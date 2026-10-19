@@ -1,0 +1,6 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Produk	Cabang	Requested Limit	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_72	AC_72.06	Approver	TRM_APV_001	KPR	011 Bandung	500.000.000	[-]	Butuh approval level 2 saja
+US_72	AC_72.06	Approver	TRM_APV_002	KPR	011 Bandung	500.000.001	[-]	Butuh approval level 2 lalu level 1
+US_72	AC_72.06	Approver	TRM_APV_003	KPR	011 Bandung	2.000.000.000	Batas atas	Butuh approval level 2 lalu level 1
+US_72	AC_72.06	Approver	TRM_APV_004	KPR	011 Bandung	2.000.000.001	Melebihi semua level	"Langkah Approval berstatus ""Error"" dengan pesan ""No approval level covers this amount"""
+US_72	AC_72.06	Approver	TRM_APV_005	KPR	012 Cimahi	300.000.000	Cabang tanpa setup approval	"Langkah Approval berstatus ""Error"" dengan pesan ""No approval setup for branch 012 and product KPR"""

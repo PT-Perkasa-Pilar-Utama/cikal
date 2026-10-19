@@ -1,0 +1,95 @@
+﻿US-ID	Judul	Persona	Aksi yang dilakukan	Hasil nilai bisnis
+US-01	Masuk dengan Username dan Password	Pengguna LOS	masuk ke aplikasi memakai username dan password yang terdaftar	hanya pengguna terdaftar yang mengakses data pengajuan sesuai perannya
+US-02	Masuk dengan Akun SSO Perusahaan	Pegawai bank dengan akun SSO	masuk ke aplikasi memakai akun SSO perusahaan tanpa password terpisah	pegawai tidak mengelola password tambahan dan akses dikendalikan identitas perusahaan
+US-03	Meminta Tautan Reset Password	Pengguna LOS dengan akun lokal	meminta tautan reset password ke email terdaftar saat lupa password	pengguna memulihkan akses secara mandiri tanpa menunggu administrator
+US-04	Mengatur Ulang Password	Pengguna LOS dengan akun lokal	membuat password baru melalui tautan reset dari email	akses pulih dengan password yang memenuhi standar keamanan
+US-05	Mengganti Password	Pengguna LOS dengan akun lokal	mengganti password sendiri, termasuk mengganti password awal dari administrator saat pertama masuk	password bawaan tidak dipakai terus dan akun tetap aman
+US-06	Keluar dari Aplikasi	Pengguna LOS	mengakhiri sesi aplikasi	data pengajuan tidak bisa diakses orang lain dari perangkat yang sama
+US-07	Mendaftarkan Pengguna Aplikasi	Maker	mendaftarkan pengguna baru beserta role, company, dan unit kerjanya	setiap pegawai hanya melihat data cabang dan fungsi sesuai tugasnya
+US-08	Mengelola Role	Maker	membuat, mengubah nama, dan menonaktifkan role	struktur tugas bank tercermin di aplikasi tanpa perubahan program
+US-09	Mengatur Hak Akses Menu per Role	Maker	menentukan menu dan tindakan (View, Create, Update, Delete, Approve) yang boleh dipakai setiap role	pegawai hanya menjalankan tindakan yang menjadi kewenangannya
+US-10	Mengatur Hak Akses Khusus per Pengguna	Maker	menambah atau mencabut akses menu untuk pengguna tertentu dalam periode tertentu	kebutuhan sementara seperti pengganti cuti terpenuhi tanpa mengubah role
+US-11	Mengelola Menu Aplikasi	Super User	menambah, mengubah urutan, dan menonaktifkan menu serta sub menu	navigasi aplikasi mengikuti kebutuhan operasional tanpa rilis ulang
+US-12	Menyetujui atau Menolak Perubahan Master Data	Checker	meninjau perbandingan data lama dan baru lalu menyetujui atau menolak perubahan yang diajukan Maker	setiap perubahan konfigurasi diperiksa orang kedua sebelum berlaku
+US-13	Meminta dan Mengerjakan Revisi Perubahan	Checker dan Maker	mengembalikan perubahan ke Maker dengan alasan, lalu Maker memperbaiki dan mengajukan ulang	perubahan yang hampir benar tidak perlu dibuat ulang dari awal
+US-14	Melihat Jejak Audit Perubahan	Auditor	melihat siapa mengubah data apa, kapan, beserta nilai sebelum dan sesudah perubahan	bank memenuhi kebutuhan audit internal dan regulator
+US-15	Mendaftarkan Company Baru	Super User	mendaftarkan bank baru beserta mata uang utama dan akun admin awalnya	bank baru mulai memakai LOS tanpa bantuan developer
+US-16	Menyalin Konfigurasi dari Company Lain	Super User	menyalin general parameter, document checklist, rute produk, dan matrix keputusan dari company sumber ke company tujuan	bank baru siap beroperasi dalam hitungan menit dengan konfigurasi standar
+US-17	Mengelola Struktur Organisasi Company	Maker	menambah dan mengubah Regional, Branch, dan Sub Branch milik company	pengajuan dan approval dikelompokkan sesuai unit kerja bank
+US-18	Mengelola Mata Uang Company	Maker	menambah dan mengubah mata uang yang dipakai company	produk dalam mata uang selain rupiah tercatat dengan kode yang benar
+US-19	Mengelola Kurs Mata Uang	Maker	mencatat kurs mata uang terhadap rupiah beserta waktu berlakunya	nilai pinjaman valas dikonversi dengan kurs yang disetujui
+US-20	Mengelola Produk Kredit	Maker	membuat dan mengubah produk kredit beserta batas plafon, tenor, usia, biaya, dan limit auto approval	bisnis meluncurkan atau menyesuaikan produk tanpa perubahan program
+US-21	Mengelola General Parameter	Maker	menambah dan mengubah nilai pilihan yang dipakai di dropdown aplikasi beserta kode BI-nya	pilihan data nasabah seragam dan sesuai kode pelaporan regulator
+US-22	Mengimpor dan Mengekspor General Parameter	Maker	mengunduh template, mengunggah banyak parameter sekaligus, dan mengekspor parameter ke Excel	penyiapan ratusan nilai parameter tidak diinput satu per satu
+US-23	Memperbarui Data Wilayah	Maker	memperbarui data provinsi sampai kode pos dari sumber data wilayah resmi dan mencari datanya	alamat nasabah dan agunan tercatat sesuai wilayah administratif terbaru
+US-24	Mengelola Template Dokumen	Maker	mengunggah dan mengganti template dokumen keluaran seperti akad kredit, SP3K, dan surat pengajuan	isi dokumen resmi mengikuti format terbaru bank tanpa perubahan program
+US-25	Mengatur Dokumen Wajib Pengajuan	Maker	menentukan dokumen yang wajib diunggah berdasarkan produk, pekerjaan, dan status perkawinan	kelengkapan dokumen setiap pengajuan sesuai kebijakan kredit
+US-26	Mengatur Level Approval	Maker	menentukan level approval per produk dan cabang beserta rentang nominal dan aksi yang diizinkan tiap level	pengajuan disetujui pejabat yang sesuai kewenangan nominalnya
+US-27	Menetapkan Approver per Level	Maker	menetapkan pengguna yang menjadi approver di setiap level dan sub level approval	antrean approval selalu sampai ke orang yang tepat
+US-28	Mengimpor Setup Approval	Maker	mengunggah level approval dan approver sekaligus dari Excel	penyiapan approval puluhan cabang selesai dalam satu kali unggah
+US-29	Mengelola Data Perusahaan Asuransi	Maker	mencatat perusahaan asuransi rekanan beserta tarif premi per produk	nilai premi e-polis dihitung dari tarif yang disetujui
+US-30	Mengatur Parameter Sistem	Maker	mengubah parameter operasional seperti batas SIKP, ambang Dukcapil, masa berlaku tautan, dan batas upload	aturan operasional disesuaikan tanpa rilis ulang aplikasi
+US-31	Mengatur Rute Modul per Produk	Maker	memilih modul proses yang dilewati pengajuan untuk setiap produk	alur pengajuan tiap produk menyesuaikan kebijakan tanpa perubahan program
+US-32	Melihat Diagram Rute Produk	Maker, Checker, dan Risk Manager	melihat rute modul setiap produk dalam bentuk diagram alur	semua pihak memahami tahapan pengajuan suatu produk tanpa membaca dokumen teknis
+US-33	Mengatur Dedup Matrix	Maker	menentukan hasil pengecekan duplikasi untuk setiap kombinasi kecocokan NIK, nama, tanggal lahir, tempat lahir, dan nama ibu kandung	kebijakan deteksi pengajuan ganda bisa diperketat atau dilonggarkan oleh bisnis
+US-34	Mengatur Aturan Verifikasi Dukcapil	Maker	mengatur bobot kecocokan nama dan nama ibu serta ambang hasil Passed, Review, dan Failed	tingkat kehati-hatian verifikasi identitas sesuai selera risiko bank
+US-35	Mengatur Fraud Matrix	Maker	menentukan hasil fraud check untuk kombinasi kondisi nama pemohon dan alamat IP pengajuan	pengajuan berisiko penipuan tertahan sejak awal proses
+US-36	Mengatur Decision Matrix	Maker	menentukan keputusan Go atau NotGo untuk kombinasi hasil Dedup, Dukcapil, Fraud, RAC, Scoring, dan SLIK	keputusan awal kredit konsisten dan mengikuti kebijakan risiko
+US-37	Menyusun Model Scoring dan RAC	Maker	menyusun model penilaian berisi kriteria berbasis data pengajuan, bobot, nilai konstanta, dan batas lulus tanpa menulis kode	tim risiko menyesuaikan kriteria kelayakan kredit tanpa bergantung pada developer
+US-38	Menguji Model Scoring Sebelum Berlaku	Maker	menjalankan model scoring terhadap pengajuan contoh dan melihat rincian nilai tiap kriteria	kesalahan kriteria terdeteksi sebelum memengaruhi keputusan kredit nasabah
+US-39	Memulai Pengajuan Kredit Baru	Sales	memulai pengajuan dengan memilih produk dan mengisi jenis pemohon, tenor, serta limit yang diminta	data calon nasabah mulai tercatat sejak pertemuan pertama
+US-40	Mengisi Data Pribadi Pemohon	Sales	mengisi identitas, kontak, alamat KTP, dan alamat domisili pemohon	identitas pemohon tercatat lengkap sebagai dasar verifikasi dan pelaporan
+US-41	Mengisi Data Pribadi dari Foto KTP	Sales	memotret atau mengunggah KTP lalu memakai hasil bacaannya untuk mengisi data pribadi	input data lebih cepat dan salah ketik NIK serta nama berkurang
+US-42	Memverifikasi Data Pensiun Pemohon	Sales	memeriksa Nomor Taspen pemohon kredit pensiun ke data EDAPEM	kredit pensiun hanya diberikan kepada pensiunan dengan data manfaat pensiun yang valid
+US-43	Mengisi Data Pasangan Pemohon	Sales	mengisi identitas dan pekerjaan pasangan untuk pemohon berstatus kawin	kemampuan bayar rumah tangga dan persetujuan pasangan dinilai lengkap
+US-44	Mengisi Data Pekerjaan Pemohon	Sales	mengisi sumber penghasilan, pekerjaan, lama bekerja, penghasilan bulanan, dan data perusahaan pemohon	sumber dan besar penghasilan pemohon bisa diverifikasi
+US-45	Mengisi Data Usaha Pemohon	Sales	mengisi profil usaha, omzet, lama usaha, dan alamat usaha untuk pemohon wiraswasta	kelayakan usaha sebagai sumber pembayaran bisa dinilai
+US-46	Mengisi Data Agunan	Sales	mencatat agunan berupa kendaraan, sertifikat tanah dan bangunan, atau SK pensiun sesuai produk	nilai dan legalitas jaminan pinjaman tercatat sebagai dasar penilaian kredit
+US-47	Mengunggah Dokumen Pendukung	Sales	mengunggah dokumen pendukung sesuai daftar dokumen wajib produk	kelengkapan administrasi terpenuhi sebelum pengajuan diproses
+US-48	Mengisi Kontak Darurat	Sales	mengisi kontak darurat pemohon yang tidak tinggal serumah	bank punya jalur komunikasi alternatif saat pemohon sulit dihubungi
+US-49	Menyimpan Pengajuan sebagai Draft	Sales	menyimpan pengajuan yang belum lengkap dan melanjutkannya di lain waktu	data yang sudah diisi tidak hilang saat dokumen nasabah belum lengkap
+US-50	Mengirim Pengajuan untuk Diproses	Sales	mengirim pengajuan yang sudah lengkap ke proses verifikasi	pengajuan masuk tahap penilaian sesuai rute produknya tanpa jeda manual
+US-51	Menghitung Simulasi Angsuran	Sales	menghitung angsuran bulanan berdasarkan pokok, tenor, suku bunga, dan jenis bunga	calon nasabah mendapat gambaran angsuran sebelum mengajukan
+US-52	Mengunggah Pengajuan Massal	Sales	mengunggah banyak pengajuan sekaligus melalui template Excel	pengajuan dari program kemitraan atau payroll diproses tanpa input satu per satu
+US-53	Memantau Hasil Upload Massal	Sales	melihat status pemrosesan file upload dan mengunduh baris yang gagal beserta alasannya	pengajuan yang gagal diunggah bisa segera diperbaiki dan diunggah ulang
+US-54	Mengirim Pengajuan melalui API Mitra	Tim IT mitra penyalur	mendaftarkan aplikasi mitra, memperoleh token, dan mengirim data pengajuan nasabah ke LOS	pengajuan dari kanal mitra masuk ke LOS tanpa input ulang oleh Sales
+US-55	Mencatat Pembayaran Biaya Appraisal	Customer Service	mengunggah bukti bayar dan mencatat nominal biaya appraisal pengajuan KPR	appraiser hanya mengerjakan pengajuan yang biaya appraisal-nya sudah dibayar
+US-56	Mengisi Laporan Kunjungan Nasabah Mikro	Surveyor	mencatat hasil kunjungan, kondisi usaha, keuangan rumah tangga, dan foto survey untuk pengajuan mikro	data faktual calon nasabah tervalidasi sebelum penilaian kredit
+US-57	Mengisi Laporan Kunjungan dan Appraisal KPR	Surveyor	mencatat hasil kunjungan dan penilaian properti agunan untuk pengajuan KPR	nilai agunan properti diketahui sebelum keputusan kredit
+US-58	Mengambil dan Melepas Tugas dari Antrean	Pengguna dengan langkah kerja manual	mengambil tugas pengajuan dari antrean sebelum mengerjakannya dan melepasnya bila batal	satu pengajuan tidak dikerjakan dua orang sekaligus
+US-59	Mendapatkan Hasil Pengecekan Duplikasi Otomatis	Risk Manager	mendapatkan hasil pengecekan duplikasi setiap pengajuan terhadap data nasabah yang sudah ada	pengajuan ganda teridentifikasi sejak awal proses
+US-60	Meninjau Hasil Duplikasi	Verifikator	membandingkan pengajuan baru dengan data nasabah yang mirip lalu memutuskan Match atau UnMatch	keputusan duplikasi yang meragukan diambil manusia, bukan ditebak sistem
+US-61	Mendapatkan Hasil Verifikasi Dukcapil Otomatis	Risk Manager	mendapatkan hasil pencocokan identitas pemohon dengan data kependudukan	identitas palsu atau salah ketik terdeteksi sebelum penilaian kredit
+US-62	Meninjau Hasil Dukcapil	Verifikator	memutuskan Pass, Fail, atau meneruskan ke Supervisor untuk hasil Dukcapil yang perlu ditinjau	data kependudukan yang meragukan diputuskan secara terkontrol
+US-63	Memutuskan Review Dukcapil Tingkat Supervisor	Supervisor	memberi keputusan akhir untuk hasil Dukcapil yang diteruskan Verifikator	kasus identitas yang sulit diputuskan pejabat berwenang
+US-64	Memverifikasi Dokumen Pengajuan	Verifikator	mencocokkan setiap dokumen yang diunggah dengan data pengajuan	keputusan kredit tidak didasarkan pada dokumen yang tidak sesuai
+US-65	Mendapatkan Hasil Fraud Check Otomatis	Risk Manager	mendapatkan hasil fraud check setiap pengajuan berdasarkan daftar hitam, alamat IP, dan frekuensi pengajuan	pengajuan penipuan tertahan dan pelakunya tercatat
+US-66	Meninjau Pengajuan Mencurigakan	Verifikator	meninjau pengajuan berstatus Suspicious lalu meloloskan atau menolaknya	pengajuan sah tidak tertolak hanya karena sinyal teknis seperti VPN
+US-67	Mendapatkan Hasil RAC dan Scoring Otomatis	Risk Manager	mendapatkan hasil kriteria penerimaan risiko dan skor kredit setiap pengajuan beserta rinciannya	penilaian kelayakan kredit objektif dan bisa dijelaskan
+US-68	Mendapatkan Hasil Kolektibilitas SLIK	Risk Manager	mendapatkan kolektibilitas kredit pemohon di lembaga keuangan lain	riwayat tunggakan pemohon ikut menentukan keputusan kredit
+US-69	Mendapatkan Keputusan Awal Go atau NotGo	Risk Manager	mendapatkan keputusan awal pengajuan dari gabungan hasil seluruh modul penilaian	pengajuan yang tidak layak berhenti sebelum memakan waktu approver
+US-70	Mendapatkan Hasil Pengecekan SIKP	Risk Manager	mendapatkan status pemohon KUR di Sistem Informasi Kredit Program	KUR disalurkan tepat sasaran dan tidak tumpang tindih dengan KUR di bank lain
+US-71	Memproses Ulang Pengajuan yang Ditolak	Risk Manager	memproses ulang pengajuan NotGo atau gagal pencairan setelah profil diperbaiki, atau mengakhirinya	pengajuan yang layak setelah perbaikan tidak perlu dibuat ulang dari awal
+US-72	Menyetujui Pengajuan Sesuai Kewenangan	Approver	meninjau dan menyetujui pengajuan yang masuk antrean sesuai level kewenangan nominal	keputusan kredit diambil pejabat yang berwenang secara berjenjang
+US-73	Menolak atau Mengembalikan Pengajuan	Approver	menolak pengajuan atau mengembalikannya ke Sales untuk diperbaiki dengan alasan	pengajuan yang tidak layak berhenti dan yang kurang lengkap diperbaiki tanpa dibuat ulang
+US-74	Menyetujui Otomatis Pengajuan Bernilai Kecil	Kepala Cabang	pengajuan Go dengan limit sampai batas auto approval produk disetujui tanpa antrean approver	pengajuan berisiko rendah cair lebih cepat dan approver fokus pada pengajuan besar
+US-75	Mengajukan E-Polis Asuransi Kredit	Admin Operasional	mengajukan polis asuransi untuk pengajuan yang sudah disetujui dengan mengisi nilai premi	pinjaman terlindungi asuransi sebelum dana dicairkan
+US-76	Memvalidasi Data Pencairan	Admin Operasional	memeriksa detail pencairan lalu menetapkan tanggal pencairan dan tanggal angsuran pertama	data yang dikirim ke core banking benar sebelum dana dicairkan
+US-77	Mencetak Akad Kredit	Admin Operasional	mencetak dokumen perjanjian kredit untuk ditandatangani nasabah	perikatan kredit sah sebelum dana dicairkan
+US-78	Mencetak Ulang Akad Kredit	Admin Operasional	mencetak ulang akad yang sudah pernah dicetak dengan data yang sama	dokumen yang hilang atau rusak bisa diganti tanpa mengubah perjanjian
+US-79	Mengirim Data Pencairan ke Core Banking	Admin Operasional	membuat file data pencairan per pengajuan dalam format core banking	pencairan dieksekusi core banking tanpa penyuntingan file manual
+US-80	Mencatat Respons Pencairan dari Core Banking	Admin Operasional	melihat hasil pencairan yang dikirim core banking dan status akhir pengajuan	status pengajuan selalu sesuai hasil pencairan sebenarnya
+US-81	Melihat Dashboard Ringkasan Pengajuan	Kepala Cabang	melihat jumlah pengajuan per status dan per langkah proses serta total pencairan per regional	hambatan proses dan pencapaian penyaluran terlihat setiap saat
+US-82	Mengekspor Laporan Pengajuan	Kepala Cabang	mengunduh daftar pengajuan ke Excel berdasarkan periode, status, dan langkah proses	laporan penyaluran disusun tanpa merekap data manual
+US-83	Mencari dan Menyaring Daftar Pengajuan	Pengguna LOS	mencari pengajuan berdasarkan Loan ID atau nama dan menyaringnya per status, langkah, produk, dan tanggal	status pengajuan nasabah bisa dijawab cepat
+US-84	Melihat Detail Pengajuan	Pengguna LOS	melihat seluruh data pengajuan dalam tab Detail, Personal, Spouse, Occupation, Business, LKN, Collateral, Document, Emergency Contact, Approval, dan History	semua pihak bekerja dari data pengajuan yang sama
+US-85	Melihat Riwayat Proses Pengajuan	Pengguna LOS	melihat urutan langkah yang sudah dilalui pengajuan beserta waktu, pelaku, hasil, dan lama tiap langkah	posisi dan hambatan setiap pengajuan bisa ditelusuri
+US-86	Memantau dan Memulihkan Proses yang Gagal	Admin Operasional	melihat pengajuan yang tertahan karena error modul otomatis lalu mengulang atau menghentikannya	pengajuan tidak macet tanpa diketahui saat layanan eksternal bermasalah
+US-87	Menerima Notifikasi Status Pengajuan	Nasabah	menerima email saat pengajuan diterima, ditolak, dan dicairkan	nasabah mengetahui perkembangan pengajuannya tanpa harus menghubungi bank
+US-88	Melihat Beranda Mobile	Sales	melihat ringkasan penjualan dan memilih kategori produk dari aplikasi mobile	sales langsung memulai pengajuan saat bertemu calon nasabah
+US-89	Membuat Pengajuan dari Mobile	Sales	mengisi pengajuan per section di mobile dengan urutan section sesuai produk	data nasabah diinput di lokasi tanpa kembali ke kantor
+US-90	Melihat Daftar Pengajuan Saya di Mobile	Sales	melihat pengajuan saya yang berstatus Draft, On Progress, dan Disburse	sales menindaklanjuti nasabah dan memantau pencapaiannya
+US-91	Mengisi Laporan Kunjungan dari Mobile	Surveyor	mengisi LKN dan mengunggah foto survey langsung dari lokasi nasabah	hasil kunjungan tercatat saat itu juga lengkap dengan bukti foto
+US-92	Melihat Profil Pengguna di Mobile	Sales	melihat data akun, mengganti password, dan logout dari aplikasi mobile	akun mobile terkelola mandiri dan aman saat perangkat dipakai bersama
+US-93	Melihat Perangkat yang Dipakai Sales	Admin Sistem	melihat daftar perangkat mobile yang dipakai login beserta lokasi terakhirnya	penggunaan aplikasi di lapangan bisa diawasi dan perangkat hilang bisa dilacak
+US-94	Mensimulasikan Respons Layanan Eksternal	QA	mengatur respons tiruan Dukcapil, SLIK, SIKP, EDAPEM, asuransi, dan core banking di lingkungan uji	semua jalur proses bisa diuji tanpa bergantung pada sistem eksternal

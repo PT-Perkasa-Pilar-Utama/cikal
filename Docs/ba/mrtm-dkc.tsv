@@ -1,0 +1,9 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Tanggal Lahir	Tempat Lahir	Skor Nama	Skor Nama Ibu	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_61	AC_61.01	Risk Manager	TRM_DKC_001	Sama	Sama	1,00	1,00	Skor 1,00	Passed; lanjut ke Verification Document
+US_61	AC_61.01	Risk Manager	TRM_DKC_002	Sama	Sama	0,90	0,90	Skor tepat 0,90	Passed
+US_61	AC_61.01	Risk Manager	TRM_DKC_003	Sama	Sama	0,90	0,85	Skor 0,88	Review; masuk antrean Prescreen Dukcapil
+US_61	AC_61.01	Risk Manager	TRM_DKC_004	Sama	Sama	0,75	0,75	Skor tepat 0,75	Review
+US_61	AC_61.01	Risk Manager	TRM_DKC_005	Sama	Sama	0,74	0,74	Skor 0,74	Failed; pengajuan berhenti dengan status Finish dan email penolakan
+US_61	AC_61.01	Risk Manager	TRM_DKC_006	Beda	Sama	1,00	1,00	Tanggal lahir beda	Failed tanpa menghitung skor
+US_61	AC_61.01	Risk Manager	TRM_DKC_007	Sama	Beda	1,00	1,00	Tempat lahir beda	Failed tanpa menghitung skor
+US_61	AC_61.01	Risk Manager	TRM_DKC_008	[-]	[ANY]	[ANY]	[ANY]	Tanggal lahir kosong	Skip; lanjut ke Verification Document

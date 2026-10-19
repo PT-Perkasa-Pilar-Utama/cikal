@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	NIK	Full Name ID	DOB	POB	Mother Maiden Name	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_59	AC_59.01	Risk Manager	TRM_DDP_001	Match	Match	Match	Match	Match	[-]	Dedup = Match; langkah berikutnya Verification Document (Dukcapil dilewati)
+US_59	AC_59.01	Risk Manager	TRM_DDP_002	Match	Fuzzy	Match	Match	Fuzzy	[-]	Dedup = Review; masuk antrean Prescreen Dedup
+US_59	AC_59.01	Risk Manager	TRM_DDP_003	UnMatch	UnMatch	[ANY]	[ANY]	[ANY]	[-]	Dedup = UnMatch; langkah berikutnya Dukcapil
+US_59	AC_59.01	Risk Manager	TRM_DDP_004	Match	UnMatch	UnMatch	UnMatch	UnMatch	NIK sama, identitas lain beda	Dedup = Review; masuk antrean Prescreen Dedup
+US_59	AC_59.01	Risk Manager	TRM_DDP_005	[-]	[ANY]	[ANY]	[ANY]	[ANY]	NIK kosong	Dedup = Skip; diperlakukan sebagai UnMatch, langkah berikutnya Dukcapil
+US_59	AC_59.01	Risk Manager	TRM_DDP_006	[ANY]	[ANY]	[ANY]	[ANY]	[ANY]	Modul Dedup dimatikan di rute produk	"Dedup tidak dijalankan; riwayat mencatat ""Skipped - not in route"""

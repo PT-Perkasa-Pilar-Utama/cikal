@@ -1,0 +1,8 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Interest Type	Principal	Tenor	Rate (% p.a.)	Input Tambahan 1	Input Tambahan 2	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_51	AC_51.02	Sales	TRM_INS_001	Flat	100.000.000	12	12	[-]	[-]	[-]	Angsuran tetap Rp9.333.333 per bulan (pokok 8.333.333 + bunga 1.000.000)
+US_51	AC_51.02	Sales	TRM_INS_002	Effective	100.000.000	12	12	[-]	[-]	[-]	Angsuran tetap Rp8.884.879 per bulan, bunga menurun, pokok naik
+US_51	AC_51.02	Sales	TRM_INS_003	Floating	100.000.000	12	10	Spread 2	[-]	Rate = interest + spread = 12%	Angsuran Rp8.884.879 per bulan
+US_51	AC_51.02	Sales	TRM_INS_004	Hybrid	100.000.000	24	10	Floating 14	Tenor fixed 12	[-]	Angsuran bulan 1 s.d. 12 dihitung dengan 10%, bulan 13 s.d. 24 dengan 14% atas sisa pokok
+US_51	AC_51.02	Sales	TRM_INS_005	Capped	100.000.000	12	12	Spread 2	Cap 13	Rate 14% melebihi cap	Angsuran dihitung dengan 13%
+US_51	AC_51.02	Sales	TRM_INS_006	Capped	100.000.000	12	10	Spread 2	Cap 13	Rate 12% di bawah cap	Angsuran dihitung dengan 12%
+US_51	AC_51.02	Sales	TRM_INS_007	Hybrid	100.000.000	12	10	Floating 14	Tenor fixed 12	Tenor fixed = tenor	"Sistem menampilkan pesan ""Fixed tenor must be less than total tenor"""

@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Kolektibilitas dari SLIK	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_68	AC_68.02	Risk Manager	TRM_SLK_001	1	[-]	Collectibility 1 - Good
+US_68	AC_68.02	Risk Manager	TRM_SLK_002	2	[-]	Collectibility 2 - Fair
+US_68	AC_68.02	Risk Manager	TRM_SLK_003	3	[-]	Collectibility 3 - Poor
+US_68	AC_68.02	Risk Manager	TRM_SLK_004	5	Nilai tertinggi	Collectibility 5 - Poor
+US_68	AC_68.02	Risk Manager	TRM_SLK_005	[-]	Tidak ada riwayat kredit	No credit history
+US_68	AC_68.02	Risk Manager	TRM_SLK_006	6	Nilai di luar rentang dari layanan	"Langkah SLIK berstatus ""Error"" dengan pesan ""Invalid collectibility value: 6"""

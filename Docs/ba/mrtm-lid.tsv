@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Tanggal Simpan	Kode Produk	Company	Counter Terakhir	Kondisi Bersamaan	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_49	AC_49.04	Sales	TRM_LID_001	20-10-2026	KTA	001	0000012	-	[-]	Loan ID 20102026KTA0000013
+US_49	AC_49.04	Sales	TRM_LID_002	20-10-2026	KPR	001	0000040	-	Counter terpisah per produk	Loan ID 20102026KPR0000041
+US_49	AC_49.04	Sales	TRM_LID_003	21-10-2026	KTA	001	0000013	-	Counter tidak direset per hari	Loan ID 21102026KTA0000014
+US_49	AC_49.04	Sales	TRM_LID_004	20-10-2026	KTA	007	0000000	-	Counter terpisah per company	Loan ID 20102026KTA0000001
+US_49	AC_49.04	Sales	TRM_LID_005	20-10-2026	KTA	001	9999999	-	Batas counter	"Sistem menampilkan pesan ""Loan ID counter has reached its limit. Please contact your administrator"""
+US_49	AC_49.04	Sales	TRM_LID_006	20-10-2026	KTA	001	0000012	Ada draft lain disimpan bersamaan	Dua Sales menyimpan pada detik yang sama	Kedua draft mendapat Loan ID berbeda: 0000013 dan 0000014

@@ -1,0 +1,11 @@
+# Dari folder Docs, yang di-push hanya Doc BA (xlsx), us-ac.md, dan TSV.
+# Folder lain (Reverse Engineering OS11, review checklist, overview, design system, konsep TO-BE, gambar) tetap lokal.
+Docs/*
+!Docs/ba/
+Docs/ba/*
+!Docs/ba/Doc_BA_Cikal_Versi 1.xlsx
+!Docs/ba/us-ac.md
+!Docs/ba/*.tsv
+
+# Sesi brainstorming visual companion
+.superpowers/

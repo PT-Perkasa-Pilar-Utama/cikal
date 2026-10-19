@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Blacklist	Kondisi IP	Jumlah Pengajuan Nama yang Sama	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_65	AC_65.01	Risk Manager	TRM_FRD_001	Ada di blacklist	[ANY]	[ANY]	[-]	High Fraud Potential; pengajuan berstatus Finish
+US_65	AC_65.01	Risk Manager	TRM_FRD_002	Tidak	Normal	4 pengajuan/hari	Batas 3 pengajuan per hari	High Fraud Potential; pengajuan berstatus Finish dan data pemohon masuk blacklist
+US_65	AC_65.01	Risk Manager	TRM_FRD_003	Tidak	Normal	3 pengajuan/hari	Tepat di batas	Clean; lanjut ke modul berikutnya
+US_65	AC_65.01	Risk Manager	TRM_FRD_004	Tidak	VPN/Proxy	1	[-]	Suspicious; masuk antrean Prescreen Fraud
+US_65	AC_65.01	Risk Manager	TRM_FRD_005	Tidak	Lokasi IP beda domisili KTP	1	[-]	Suspicious; masuk antrean Prescreen Fraud
+US_65	AC_65.01	Risk Manager	TRM_FRD_006	Tidak	Normal	1	[-]	Clean; lanjut ke modul berikutnya

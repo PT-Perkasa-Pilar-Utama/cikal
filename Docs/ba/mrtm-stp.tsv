@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Produk (Kategori)	Marital	Occupation	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_50	AC_50.06	Sales	TRM_STP_001	KTA (Non Collateral)	Belum Kawin	Karyawan Swasta	[-]	Application > Personal > Occupation > Document > Emergency Contact
+US_50	AC_50.06	Sales	TRM_STP_002	KTA (Non Collateral)	Kawin	Karyawan Swasta	[-]	Application > Personal > Spouse > Occupation > Document > Emergency Contact
+US_50	AC_50.06	Sales	TRM_STP_003	Kredit Agunan (Collateral)	Kawin	Wiraswasta	[-]	Application > Personal > Spouse > Occupation > Business > Collateral > Document > Emergency Contact
+US_50	AC_50.06	Sales	TRM_STP_004	KUR Kecil (Collateral)	Belum Kawin	Wiraswasta	[-]	Application > Personal > Occupation > Business > Collateral > Document > Emergency Contact
+US_50	AC_50.06	Sales	TRM_STP_005	KPR (Collateral)	Cerai Hidup	ASN	Agunan otomatis Sertifikat	Application > Personal > Occupation > Collateral > Document > Emergency Contact
+US_50	AC_50.06	Sales	TRM_STP_006	Pension	Kawin	Pensiunan	Wajib verifikasi Taspen	Application > Personal (Taspen) > Spouse > Occupation > Collateral (SK) > Document > Emergency Contact

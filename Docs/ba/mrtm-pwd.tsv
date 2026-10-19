@@ -1,0 +1,8 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Contoh Password	Panjang	Huruf Besar	Huruf Kecil	Angka	Karakter Spesial	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_001	Ckl@202	7	Ya	Ya	Ya	Ya	[-]	"Sistem menampilkan pesan ""Password must be at least 8 characters"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_002	Ckl@2026	8	Ya	Ya	Ya	Ya	[-]	"Password diterima, pesan ""Your password has been reset. Please log in"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_003	cikal@2026	10	Tidak	Ya	Ya	Ya	[-]	"Sistem menampilkan pesan ""Password must contain at least one uppercase letter (A-Z)"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_004	CIKAL@2026	10	Ya	Tidak	Ya	Ya	[-]	"Sistem menampilkan pesan ""Password must contain at least one lowercase letter (a-z)"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_005	Cikal@abcd	10	Ya	Ya	Tidak	Ya	[-]	"Sistem menampilkan pesan ""Password must contain at least one number (0-9)"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_006	Cikal2026a	10	Ya	Ya	Ya	Tidak	[-]	"Sistem menampilkan pesan ""Password must contain at least one special character"""
+US_04	AC_04.02	Pengguna lokal	TRM_PWD_007	[ANY] 129 karakter	129	Ya	Ya	Ya	Ya	[-]	"Sistem menampilkan pesan ""Password must not exceed 128 characters"""

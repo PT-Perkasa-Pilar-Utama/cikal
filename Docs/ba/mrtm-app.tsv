@@ -1,0 +1,9 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Requested Limit	Tenor Proposed	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_39	AC_39.03	Sales	TRM_APP_001	4.999.999	36	[-]	"Sistem menampilkan pesan ""Requested limit must be between 5,000,000 and 300,000,000"""
+US_39	AC_39.03	Sales	TRM_APP_002	5.000.000	36	[-]	"Lanjut ke step ""Personal"""
+US_39	AC_39.03	Sales	TRM_APP_003	300.000.000	36	[-]	"Lanjut ke step ""Personal"""
+US_39	AC_39.03	Sales	TRM_APP_004	300.000.001	36	[-]	"Sistem menampilkan pesan ""Requested limit must be between 5,000,000 and 300,000,000"""
+US_39	AC_39.03	Sales	TRM_APP_005	20.000.000	5	[-]	"Sistem menampilkan pesan ""Tenor must be between 6 and 60 months"""
+US_39	AC_39.03	Sales	TRM_APP_006	20.000.000	6	[-]	"Lanjut ke step ""Personal"""
+US_39	AC_39.03	Sales	TRM_APP_007	20.000.000	60	[-]	"Lanjut ke step ""Personal"""
+US_39	AC_39.03	Sales	TRM_APP_008	20.000.000	61	[-]	"Sistem menampilkan pesan ""Tenor must be between 6 and 60 months"""

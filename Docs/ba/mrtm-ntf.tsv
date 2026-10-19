@@ -1,0 +1,7 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Kejadian	Subjek Email	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_87	AC_87.01	Nasabah	TRM_NTF_001	Pengajuan disubmit	Your loan application 20102026KTA0000013 has been received	[-]	Email terkirim satu kali
+US_87	AC_87.01	Nasabah	TRM_NTF_002	Decision NotGo	Your loan application 20102026KTA0000013 could not be approved	[-]	Email terkirim satu kali
+US_87	AC_87.01	Nasabah	TRM_NTF_003	Approver Reject	Your loan application 20102026KTA0000013 could not be approved	[-]	Email terkirim satu kali
+US_87	AC_87.01	Nasabah	TRM_NTF_004	Respons core SUKSES	Your loan 20102026KTA0000013 has been disbursed	[-]	Email terkirim satu kali
+US_87	AC_87.01	Nasabah	TRM_NTF_005	Recontest dimulai	[-]	[-]	Tidak ada email
+US_87	AC_87.01	Nasabah	TRM_NTF_006	Pengajuan disubmit	[-]	Email nasabah kosong	"Tidak ada email; riwayat mencatat ""Notification skipped - no email"""

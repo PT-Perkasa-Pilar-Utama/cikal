@@ -1,0 +1,5 @@
+﻿User Story ID	Acceptance Criteria ID	User	Test Case ID	Role	View	Create/Update	Delete	Approve	Kondisi Khusus	HASIL (EXPECTED RESULT)
+US_09	AC_09.02	Pengguna LOS	TRM_ACC_001	Sales	Tidak	Tidak	Tidak	Tidak	[-]	"Menu ""Product"" tidak tampil; membuka alamat halaman menampilkan pesan ""You do not have access to this page"""
+US_09	AC_09.02	Pengguna LOS	TRM_ACC_002	Checker	Ya	Tidak	Tidak	Ya	[-]	"Daftar produk tampil; tombol ""New Product"", ikon edit, dan ikon hapus tidak tampil; tombol ""Approve"" tampil di Pending Product"
+US_09	AC_09.02	Pengguna LOS	TRM_ACC_003	Maker	Ya	Ya	Ya	Tidak	[-]	"Daftar produk, tombol ""New Product"", dan ikon edit tampil; tombol ""Approve"" di Pending Product tidak tampil"
+US_09	AC_09.02	Pengguna LOS	TRM_ACC_004	Admin Sistem	Ya	Ya	Ya	Ya	Admin tetap tidak bisa menyetujui perubahannya sendiri	Semua tombol tampil

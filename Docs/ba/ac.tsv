@@ -1,0 +1,1618 @@
+﻿AC-ID	US-ID	Skenario	GIVEN	WHEN	THEN	Status
+AC-01.01	US-01	Masuk dengan username dan password yang benar	"Saya seorang Sales dengan username ""sales.jkt01""
+AND saya berada di halaman ""Login"""	"Saya mengetik ""sales.jkt01"" di field ""Username""
+AND saya mengetik password yang benar di field ""Password""
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan halaman ""Dashboard""
+AND nama lengkap, role ""Sales"", dan nama company saya tampil di header kanan atas"	Draft
+AC-01.02	US-01	Gagal masuk karena password salah	"Saya seorang Sales dengan username ""sales.jkt01""
+AND saya berada di halaman ""Login"""	"Saya mengetik ""sales.jkt01"" di field ""Username""
+AND saya mengetik password yang salah di field ""Password""
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Invalid username or password""
+AND saya tetap di halaman ""Login"""	Draft
+AC-01.03	US-01	Gagal masuk karena username tidak terdaftar	"Saya seorang pengunjung
+AND saya berada di halaman ""Login"""	"Saya mengetik ""tidak.terdaftar"" di field ""Username""
+AND saya mengetik ""Abc12345!"" di field ""Password""
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Invalid username or password"" yang sama persis dengan pesan password salah
+AND saya tetap di halaman ""Login"""	Draft
+AC-01.04	US-01	Gagal masuk karena field wajib kosong	"Saya seorang pengunjung
+AND saya berada di halaman ""Login"""	"Saya membiarkan field ""Username"" dan ""Password"" kosong
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Username is required"" di bawah field ""Username""
+AND pesan ""Password is required"" tampil di bawah field ""Password"""	Draft
+AC-01.05	US-01	Akun terkunci pada kegagalan kelima berturut-turut	"Saya seorang Sales dengan username ""sales.jkt01""
+AND saya berada di halaman ""Login""
+AND saya sudah 4 kali berturut-turut salah memasukkan password"	"Saya mengetik password yang salah
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Your account is locked for 15 minutes due to too many failed attempts""
+AND login dengan password benar selama 15 menit berikutnya ditolak dengan pesan yang sama"	Draft
+AC-01.06	US-01	Login benar setelah 4 kegagalan belum terkunci	"Saya seorang Sales dengan username ""sales.jkt01""
+AND saya berada di halaman ""Login""
+AND saya sudah 4 kali berturut-turut salah memasukkan password"	"Saya mengetik password yang benar
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan halaman ""Dashboard""
+AND hitungan gagal login saya kembali ke 0"	Draft
+AC-01.07	US-01	User berstatus Inactive tidak bisa masuk	"Saya seorang pengguna dengan username ""sales.jkt02"" yang berstatus Inactive
+AND saya berada di halaman ""Login"""	"Saya mengetik ""sales.jkt02"" dan password yang benar
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Your account is inactive. Please contact your administrator""
+AND saya tetap di halaman ""Login"""	Draft
+AC-01.08	US-01	Input berisi pola injeksi tidak memberi akses	"Saya seorang pengunjung
+AND saya berada di halaman ""Login"""	"Saya mengetik ""admin' OR '1'='1"" di field ""Username""
+AND saya mengetik ""x"" di field ""Password""
+AND saya mengklik tombol ""Login"""	"Sistem menampilkan pesan ""Invalid username or password""
+AND saya tetap di halaman ""Login"" tanpa akses ke aplikasi"	Draft
+AC-02.01	US-02	Masuk SSO dengan akun yang sudah punya role	"Saya seorang pegawai dengan akun SSO ""rina.approver"" yang terdaftar di LOS dengan role Approver
+AND saya berada di halaman ""Login"""	"Saya mengklik tombol ""Login with SSO""
+AND saya mengisi username dan password di halaman login SSO perusahaan
+AND saya mengklik tombol ""Sign In"" di halaman SSO"	"Sistem menampilkan halaman ""Dashboard"" LOS
+AND nama saya dan role ""Approver"" tampil di header"	Draft
+AC-02.02	US-02	Masuk SSO pertama kali untuk akun yang belum terdaftar	"Saya seorang pegawai dengan akun SSO ""budi.baru"" yang belum pernah masuk LOS
+AND saya berada di halaman ""Login"""	"Saya mengklik tombol ""Login with SSO""
+AND saya menyelesaikan login di halaman SSO perusahaan"	"Sistem menampilkan halaman dengan pesan ""Your account has been created. Please wait until an administrator assigns your role""
+AND menu aplikasi tidak tampil
+AND user ""budi.baru"" tercatat di daftar User Application dengan status ""No Role"""	Draft
+AC-02.03	US-02	Login SSO dibatalkan di halaman penyedia SSO	"Saya seorang pegawai dengan akun SSO
+AND saya berada di halaman ""Login"""	"Saya mengklik tombol ""Login with SSO""
+AND saya mengklik tombol ""Cancel"" di halaman SSO perusahaan"	"Sistem menampilkan halaman ""Login"" LOS dengan pesan ""SSO login was cancelled"""	Draft
+AC-02.04	US-02	Akun SSO berstatus Inactive di LOS tidak bisa masuk	"Saya seorang pegawai dengan akun SSO ""dodi.sales"" yang berstatus Inactive di LOS
+AND saya berada di halaman ""Login"""	"Saya mengklik tombol ""Login with SSO""
+AND saya menyelesaikan login di halaman SSO perusahaan"	"Sistem menampilkan halaman ""Login"" dengan pesan ""Your account is inactive. Please contact your administrator"""	Draft
+AC-02.05	US-02	Email akun SSO sudah dipakai user lokal	"Saya seorang pegawai dengan akun SSO beremail ""sari@contoh.co.id""
+AND saya berada di halaman ""Login""
+AND user lokal ""sales.bdg01"" sudah memakai email ""sari@contoh.co.id"""	"Saya mengklik tombol ""Login with SSO""
+AND saya menyelesaikan login di halaman SSO perusahaan"	"Sistem menampilkan halaman ""Dashboard"" sebagai user ""sales.bdg01"" dan akun tersebut tertaut ke SSO tanpa membuat user baru"	Draft
+AC-03.01	US-03	Meminta tautan reset dengan email terdaftar	"Saya seorang pengguna lokal dengan email ""analis@contoh.co.id""
+AND saya berada di halaman ""Forgot Password"""	"Saya mengetik ""analis@contoh.co.id"" di field ""Email""
+AND saya mengklik tombol ""Send Reset Link"""	"Sistem menampilkan pesan ""If the email is registered, a reset link has been sent""
+AND email berisi tautan reset yang berlaku 10 menit terkirim ke ""analis@contoh.co.id"""	Draft
+AC-03.02	US-03	Meminta tautan reset dengan email tidak terdaftar	"Saya seorang pengunjung
+AND saya berada di halaman ""Forgot Password"""	"Saya mengetik ""bukan.user@contoh.co.id"" di field ""Email""
+AND saya mengklik tombol ""Send Reset Link"""	"Sistem menampilkan pesan ""If the email is registered, a reset link has been sent"" yang sama persis dengan email terdaftar
+AND tidak ada email yang dikirim"	Draft
+AC-03.03	US-03	Format email tidak valid	"Saya seorang pengunjung
+AND saya berada di halaman ""Forgot Password"""	"Saya mengetik ""analis@contoh"" di field ""Email""
+AND saya mengklik tombol ""Send Reset Link"""	"Sistem menampilkan pesan ""Please enter a valid email address"" di bawah field ""Email"""	Draft
+AC-03.04	US-03	Akun SSO tidak menerima email reset password lokal	"Saya seorang pegawai yang hanya memakai akun SSO dengan email ""rina@contoh.co.id""
+AND saya berada di halaman ""Forgot Password"""	"Saya mengetik ""rina@contoh.co.id"" di field ""Email""
+AND saya mengklik tombol ""Send Reset Link"""	"Sistem menampilkan pesan ""If the email is registered, a reset link has been sent""
+AND tidak ada email reset yang dikirim karena akun dikelola SSO"	Draft
+AC-04.01	US-04	Membuat password baru yang memenuhi semua kriteria	"Saya seorang pengguna lokal
+AND saya berada di halaman ""Reset Password""
+AND saya membuka tautan reset yang masih berlaku"	"Saya mengetik ""Cikal@2026"" di field ""New Password""
+AND saya mengetik ""Cikal@2026"" di field ""Confirm New Password""
+AND saya mengklik tombol ""Reset Password"""	"Sistem menampilkan halaman ""Login"" dengan pesan ""Your password has been reset. Please log in""
+AND tautan reset yang sama tidak bisa dipakai lagi"	Draft
+AC-04.02	US-04	Aturan panjang dan komposisi password sesuai matriks	"Saya seorang pengguna lokal
+AND saya berada di halaman ""Reset Password""
+AND saya membuka tautan reset yang masih berlaku"	"Saya mengetik nilai kolom ""Contoh Password"" di field ""New Password"" dan ""Confirm New Password""
+AND saya mengklik tombol ""Reset Password"""	Refer to MRTM Rows: TRM_PWD_001 through TRM_PWD_007 for comprehensive logic combinations.	Draft
+AC-04.03	US-04	Konfirmasi password tidak sama	"Saya seorang pengguna lokal
+AND saya berada di halaman ""Reset Password""
+AND saya membuka tautan reset yang masih berlaku"	"Saya mengetik ""Cikal@2026"" di field ""New Password""
+AND saya mengetik ""Cikal@2027"" di field ""Confirm New Password""
+AND saya mengklik tombol ""Reset Password"""	"Sistem menampilkan pesan ""Passwords do not match"" di bawah field ""Confirm New Password"""	Draft
+AC-04.04	US-04	Password baru sama dengan password saat ini	"Saya seorang pengguna lokal dengan password saat ini ""Cikal@2025""
+AND saya berada di halaman ""Reset Password""
+AND saya membuka tautan reset yang masih berlaku"	"Saya mengetik ""Cikal@2025"" di field ""New Password"" dan ""Confirm New Password""
+AND saya mengklik tombol ""Reset Password"""	"Sistem menampilkan pesan ""New password must be different from your current password"""	Draft
+AC-04.05	US-04	Membuka tautan reset pada menit ke-11	"Saya seorang pengguna lokal
+AND tautan reset saya dikirim 11 menit yang lalu"	Saya mengklik tautan reset di email	"Sistem menampilkan halaman ""Forgot Password"" dengan pesan ""The reset link is invalid or has expired. Please request a new one"""	Draft
+AC-04.06	US-04	Tautan kedaluwarsa saat form sedang diisi	"Saya seorang pengguna lokal
+AND saya berada di halaman ""Reset Password""
+AND saya membuka tautan reset 9 menit setelah dikirim"	"Saya mengisi password valid di kedua field pada menit ke-11 setelah tautan dikirim
+AND saya mengklik tombol ""Reset Password"""	"Sistem menampilkan pesan ""The reset link is invalid or has expired. Please request a new one""
+AND password saya tidak berubah"	Draft
+AC-05.01	US-05	Mengganti password dari halaman profil	"Saya seorang pengguna lokal yang sudah login
+AND saya berada di halaman ""My Profile"""	"Saya mengklik tombol ""Change Password""
+AND saya mengetik password saat ini di field ""Current Password""
+AND saya mengetik ""Cikal@2027"" di field ""New Password"" dan ""Confirm New Password""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Your password has been changed""
+AND login berikutnya hanya berhasil dengan password ""Cikal@2027"""	Draft
+AC-05.02	US-05	Password saat ini salah	"Saya seorang pengguna lokal yang sudah login
+AND saya berada di halaman ""Change Password"""	"Saya mengetik password yang salah di field ""Current Password""
+AND saya mengetik ""Cikal@2027"" di field ""New Password"" dan ""Confirm New Password""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Current password is incorrect"" di bawah field ""Current Password"""	Draft
+AC-05.03	US-05	Wajib ganti password awal saat pertama kali masuk	"Saya seorang pengguna lokal baru yang menerima password awal dari administrator
+AND saya berada di halaman ""Login"""	Saya login dengan username dan password awal	"Sistem menampilkan halaman ""Change Password"" dengan pesan ""Please change your initial password before continuing""
+AND menu aplikasi tidak bisa diakses sebelum password diganti"	Draft
+AC-05.04	US-05	Halaman lain tidak bisa dibuka sebelum password awal diganti	"Saya seorang pengguna lokal baru
+AND saya berada di halaman ""Change Password""
+AND saya belum mengganti password awal"	"Saya mengetik alamat halaman ""Application Inquiry"" di address bar browser"	"Sistem menampilkan kembali halaman ""Change Password"" dengan pesan ""Please change your initial password before continuing"""	Draft
+AC-06.01	US-06	Keluar lewat tombol Logout	"Saya seorang pengguna yang sudah login
+AND saya berada di halaman ""Dashboard"""	"Saya mengklik ikon ""Logout"" di header"	"Sistem menampilkan halaman ""Login""
+AND menekan tombol Back di browser tidak menampilkan halaman aplikasi"	Draft
+AC-06.02	US-06	Membuka alamat halaman aplikasi setelah logout	"Saya seorang pengguna yang baru saja logout
+AND saya berada di halaman ""Login"""	"Saya mengetik alamat halaman ""Dashboard"" di address bar browser"	"Sistem menampilkan halaman ""Login"""	Draft
+AC-06.03	US-06	Sesi berakhir setelah 30 menit tanpa aktivitas	"Saya seorang pengguna yang sudah login
+AND saya berada di halaman ""Application Inquiry""
+AND saya tidak melakukan aktivitas selama 30 menit"	Saya mengklik salah satu baris pengajuan	"Sistem menampilkan halaman ""Login"" dengan pesan ""Your session has expired. Please log in again"""	Draft
+AC-06.04	US-06	Sesi masih aktif pada menit ke-29	"Saya seorang pengguna yang sudah login
+AND saya berada di halaman ""Application Inquiry""
+AND saya tidak melakukan aktivitas selama 29 menit"	Saya mengklik salah satu baris pengajuan	Sistem menampilkan detail pengajuan yang saya klik	Draft
+AC-07.01	US-07	Mendaftarkan pengguna baru dengan data lengkap	"Saya seorang Maker
+AND saya berada di halaman ""User Application"""	"Saya mengklik tombol ""New User""
+AND saya mengisi field ""Username"" dengan ""sales.bdg01""
+AND saya mengisi field ""Full Name"" dengan ""Sari Wulandari""
+AND saya mengisi field ""Email"" dengan ""sari@contoh.co.id""
+AND saya memilih ""Sales"" di dropdown ""Role""
+AND saya memilih Company ""001 - Bank Contoh"", Regional ""01 - Jawa Barat"", Branch ""011 - Bandung"", Sub Branch ""0111 - Dago""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND pengguna ""sales.bdg01"" tampil di halaman ""Pending User Application"" dengan status ""Waiting Approval""
+AND pengguna belum bisa login sebelum disetujui"	Draft
+AC-07.02	US-07	Field wajib kosong	"Saya seorang Maker
+AND saya berada di halaman ""New User Application"""	"Saya membiarkan field ""Username"", ""Role"", dan ""Branch"" kosong
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""This field is required"" di bawah setiap field wajib yang kosong"	Draft
+AC-07.03	US-07	Username sudah dipakai atau sedang menunggu persetujuan	"Saya seorang Maker
+AND saya berada di halaman ""New User Application""
+AND username ""sales.bdg01"" sudah ada di data aktif"	"Saya mengisi field ""Username"" dengan ""sales.bdg01"" dan field wajib lain dengan data valid
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Username already exists"""	Draft
+AC-07.04	US-07	Username melebihi 50 karakter	"Saya seorang Maker
+AND saya berada di halaman ""New User Application"""	"Saya mengisi field ""Username"" dengan 51 karakter
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Username must not exceed 50 characters"""	Draft
+AC-07.05	US-07	Menonaktifkan pengguna	"Saya seorang Maker
+AND saya berada di halaman ""User Application""
+AND pengguna ""sales.bdg01"" berstatus Active"	"Saya mengklik ikon edit pada baris ""sales.bdg01""
+AND saya menghapus centang checkbox ""Is Active""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND setelah Checker menyetujui, ""sales.bdg01"" tidak bisa login dan tugas antrean yang ia ambil kembali ke antrean umum"	Draft
+AC-07.06	US-07	Dropdown Branch hanya berisi cabang dari Regional terpilih	"Saya seorang Maker
+AND saya berada di halaman ""New User Application"""	"Saya memilih Regional ""01 - Jawa Barat""
+AND saya mengklik dropdown ""Branch"""	"Sistem menampilkan hanya cabang aktif milik Regional ""01 - Jawa Barat"""	Draft
+AC-08.01	US-08	Membuat role baru	"Saya seorang Maker
+AND saya berada di halaman ""Role"""	"Saya mengklik tombol ""New Role""
+AND saya mengisi field ""Role Name"" dengan ""Credit Analyst""
+AND saya mencentang checkbox ""Is Active""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND role ""Credit Analyst"" tampil di halaman ""Pending Role"" dengan status ""Waiting Approval"""	Draft
+AC-08.02	US-08	Nama role sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""New Role""
+AND role ""Sales"" sudah ada"	"Saya mengisi field ""Role Name"" dengan ""sales""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Role already exists"" (pengecekan tidak membedakan huruf besar dan kecil)"	Draft
+AC-08.03	US-08	Nama role 2 karakter ditolak	"Saya seorang Maker
+AND saya berada di halaman ""New Role"""	"Saya mengisi field ""Role Name"" dengan ""CS""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Role name must be 3 to 50 characters"""	Draft
+AC-08.04	US-08	Role yang masih dipakai pengguna aktif tidak bisa dinonaktifkan	"Saya seorang Maker
+AND saya berada di halaman ""Role""
+AND role ""Sales"" dipakai 12 pengguna aktif"	"Saya mengklik ikon edit pada baris ""Sales""
+AND saya menghapus centang checkbox ""Is Active""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Role is assigned to 12 active users and cannot be deactivated"""	Draft
+AC-09.01	US-09	Memberi akses menu ke role	"Saya seorang Maker
+AND saya berada di halaman ""Role Access"""	"Saya mengklik tombol ""New Role Access""
+AND saya memilih ""Checker"" di dropdown ""Role""
+AND saya memilih ""Master Data"" di dropdown ""Menu"" dan ""Product"" di dropdown ""Sub Menu""
+AND saya mengaktifkan toggle ""View"" dan ""Approve""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND akses tampil di halaman ""Pending Role Access"" dengan status ""Waiting Approval"""	Draft
+AC-09.02	US-09	Efek hak akses pada layar sesuai matriks	"Saya seorang pengguna dengan role sesuai kolom Role
+AND saya berada di halaman ""Product"""	"Saya membuka halaman ""Product"""	Refer to MRTM Rows: TRM_ACC_001 through TRM_ACC_004 for comprehensive logic combinations.	Draft
+AC-09.03	US-09	Akses tanpa View ditolak	"Saya seorang Maker
+AND saya berada di halaman ""New Role Access"""	"Saya memilih Role, Menu, dan Sub Menu
+AND saya mengaktifkan toggle ""Approve"" tanpa mengaktifkan toggle ""View""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""View access is required when other access is granted"""	Draft
+AC-09.04	US-09	Akses API ditolak walau tombol disembunyikan	Saya seorang Sales tanpa akses Create pada menu Product	Saya mengirim permintaan pembuatan produk langsung ke alamat API produk	"Sistem menolak permintaan dengan pesan ""You do not have permission to perform this action""
+AND tidak ada data produk yang dibuat"	Draft
+AC-10.01	US-10	Memberi akses sementara	"Saya seorang Maker
+AND saya berada di halaman ""User Access"""	"Saya mengklik tombol ""New User Access""
+AND saya mencari dan memilih pengguna ""rina.approver""
+AND saya memilih Menu ""Approval""
+AND saya mengaktifkan toggle ""View"" dan ""Approve""
+AND saya mengisi ""Valid From"" dengan ""01-11-2026"" dan ""Valid To"" dengan ""14-11-2026""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND akses tampil di halaman ""Pending User Access"" dengan periode 01-11-2026 s.d. 14-11-2026"	Draft
+AC-10.02	US-10	Valid To lebih awal dari Valid From	"Saya seorang Maker
+AND saya berada di halaman ""New User Access"""	"Saya mengisi ""Valid From"" dengan ""14-11-2026"" dan ""Valid To"" dengan ""01-11-2026""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Valid To must be on or after Valid From"""	Draft
+AC-10.03	US-10	Akses berakhir setelah tanggal Valid To	"Saya seorang pengguna ""rina.approver"" dengan akses Approval berlaku s.d. 14-11-2026
+AND saya berada di halaman ""Dashboard""
+AND hari ini 15-11-2026"	Saya membuka menu samping	"Sistem tidak menampilkan menu ""Approval"""	Draft
+AC-10.04	US-10	Akses masih berlaku pada tanggal Valid To	"Saya seorang pengguna ""rina.approver"" dengan akses Approval berlaku s.d. 14-11-2026
+AND saya berada di halaman ""Dashboard""
+AND hari ini 14-11-2026"	Saya membuka menu samping	"Sistem menampilkan menu ""Approval"""	Draft
+AC-11.01	US-11	Menambah sub menu	"Saya seorang Super User
+AND saya berada di halaman ""Menu"""	"Saya mengklik tombol ""New Menu""
+AND saya mengisi ""Menu Code"" dengan ""MON-03"", ""Menu Name"" dengan ""Process Monitoring"", ""Menu Index"" dengan ""3""
+AND saya memilih ""Monitoring"" di dropdown ""Parent Menu""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND menu tampil di halaman ""Pending Menu"" dengan status ""Waiting Approval"""	Draft
+AC-11.02	US-11	Kode menu sudah ada	"Saya seorang Super User
+AND saya berada di halaman ""New Menu""
+AND kode ""MON-03"" sudah dipakai"	"Saya mengisi ""Menu Code"" dengan ""MON-03"" dan field lain dengan data valid
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Menu code already exists"""	Draft
+AC-11.03	US-11	Menu induk yang dinonaktifkan menyembunyikan sub menunya	"Saya seorang Super User
+AND saya berada di halaman ""Menu""
+AND menu ""Monitoring"" punya 3 sub menu aktif"	"Saya menonaktifkan menu ""Monitoring""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND setelah disetujui, menu ""Monitoring"" dan 3 sub menunya tidak tampil untuk semua role"	Draft
+AC-11.04	US-11	Maker tidak bisa membuka halaman Menu	"Saya seorang Maker
+AND saya berada di halaman ""Dashboard"""	"Saya mengetik alamat halaman ""Menu"" di address bar browser"	"Sistem menampilkan pesan ""You do not have access to this page"""	Draft
+AC-12.01	US-12	Menyetujui data baru	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product""
+AND terdapat produk baru ""KPR Subsidi"" berstatus Waiting Approval yang diajukan ""maker.01"""	"Saya mengklik tombol ""Detail"" pada baris ""KPR Subsidi""
+AND saya mengklik tombol ""Approve""
+AND saya mengklik tombol ""Yes"" di konfirmasi ""Are you sure you want to approve?"""	"Sistem menampilkan pesan ""Data approved""
+AND produk ""KPR Subsidi"" tampil di halaman ""Product""
+AND baris hilang dari ""Pending Product""
+AND audit trail mencatat persetujuan oleh saya"	Draft
+AC-12.02	US-12	Melihat perbandingan data lama dan baru	"Saya seorang Checker
+AND saya berada di halaman ""Pending Currency Rate""
+AND terdapat perubahan kurs USD dari 16.000 menjadi 16.250"	"Saya mengklik tombol ""Detail"" pada baris USD"	"Sistem menampilkan dua kolom ""Current Data"" dan ""Proposed Data"" dengan field yang berubah ditandai, ""Rate"" 16.000 dan 16.250"	Draft
+AC-12.03	US-12	Menolak perubahan	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product""
+AND terdapat perubahan produk ""KTA"" berstatus Waiting Approval"	"Saya mengklik tombol ""Detail"" pada baris ""KTA""
+AND saya mengklik tombol ""Reject""
+AND saya mengklik tombol ""Yes"" di konfirmasi ""Are you sure you want to reject?"""	"Sistem menampilkan pesan ""Data rejected""
+AND data produk ""KTA"" di halaman ""Product"" tidak berubah
+AND baris hilang dari ""Pending Product"""	Draft
+AC-12.04	US-12	Maker tidak bisa menyetujui perubahannya sendiri	"Saya seorang pengguna ""admin.01"" dengan akses Create dan Approve
+AND saya berada di halaman ""Pending Role""
+AND perubahan role ""Credit Analyst"" diajukan oleh ""admin.01"""	"Saya mengklik tombol ""Detail"" pada baris ""Credit Analyst"""	"Sistem menampilkan detail tanpa tombol ""Approve"", ""Reject"", dan ""Revise""
+AND tampil keterangan ""You cannot review your own submission"""	Draft
+AC-12.05	US-12	Dua Checker memproses perubahan yang sama	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product""
+AND Checker lain sudah menyetujui perubahan ""KTA"" saat detailnya masih terbuka di layar saya"	"Saya mengklik tombol ""Approve""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""This submission has already been processed""
+AND data tidak diproses dua kali"	Draft
+AC-12.06	US-12	Perubahan kedua untuk data yang masih menunggu persetujuan ditolak	"Saya seorang Maker
+AND saya berada di halaman ""Product""
+AND produk ""KTA"" punya perubahan berstatus Waiting Approval"	"Saya mengklik ikon edit pada baris ""KTA"""	"Sistem menampilkan pesan ""This data has a pending submission and cannot be edited"""	Draft
+AC-13.01	US-13	Checker meminta revisi	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product""
+AND perubahan produk ""KTA"" berstatus Waiting Approval"	"Saya mengklik tombol ""Detail"" pada baris ""KTA""
+AND saya mengklik tombol ""Revise""
+AND saya mengisi field ""Revise Reason"" dengan ""Limit auto approval harus 10.000.000""
+AND saya mengklik tombol ""Submit Revise"""	"Sistem menampilkan pesan ""Revision requested""
+AND status perubahan ""KTA"" menjadi ""Revise"" dengan alasan yang saya tulis"	Draft
+AC-13.02	US-13	Revise tanpa alasan	"Saya seorang Checker
+AND saya berada di halaman ""Detail Pending Product"""	"Saya mengklik tombol ""Revise""
+AND saya membiarkan field ""Revise Reason"" kosong
+AND saya mengklik tombol ""Submit Revise"""	"Sistem menampilkan pesan ""Revise reason is required"""	Draft
+AC-13.03	US-13	Maker mengajukan ulang hasil revisi	"Saya seorang Maker yang mengajukan perubahan ""KTA""
+AND saya berada di halaman ""Pending Product""
+AND status perubahan ""KTA"" adalah ""Revise"""	"Saya mengklik tombol ""Edit"" pada baris ""KTA""
+AND saya mengubah ""Limit Auto Approval"" menjadi ""10.000.000""
+AND saya mengklik tombol ""Resubmit"""	"Sistem menampilkan pesan ""Data resubmitted for approval""
+AND status menjadi ""Waiting Approval"" dan alasan revisi tetap tersimpan di riwayat"	Draft
+AC-13.04	US-13	Alasan revisi melebihi 500 karakter	"Saya seorang Checker
+AND saya berada di halaman ""Detail Pending Product"""	"Saya mengklik tombol ""Revise""
+AND saya mengisi field ""Revise Reason"" dengan 501 karakter
+AND saya mengklik tombol ""Submit Revise"""	"Sistem menampilkan pesan ""Revise reason must not exceed 500 characters"""	Draft
+AC-13.05	US-13	Maker lain tidak bisa mengedit revisi milik orang lain	"Saya seorang Maker ""maker.02""
+AND saya berada di halaman ""Pending Product""
+AND perubahan ""KTA"" berstatus Revise diajukan oleh ""maker.01"""	"Saya melihat baris ""KTA"""	"Sistem tidak menampilkan tombol ""Edit"" pada baris ""KTA"" untuk saya"	Draft
+AC-14.01	US-14	Mencari jejak audit berdasarkan modul dan tanggal	"Saya seorang Auditor
+AND saya berada di halaman ""Audit Trail"""	"Saya memilih ""Product"" di dropdown ""Module""
+AND saya memilih periode ""01-10-2026"" s.d. ""31-10-2026""
+AND saya mengklik tombol ""Search"""	Sistem menampilkan daftar aktivitas modul Product pada periode tersebut dengan kolom Date Time, User, Action, Record	Draft
+AC-14.02	US-14	Melihat detail perubahan	"Saya seorang Auditor
+AND saya berada di halaman ""Audit Trail""
+AND terdapat aktivitas ""Approve"" untuk produk ""KTA"""	Saya mengklik baris aktivitas tersebut	Sistem menampilkan data sebelum dan sesudah perubahan berdampingan dengan field yang berubah ditandai	Draft
+AC-14.03	US-14	Periode pencarian tidak valid	"Saya seorang Auditor
+AND saya berada di halaman ""Audit Trail"""	"Saya memilih periode ""31-10-2026"" s.d. ""01-10-2026""
+AND saya mengklik tombol ""Search"""	"Sistem menampilkan pesan ""End date must be on or after start date"""	Draft
+AC-14.04	US-14	Periode pencarian lebih dari 366 hari	"Saya seorang Auditor
+AND saya berada di halaman ""Audit Trail"""	"Saya memilih periode ""01-01-2025"" s.d. ""02-01-2026""
+AND saya mengklik tombol ""Search"""	"Sistem menampilkan pesan ""Search period must not exceed 366 days"""	Draft
+AC-14.05	US-14	Jejak audit tidak bisa diubah atau dihapus	"Saya seorang Auditor
+AND saya berada di halaman ""Audit Trail"""	Saya membuka detail salah satu aktivitas	Sistem tidak menampilkan tombol edit atau hapus	Draft
+AC-15.01	US-15	Mendaftarkan company dengan data lengkap	"Saya seorang Super User
+AND saya berada di halaman ""Company Configuration"""	"Saya mengklik tombol ""Create New Company""
+AND saya mengisi ""Company Code"" dengan ""007"", ""Company Name"" dengan ""Bank Contoh Syariah""
+AND saya memilih ""Syariah"" di dropdown ""Platform""
+AND saya mengisi ""Currency Code"" dengan ""360"" dan ""Currency Name"" dengan ""IDR""
+AND saya mengisi ""Admin Full Name"", ""Admin Username"" ""admin.007"", dan ""Admin Email"" ""admin007@contoh.co.id""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Company created""
+AND company ""007"" tampil di daftar company
+AND user ""admin.007"" dengan role ""Admin"" terbentuk dan menerima email berisi tautan untuk membuat password"	Draft
+AC-15.02	US-15	Field wajib kosong	"Saya seorang Super User
+AND saya berada di halaman ""Create New Company"""	"Saya membiarkan ""Company Name"" dan ""Admin Email"" kosong
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""This field is required"" di bawah setiap field wajib yang kosong"	Draft
+AC-15.03	US-15	Company Code sudah dipakai	"Saya seorang Super User
+AND saya berada di halaman ""Create New Company""
+AND company ""001"" sudah ada"	"Saya mengisi ""Company Code"" dengan ""001"" dan field lain dengan data valid
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Company code already exists"""	Draft
+AC-15.04	US-15	Company Code bukan 3 digit angka	"Saya seorang Super User
+AND saya berada di halaman ""Create New Company"""	"Saya mengisi ""Company Code"" dengan ""07""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Company code must be a 3-digit number"""	Draft
+AC-15.05	US-15	Maker tidak bisa membuat company	"Saya seorang Maker
+AND saya berada di halaman ""Dashboard"""	"Saya mengetik alamat halaman ""Company Configuration"" di address bar browser"	"Sistem menampilkan pesan ""You do not have access to this page"""	Draft
+AC-16.01	US-16	Menyalin general parameter	"Saya seorang Super User
+AND saya berada di halaman ""Company Configuration""
+AND company ""007"" belum punya general parameter"	"Saya mengklik tombol ""Copy Configuration""
+AND saya memilih ""General Parameter"" di dropdown ""Configuration Type""
+AND saya memilih Company ""001"" / Currency ""360"" sebagai sumber
+AND saya memilih Company ""007"" / Currency ""360"" sebagai tujuan
+AND saya mengklik tombol ""Copy"""	"Sistem menampilkan pesan ""Configuration copied: 412 records added, 0 skipped""
+AND general parameter company ""007"" berisi 412 data"	Draft
+AC-16.02	US-16	Data yang sudah ada di tujuan dilewati	"Saya seorang Super User
+AND saya berada di halaman ""Copy Configuration""
+AND company ""007"" sudah punya 10 dari 412 general parameter"	"Saya memilih sumber ""001"" dan tujuan ""007"" untuk ""General Parameter""
+AND saya mengklik tombol ""Copy"""	"Sistem menampilkan pesan ""Configuration copied: 402 records added, 10 skipped""
+AND 10 data yang sudah ada di tujuan tidak berubah"	Draft
+AC-16.03	US-16	Sumber dan tujuan sama	"Saya seorang Super User
+AND saya berada di halaman ""Copy Configuration"""	"Saya memilih Company ""001"" sebagai sumber dan tujuan
+AND saya mengklik tombol ""Copy"""	"Sistem menampilkan pesan ""Source and destination must be different"""	Draft
+AC-16.04	US-16	Company tujuan belum punya currency yang dipilih	"Saya seorang Super User
+AND saya berada di halaman ""Copy Configuration""
+AND company ""007"" tidak punya currency ""840"""	"Saya memilih Company ""007"" / Currency ""840"" sebagai tujuan
+AND saya mengklik tombol ""Copy"""	"Sistem menampilkan pesan ""Destination currency does not exist for the selected company"""	Draft
+AC-17.01	US-17	Menambah branch	"Saya seorang Maker
+AND saya berada di halaman ""Organization Structure""
+AND Regional ""01 - Jawa Barat"" aktif"	"Saya mengklik tombol ""+"" di tabel ""Branch""
+AND saya memilih Regional ""01 - Jawa Barat""
+AND saya mengisi ""Branch Code"" dengan ""011"" dan ""Branch Name"" dengan ""Bandung""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND branch ""011 - Bandung"" tampil di halaman ""Pending Organization"" dengan status ""Waiting Approval"""	Draft
+AC-17.02	US-17	Kode unit 1 digit ditolak	"Saya seorang Maker
+AND saya berada di halaman ""Add Branch"""	"Saya mengisi ""Branch Code"" dengan ""1""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Code must be 2 to 3 digits"""	Draft
+AC-17.03	US-17	Kode unit 4 digit ditolak	"Saya seorang Maker
+AND saya berada di halaman ""Add Branch"""	"Saya mengisi ""Branch Code"" dengan ""0111""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Code must be 2 to 3 digits"""	Draft
+AC-17.04	US-17	Kode branch sudah dipakai di regional yang sama	"Saya seorang Maker
+AND saya berada di halaman ""Add Branch""
+AND branch ""011"" sudah ada di Regional ""01"""	"Saya memilih Regional ""01"" dan mengisi ""Branch Code"" dengan ""011""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Branch code already exists in this regional"""	Draft
+AC-17.05	US-17	Branch dengan pengajuan aktif tidak bisa dinonaktifkan	"Saya seorang Maker
+AND saya berada di halaman ""Organization Structure""
+AND branch ""011"" punya 25 pengajuan yang belum selesai"	"Saya menghapus centang ""Is Active"" pada branch ""011""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Branch has 25 applications in progress and cannot be deactivated"""	Draft
+AC-17.06	US-17	Dropdown Regional hanya berisi regional aktif	"Saya seorang Maker
+AND saya berada di halaman ""Add Branch""
+AND Regional ""09"" berstatus Inactive"	"Saya mengklik dropdown ""Regional"""	"Sistem tidak menampilkan Regional ""09"" di daftar pilihan"	Draft
+AC-18.01	US-18	Menambah mata uang dengan kode ISO 4217	"Saya seorang Maker
+AND saya berada di halaman ""Organization Structure"""	"Saya mengklik tombol ""+"" di tabel ""Currency""
+AND saya mengisi ""Currency Code"" dengan ""840"" dan ""Currency Name"" dengan ""USD""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND setelah disetujui, currency ""840 - USD"" tampil dengan keterangan ""US Dollar"""	Draft
+AC-18.02	US-18	Kode mata uang bukan kode ISO 4217	"Saya seorang Maker
+AND saya berada di halaman ""Add Currency"""	"Saya mengisi ""Currency Code"" dengan ""999"" dan ""Currency Name"" dengan ""XYZ""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Currency code is not a valid ISO 4217 code"""	Draft
+AC-18.03	US-18	Kode mata uang 4 digit ditolak	"Saya seorang Maker
+AND saya berada di halaman ""Add Currency"""	"Saya mengetik ""3601"" di field ""Currency Code"""	"Sistem hanya menerima 3 karakter pertama ""360"" di field ""Currency Code"""	Draft
+AC-18.04	US-18	Mata uang sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""Add Currency""
+AND currency ""360"" sudah ada"	"Saya mengisi ""Currency Code"" dengan ""360""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Currency already exists"""	Draft
+AC-19.01	US-19	Mencatat kurs baru	"Saya seorang Maker
+AND saya berada di halaman ""Currency Rate"""	"Saya mengklik tombol ""New Currency Rate""
+AND saya memilih Company ""001"" dan Currency ""840 - USD""
+AND saya mengisi ""Rupiah Equivalent"" dengan ""16250"" dan ""Rate Timestamp"" dengan ""20-10-2026 08:00""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND kurs tampil di halaman ""Pending Currency Rate"" dengan status ""Waiting Approval"""	Draft
+AC-19.02	US-19	Kurs untuk company dan currency yang sama sudah menunggu persetujuan	"Saya seorang Maker
+AND saya berada di halaman ""New Currency Rate""
+AND kurs USD company ""001"" berstatus Waiting Approval"	"Saya memilih Company ""001"" dan Currency ""840 - USD""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""A pending rate already exists for this company and currency"""	Draft
+AC-19.03	US-19	Rupiah Equivalent 0 ditolak	"Saya seorang Maker
+AND saya berada di halaman ""New Currency Rate"""	"Saya mengisi ""Rupiah Equivalent"" dengan ""0""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Rupiah equivalent must be greater than 0"""	Draft
+AC-19.04	US-19	Pengajuan memakai kurs yang berlaku saat submit	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND kurs USD 16.000 berlaku sampai kurs 16.250 disetujui pukul 10:00"	Saya mensubmit pengajuan USD pukul 09:59	Sistem menampilkan Rate 16.000 dan Rate Timestamp kurs tersebut di detail pengajuan	Draft
+AC-20.01	US-20	Membuat produk baru	"Saya seorang Maker
+AND saya berada di halaman ""Product"""	"Saya mengklik tombol ""New Product""
+AND saya mengisi ""Product Code"" ""KTA"", ""Product Name"" ""Kredit Tanpa Agunan""
+AND saya memilih ""Non Collateral Loan"" di ""Product Category"" dan ""Effective"" di ""Interest Type""
+AND saya mengisi Minimal Plafond ""5.000.000"", Maximal Plafond ""300.000.000"", Minimum Tenor ""6"", Maximum Tenor ""60"", Minimum Age ""21"", Maximum Age ""55"", DBR Max ""40"", Limit Auto Approval ""10.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND produk ""KTA"" tampil di halaman ""Pending Product"" dengan status ""Waiting Approval"""	Draft
+AC-20.02	US-20	Maximal Plafond lebih kecil dari Minimal Plafond	"Saya seorang Maker
+AND saya berada di halaman ""New Product"""	"Saya mengisi Minimal Plafond ""300.000.000"" dan Maximal Plafond ""5.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Maximal plafond must be greater than minimal plafond"""	Draft
+AC-20.03	US-20	Kode produk sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""New Product""
+AND produk ""KTA"" sudah ada"	"Saya mengisi ""Product Code"" dengan ""kta"" dan field lain dengan data valid
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Product code already exists"""	Draft
+AC-20.04	US-20	Kode produk 6 karakter ditolak	"Saya seorang Maker
+AND saya berada di halaman ""New Product"""	"Saya mengisi ""Product Code"" dengan ""KPRSUB""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Product code must be 1 to 5 letters or digits"""	Draft
+AC-20.05	US-20	Limit Auto Approval melebihi Maximal Plafond	"Saya seorang Maker
+AND saya berada di halaman ""New Product"""	"Saya mengisi Maximal Plafond ""300.000.000"" dan Limit Auto Approval ""300.000.001""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Limit auto approval must not exceed maximal plafond"""	Draft
+AC-20.06	US-20	Produk baru tanpa rute tidak muncul di form pengajuan	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND produk ""KTA"" sudah disetujui tetapi belum punya rute produk yang disetujui"	"Saya mengklik dropdown ""Product"""	"Sistem tidak menampilkan ""KTA"" di daftar produk"	Draft
+AC-21.01	US-21	Menambah nilai parameter	"Saya seorang Maker
+AND saya berada di halaman ""General Parameter"""	"Saya mengklik tombol ""New Parameter""
+AND saya memilih ""Occupation"" di ""Param Type""
+AND saya mengisi ""Param Value"" dengan ""Pengemudi Daring"" dan ""BI Code"" dengan ""099""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND setelah disetujui, ""Pengemudi Daring"" tersedia di dropdown ""Occupation"" pada form pengajuan"	Draft
+AC-21.02	US-21	Nilai parameter duplikat dalam Param Type yang sama	"Saya seorang Maker
+AND saya berada di halaman ""New Parameter""
+AND ""Karyawan Swasta"" sudah ada di Param Type Occupation"	"Saya memilih ""Occupation"" dan mengisi ""Param Value"" dengan ""karyawan swasta""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Parameter value already exists in this type"""	Draft
+AC-21.03	US-21	Parameter nonaktif tidak muncul di form tetapi tetap tampil di data lama	"Saya seorang Sales
+AND saya berada di halaman ""Application Detail""
+AND pengajuan lama memakai Occupation ""Pengemudi Daring"" yang kini Inactive"	"Saya membuka tab ""Occupation"""	"Sistem menampilkan ""Pengemudi Daring"" pada data pengajuan lama
+AND dropdown ""Occupation"" di pengajuan baru tidak berisi ""Pengemudi Daring"""	Draft
+AC-21.04	US-21	Param Value melebihi 100 karakter	"Saya seorang Maker
+AND saya berada di halaman ""New Parameter"""	"Saya mengisi ""Param Value"" dengan 101 karakter
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Parameter value must not exceed 100 characters"""	Draft
+AC-22.01	US-22	Mengimpor parameter dari Excel	"Saya seorang Maker
+AND saya berada di halaman ""General Parameter"""	"Saya mengklik tombol ""Import""
+AND saya memilih file ""parameter.xlsx"" berisi 50 baris valid sesuai template
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""50 rows submitted for approval""
+AND 50 parameter tampil di ""Pending General Parameter"""	Draft
+AC-22.02	US-22	File berisi baris tidak valid	"Saya seorang Maker
+AND saya berada di halaman ""Import General Parameter"""	"Saya memilih file berisi 48 baris valid dan 2 baris tanpa ""Param Type""
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Import failed: 2 invalid rows. Download the error file for details""
+AND tidak ada baris yang diajukan
+AND tombol ""Download Error File"" tampil"	Draft
+AC-22.03	US-22	Format file bukan xlsx	"Saya seorang Maker
+AND saya berada di halaman ""Import General Parameter"""	"Saya memilih file ""parameter.csv""
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Only .xlsx files are allowed"""	Draft
+AC-22.04	US-22	File melebihi 1.000 baris	"Saya seorang Maker
+AND saya berada di halaman ""Import General Parameter"""	"Saya memilih file berisi 1.001 baris
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Maximum 1000 rows per import"""	Draft
+AC-22.05	US-22	Mengekspor parameter terfilter	"Saya seorang Maker
+AND saya berada di halaman ""General Parameter""
+AND filter Param Type ""Occupation"" aktif"	"Saya mengklik tombol ""Export"""	Sistem mengunduh file Excel berisi seluruh parameter Occupation sesuai filter	Draft
+AC-23.01	US-23	Menjalankan sinkronisasi wilayah	"Saya seorang Maker
+AND saya berada di halaman ""Master Geography"""	"Saya mengklik tombol ""Sync Region Data""
+AND saya mengklik tombol ""Yes"" di konfirmasi"	"Sistem menampilkan pesan ""Region sync completed: 12 added, 3 updated""
+AND kolom ""Last Sync"" berisi waktu sinkronisasi"	Draft
+AC-23.02	US-23	Sumber data wilayah tidak merespons	"Saya seorang Maker
+AND saya berada di halaman ""Master Geography""
+AND layanan data wilayah tidak tersedia"	"Saya mengklik tombol ""Sync Region Data""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Region sync failed. Existing data is unchanged""
+AND data wilayah tidak berubah"	Draft
+AC-23.03	US-23	Mencari wilayah tanpa membedakan huruf besar dan kecil	"Saya seorang Maker
+AND saya berada di halaman ""Master Geography"""	"Saya mengetik ""gam"" di field ""Search"""	"Sistem menampilkan wilayah yang mengandung ""gam"" di provinsi, kota, kecamatan, kelurahan, atau kode pos, misalnya ""Gambir"""	Draft
+AC-23.04	US-23	Filter berjenjang	"Saya seorang Maker
+AND saya berada di halaman ""Master Geography"""	"Saya membuka filter
+AND saya memilih Province ""DKI Jakarta""
+AND saya mengklik dropdown ""City"""	Sistem menampilkan hanya kota di provinsi DKI Jakarta	Draft
+AC-24.01	US-24	Mengunggah template baru	"Saya seorang Maker
+AND saya berada di halaman ""Document Template"""	"Saya mengklik tombol ""Add Document Template""
+AND saya mengisi ""Document Code"" dengan ""AKAD-KPR""
+AND saya memilih file ""akad-kpr.docx""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND template tampil di ""Pending Document Template"""	Draft
+AC-24.02	US-24	Template tanpa file	"Saya seorang Maker
+AND saya berada di halaman ""Add Document Template"""	"Saya mengisi ""Document Code"" tanpa memilih file
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Template file is required"""	Draft
+AC-24.03	US-24	Template berisi placeholder yang tidak dikenal	"Saya seorang Maker
+AND saya berada di halaman ""Add Document Template"""	"Saya memilih file berisi placeholder ""{{nama_ibu_kandng}}""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Unknown placeholder: nama_ibu_kandng"""	Draft
+AC-24.04	US-24	File template melebihi 5 MB	"Saya seorang Maker
+AND saya berada di halaman ""Add Document Template"""	"Saya memilih file .docx berukuran 5,1 MB
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Template file must not exceed 5 MB"""	Draft
+AC-25.01	US-25	Membuat daftar dokumen wajib	"Saya seorang Maker
+AND saya berada di halaman ""Document Checklist"""	"Saya mengklik tombol ""New Document Checklist""
+AND saya memilih Product ""KPR"", Occupation ""Karyawan Swasta"", Marital ""Kawin""
+AND saya mencentang dokumen ""KTP"", ""KK"", ""NPWP"", ""Slip Gaji"", ""Rekening Koran 3 Bulan"", ""Sertifikat"", ""KTP Pasangan""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND checklist tampil di ""Pending Document Checklist"" dengan jumlah dokumen 7"	Draft
+AC-25.02	US-25	Tanpa dokumen yang dipilih	"Saya seorang Maker
+AND saya berada di halaman ""New Document Checklist"""	"Saya memilih Product, Occupation, dan Marital tanpa mencentang dokumen
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Select at least one document"""	Draft
+AC-25.03	US-25	Kombinasi sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""New Document Checklist""
+AND checklist KPR / Karyawan Swasta / Kawin sudah ada"	"Saya memilih kombinasi yang sama
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Document checklist already exists for this combination"""	Draft
+AC-25.04	US-25	Form pengajuan memakai checklist yang cocok	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document""
+AND pengajuan KPR, Occupation Karyawan Swasta, Marital Kawin"	"Saya membuka step ""Document"""	Sistem menampilkan 7 slot unggah sesuai checklist KPR / Karyawan Swasta / Kawin	Draft
+AC-25.05	US-25	Tidak ada checklist untuk kombinasi pengajuan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document""
+AND tidak ada checklist untuk KTA / Pelajar / Belum Kawin"	"Saya membuka step ""Document"""	"Sistem menampilkan pesan ""No document checklist is configured for this product. Please contact your administrator""
+AND tombol ""Submit"" pengajuan nonaktif"	Draft
+AC-26.01	US-26	Menambah level approval	"Saya seorang Maker
+AND saya berada di halaman ""Approval Level Setup"""	"Saya mengklik tombol ""New Approval Level""
+AND saya memilih Branch ""011 - Bandung"", Product ""KPR"", Job Level ""2""
+AND saya mengisi Description ""Kepala Cabang"", Amount Begin ""100.000.001"", Amount End ""500.000.000""
+AND saya mencentang ""Is Approve"", ""Is Reject"", ""Is Return""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND level tampil di ""Pending Approval Setup"""	Draft
+AC-26.02	US-26	Amount End lebih kecil dari Amount Begin	"Saya seorang Maker
+AND saya berada di halaman ""New Approval Level"""	"Saya mengisi Amount Begin ""500.000.000"" dan Amount End ""100.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Amount end must be greater than amount begin"""	Draft
+AC-26.03	US-26	Rentang nominal tumpang tindih dengan level lain	"Saya seorang Maker
+AND saya berada di halaman ""New Approval Level""
+AND level 1 KPR Bandung memakai rentang 0 s.d. 100.000.000"	"Saya mengisi Amount Begin ""100.000.000"" untuk level 2 KPR Bandung
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Amount range overlaps with level 1"""	Draft
+AC-26.04	US-26	Kombinasi Branch, Product, Job Level sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""New Approval Level""
+AND level 2 KPR Bandung sudah ada"	"Saya memilih Branch ""011"", Product ""KPR"", Job Level ""2""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Approval level already exists"""	Draft
+AC-27.01	US-27	Menetapkan approver	"Saya seorang Maker
+AND saya berada di halaman ""Approval Hierarchy""
+AND level 2 KPR Bandung sudah disetujui"	"Saya mengklik tombol ""New Hierarchy""
+AND saya memilih Branch ""011"", Product ""KPR"", Job Level ""2"", Sub Level ""1""
+AND saya memilih user ""rina.approver"" di dropdown ""Approver""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND hierarki tampil di ""Pending Approval Setup"""	Draft
+AC-27.02	US-27	Approver tidak punya akses menu Approval	"Saya seorang Maker
+AND saya berada di halaman ""New Hierarchy""
+AND user ""sari.sales"" tidak punya akses Approve di menu Approval"	"Saya memilih ""sari.sales"" di dropdown ""Approver""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Selected user does not have approval access"""	Draft
+AC-27.03	US-27	Approver dinonaktifkan	"Saya seorang Maker
+AND saya berada di halaman ""Approval Hierarchy""
+AND approver ""rina.approver"" baru dinonaktifkan"	"Saya membuka halaman ""Approval Hierarchy"""	"Sistem menandai baris ""rina.approver"" dengan label ""Inactive approver"""	Draft
+AC-28.01	US-28	Mengimpor setup approval valid	"Saya seorang Maker
+AND saya berada di halaman ""Approval Level Setup"""	"Saya mengklik tombol ""Import""
+AND saya memilih file sesuai template berisi 40 baris valid
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""40 rows submitted for approval""
+AND baris tampil di ""Pending Approval Setup"""	Draft
+AC-28.02	US-28	Branch atau produk tidak ditemukan	"Saya seorang Maker
+AND saya berada di halaman ""Import Approval Setup"""	"Saya memilih file dengan 1 baris Branch ""999"" yang tidak ada
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Import failed: 1 invalid row. Download the error file for details""
+AND file error berisi alasan ""Branch 999 not found"" di baris tersebut"	Draft
+AC-28.03	US-28	Username approver tidak ditemukan	"Saya seorang Maker
+AND saya berada di halaman ""Import Approval Setup"""	"Saya memilih file dengan 1 baris berisi username ""tidak.ada""
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Import failed: 1 invalid row. Download the error file for details""
+AND file error berisi alasan ""User tidak.ada not found"""	Draft
+AC-29.01	US-29	Menambah perusahaan asuransi	"Saya seorang Maker
+AND saya berada di halaman ""Insurance"""	"Saya mengklik tombol ""New Insurance""
+AND saya mengisi ""Insurance Code"" ""ASR01"", ""Insurance Name"" ""Asuransi Contoh""
+AND saya memilih Product ""KPR"" dan mengisi ""Premium Rate (%)"" dengan ""0,85""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND asuransi tampil di ""Pending Insurance"""	Draft
+AC-29.02	US-29	Tarif premi di atas 100%	"Saya seorang Maker
+AND saya berada di halaman ""New Insurance"""	"Saya mengisi ""Premium Rate (%)"" dengan ""100,01""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Premium rate must be between 0 and 100"""	Draft
+AC-29.03	US-29	Kode asuransi sudah ada	"Saya seorang Maker
+AND saya berada di halaman ""New Insurance""
+AND kode ""ASR01"" sudah ada"	"Saya mengisi ""Insurance Code"" dengan ""ASR01""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Insurance code already exists"""	Draft
+AC-30.01	US-30	Mengubah batas SIKP	"Saya seorang Maker
+AND saya berada di halaman ""System Parameter""
+AND parameter ""SIKP Minimum Limit"" bernilai 50.000.000"	"Saya mengklik ikon edit pada ""SIKP Minimum Limit""
+AND saya mengisi nilai ""100.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND nilai lama tetap berlaku sampai disetujui Checker"	Draft
+AC-30.02	US-30	Nilai tidak sesuai tipe parameter	"Saya seorang Maker
+AND saya berada di halaman ""Edit System Parameter""
+AND parameter ""SIKP Minimum Limit"" bertipe angka"	"Saya mengisi nilai ""seratus juta""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Value must be a number"""	Draft
+AC-30.03	US-30	Nilai di luar rentang yang diizinkan	"Saya seorang Maker
+AND saya berada di halaman ""Edit System Parameter""
+AND parameter ""Dukcapil Review Threshold"" hanya menerima 0 s.d. 1"	"Saya mengisi nilai ""1,01""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Value must be between 0 and 1"""	Draft
+AC-30.04	US-30	Nilai rahasia tidak ditampilkan	"Saya seorang Maker
+AND saya berada di halaman ""System Parameter""
+AND terdapat parameter rahasia ""OCR API Key"""	"Saya melihat baris ""OCR API Key"""	"Sistem menampilkan nilai sebagai ""********"" dan tidak menyediakan tombol untuk melihat nilai aslinya"	Draft
+AC-31.01	US-31	Mematikan modul Survey untuk produk KTA	"Saya seorang Maker
+AND saya berada di halaman ""Product Route""
+AND rute aktif produk ""KTA"" versi 2 memakai modul Survey"	"Saya memilih ""KTA"" di dropdown ""Product""
+AND saya mengklik tombol ""Edit Route""
+AND saya mematikan toggle modul ""Survey""
+AND saya mengklik tombol ""Submit for Approval"""	"Sistem menampilkan pesan ""Route version 3 submitted for approval""
+AND versi 3 tampil di ""Pending Product Route"" dengan status ""Waiting Approval""
+AND pengajuan KTA baru tetap memakai versi 2 sampai versi 3 disetujui"	Draft
+AC-31.02	US-31	Modul wajib tidak bisa dimatikan	"Saya seorang Maker
+AND saya berada di halaman ""Product Route""
+AND saya sedang mengedit rute produk ""KTA"""	"Saya mengklik toggle modul ""Approval"""	"Sistem menampilkan keterangan ""Approval is a mandatory module and cannot be turned off""
+AND toggle ""Approval"" tetap menyala"	Draft
+AC-31.03	US-31	Rute baru tidak memengaruhi pengajuan yang sedang berjalan	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product Route""
+AND pengajuan KTA ""20102026KTA0000005"" sedang berada di modul Dedup memakai rute versi 2"	Saya menyetujui rute KTA versi 3 yang mematikan modul Survey	"Sistem menampilkan pesan ""Data approved""
+AND pengajuan ""20102026KTA0000005"" tetap melanjutkan rute versi 2
+AND pengajuan KTA yang disubmit setelah persetujuan memakai versi 3"	Draft
+AC-31.04	US-31	Modul bersyarat tetap mengikuti kondisinya	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND rute produk ""KUR"" memakai modul SIKP dengan batas SIKP 50.000.000"	Saya mensubmit pengajuan KUR dengan Requested Limit 40.000.000	"Sistem melewati modul SIKP untuk pengajuan tersebut
+AND riwayat proses menampilkan SIKP dengan status ""Skipped - condition not met"""	Draft
+AC-31.05	US-31	Rute tanpa perubahan tidak bisa diajukan	"Saya seorang Maker
+AND saya berada di halaman ""Product Route""
+AND saya membuka mode edit rute ""KTA"" tanpa mengubah toggle apa pun"	"Saya mengklik tombol ""Submit for Approval"""	"Sistem menampilkan pesan ""No changes to submit"""	Draft
+AC-31.06	US-31	Pengguna tanpa akses Update hanya melihat rute	"Saya seorang Checker
+AND saya berada di halaman ""Product Route"""	"Saya memilih produk ""KTA"""	"Sistem menampilkan diagram rute tanpa tombol ""Edit Route"""	Draft
+AC-32.01	US-32	Melihat diagram rute aktif	"Saya seorang Risk Manager
+AND saya berada di halaman ""Product Route"""	"Saya memilih ""KPR"" di dropdown ""Product"""	"Sistem menampilkan diagram berisi node modul berurutan dengan pembeda warna: otomatis (biru), langkah manual (oranye), bersyarat (garis putus-putus), dan tidak dipakai (abu-abu dicoret)
+AND nomor versi aktif dan tanggal berlakunya tampil di atas diagram"	Draft
+AC-32.02	US-32	Melihat detail modul	"Saya seorang Risk Manager
+AND saya berada di halaman ""Product Route""
+AND diagram rute KUR tampil"	"Saya mengklik node ""SIKP"""	"Sistem menampilkan panel detail berisi jenis modul ""Automatic"", kondisi ""Requested Limit > SIKP Minimum Limit (50.000.000)"", dan tujuan untuk tiap hasil modul"	Draft
+AC-32.03	US-32	Membandingkan versi rute	"Saya seorang Checker
+AND saya berada di halaman ""Pending Product Route""
+AND rute KTA versi 3 menunggu persetujuan"	"Saya mengklik tombol ""Detail"" pada baris KTA versi 3"	Sistem menampilkan diagram versi 2 dan versi 3 berdampingan dengan modul yang berubah ditandai	Draft
+AC-32.04	US-32	Produk belum punya rute	"Saya seorang Risk Manager
+AND saya berada di halaman ""Product Route""
+AND produk ""KPR Subsidi"" belum punya rute"	"Saya memilih ""KPR Subsidi"" di dropdown ""Product"""	"Sistem menampilkan pesan ""This product has no route yet"""	Draft
+AC-32.05	US-32	Produk yang dipilih tidak aktif	"Saya seorang Risk Manager
+AND saya berada di halaman ""Product Route""
+AND produk ""KPR Lama"" berstatus Inactive"	"Saya mengklik dropdown ""Product"""	"Sistem tidak menampilkan ""KPR Lama"" di daftar produk"	Draft
+AC-33.01	US-33	Mengubah outcome kombinasi dedup	"Saya seorang Maker
+AND saya berada di halaman ""Dedup Matrix""
+AND kombinasi NIK Match, Full Name Fuzzy, DOB Match, POB Match, MMN Fuzzy ber-outcome Review"	"Saya mengklik ikon edit pada kombinasi tersebut
+AND saya memilih ""Match"" di dropdown ""Dedup Outcome""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND perubahan tampil di ""Pending Dedup Matrix"""	Draft
+AC-33.02	US-33	Menyaring kombinasi matrix	"Saya seorang Maker
+AND saya berada di halaman ""Dedup Matrix"""	"Saya memilih ""Match"" di filter ""NIK""
+AND saya memilih ""Review"" di filter ""Dedup Outcome"""	Sistem menampilkan hanya kombinasi dengan NIK Match dan outcome Review	Draft
+AC-33.03	US-33	Membatalkan perubahan	"Saya seorang Maker
+AND saya berada di halaman ""Edit Dedup Matrix"""	"Saya memilih outcome baru
+AND saya mengklik tombol ""Cancel"""	"Sistem menutup form tanpa perubahan dan tidak ada data baru di ""Pending Dedup Matrix"""	Draft
+AC-33.04	US-33	Ambang kemiripan fuzzy di luar rentang	"Saya seorang Maker
+AND saya berada di halaman ""Dedup Matrix Setting"""	"Saya mengisi ""Fuzzy Match Threshold (%)"" dengan ""49""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Fuzzy threshold must be between 50 and 100"""	Draft
+AC-34.01	US-34	Mengubah ambang Passed	"Saya seorang Maker
+AND saya berada di halaman ""Dukcapil Rule""
+AND ambang Passed 0,90 dan Review 0,75"	"Saya mengisi ""Passed Threshold"" dengan ""0,92""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND perubahan tampil di ""Pending Dukcapil Rule"""	Draft
+AC-34.02	US-34	Jumlah bobot tidak 100%	"Saya seorang Maker
+AND saya berada di halaman ""Dukcapil Rule"""	"Saya mengisi bobot ""Full Name ID"" 60 dan ""Mother Maiden Name"" 30
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Total weight must be 100%"""	Draft
+AC-34.03	US-34	Ambang Review lebih tinggi dari ambang Passed	"Saya seorang Maker
+AND saya berada di halaman ""Dukcapil Rule"""	"Saya mengisi ""Passed Threshold"" 0,80 dan ""Review Threshold"" 0,85
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review threshold must be lower than passed threshold"""	Draft
+AC-35.01	US-35	Mengubah outcome kombinasi fraud	"Saya seorang Maker
+AND saya berada di halaman ""Fraud Matrix""
+AND kombinasi Nama Normal dan IP VPN/Proxy ber-outcome Suspicious"	"Saya mengklik ikon edit pada kombinasi tersebut
+AND saya memilih ""High Fraud Potential"" di dropdown ""Fraud Outcome""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND perubahan tampil di ""Pending Fraud Matrix"""	Draft
+AC-35.02	US-35	Membatalkan perubahan	"Saya seorang Maker
+AND saya berada di halaman ""Edit Fraud Matrix"""	"Saya memilih outcome baru
+AND saya mengklik tombol ""Cancel"""	Sistem menutup form tanpa perubahan	Draft
+AC-35.03	US-35	Batas jumlah pengajuan per hari di luar rentang	"Saya seorang Maker
+AND saya berada di halaman ""Fraud Matrix Setting"""	"Saya mengisi ""Max Applications per Name per Day"" dengan ""0""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Value must be between 1 and 100"""	Draft
+AC-36.01	US-36	Mengubah keputusan kombinasi	"Saya seorang Maker
+AND saya berada di halaman ""Decision Matrix""
+AND kombinasi SLIK Collect 2 dan Scoring Pass ber-decision NotGo"	"Saya mengklik ikon edit pada kombinasi tersebut
+AND saya memilih ""Go"" di dropdown ""Decision Outcome""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND perubahan tampil di ""Pending Decision Matrix"""	Draft
+AC-36.02	US-36	Menyimulasikan keputusan	"Saya seorang Maker
+AND saya berada di halaman ""Decision Matrix"""	"Saya mengklik tombol ""Simulate""
+AND saya memilih Dedup ""UnMatch"", Dukcapil ""Passed"", Fraud ""Clean"", RAC ""Pass"", Scoring ""Pass"", SLIK ""Collect 1""
+AND saya mengklik tombol ""Run"""	"Sistem menampilkan hasil ""Go"" beserta baris matrix yang dipakai"	Draft
+AC-36.03	US-36	Kombinasi tanpa baris matrix	"Saya seorang Maker
+AND saya berada di halaman ""Decision Matrix Simulation"""	"Saya memilih kombinasi yang tidak punya baris matrix
+AND saya mengklik tombol ""Run"""	"Sistem menampilkan hasil ""NotGo"" dengan keterangan ""No matching rule, default decision applied"""	Draft
+AC-36.04	US-36	Simulasi tanpa memilih semua hasil modul	"Saya seorang Maker
+AND saya berada di halaman ""Decision Matrix Simulation"""	"Saya memilih Dedup, Dukcapil, dan Fraud tanpa memilih RAC, Scoring, dan SLIK
+AND saya mengklik tombol ""Run"""	"Sistem menampilkan pesan ""Select an outcome for every module"""	Draft
+AC-37.01	US-37	Membuat kriteria pada model scoring	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model""
+AND model ""KTA-2026"" berjenis Scoring untuk produk KTA"	"Saya mengklik tombol ""Add Criterion""
+AND saya memilih field ""Occupation"", operator ""is one of"", nilai ""ASN, Karyawan BUMN""
+AND saya mengisi ""Weight"" dengan ""50""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan kriteria ""Occupation is one of ASN, Karyawan BUMN : +50"" di daftar kriteria model"	Draft
+AC-37.02	US-37	Membuat kriteria RAC kemampuan bayar	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model""
+AND model ""KTA-RAC"" berjenis RAC"	"Saya mengklik tombol ""Add Criterion""
+AND saya memilih field ""Installment to Income Ratio (%)"", operator ""less than or equal"", nilai ""Product DBR Max""
+AND saya memilih ""Mandatory"" di ""Criterion Type""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan kriteria wajib ""Installment to Income Ratio <= Product DBR Max"" di model RAC"	Draft
+AC-37.03	US-37	Nilai kriteria tidak sesuai tipe field	"Saya seorang Maker
+AND saya berada di halaman ""Add Criterion"""	"Saya memilih field ""Monthly Income"" dan operator ""greater than""
+AND saya mengisi nilai ""lima juta""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Value must be a number"""	Draft
+AC-37.04	US-37	Bobot kriteria di luar rentang	"Saya seorang Maker
+AND saya berada di halaman ""Add Criterion"""	"Saya mengisi ""Weight"" dengan ""1001""
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Weight must be between -1000 and 1000"""	Draft
+AC-37.05	US-37	Mengajukan model untuk disetujui	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model""
+AND model ""KTA-2026"" berisi 8 kriteria, Constant 200, Cut Off 430"	"Saya mengklik tombol ""Submit for Approval"""	"Sistem menampilkan pesan ""Data submitted for approval""
+AND model aktif sebelumnya tetap dipakai sampai model baru disetujui"	Draft
+AC-38.01	US-38	Menguji model dengan pengajuan contoh	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model Test""
+AND model draft ""KTA-2026"" punya Constant 200 dan Cut Off 430"	"Saya mengetik Loan ID ""15122025KTA0000013"" di field ""Sample Application""
+AND saya mengklik tombol ""Run Test"""	"Sistem menampilkan Total Score, Constant 200, Cut Off 430, hasil ""Pass"" atau ""Fail""
+AND rincian kriteria yang terpenuhi beserta bobotnya"	Draft
+AC-38.02	US-38	Skor tepat sama dengan Cut Off	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model Test""
+AND pengajuan contoh menghasilkan Constant + bobot = 430 dan Cut Off 430"	"Saya mengklik tombol ""Run Test"""	"Sistem menampilkan hasil ""Pass"""	Draft
+AC-38.03	US-38	Skor satu poin di bawah Cut Off	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model Test""
+AND pengajuan contoh menghasilkan Constant + bobot = 429 dan Cut Off 430"	"Saya mengklik tombol ""Run Test"""	"Sistem menampilkan hasil ""Fail"""	Draft
+AC-38.04	US-38	Loan ID contoh tidak ditemukan	"Saya seorang Maker
+AND saya berada di halaman ""Scoring Model Test"""	"Saya mengetik ""LOANTIDAKADA"" di field ""Sample Application""
+AND saya mengklik tombol ""Run Test"""	"Sistem menampilkan pesan ""Application not found"""	Draft
+AC-39.01	US-39	Mengisi section Application dengan data valid	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Application"""	"Saya memilih ""NTB"" di ""Application Type"", ""Mikro"" di ""Segment"", ""Non Collateral Loan"" di ""Product Category"", ""KTA"" di ""Product""
+AND saya memilih ""36"" di ""Tenor Proposed""
+AND saya mengisi ""Requested Limit"" dengan ""20.000.000""
+AND saya memilih asuransi ""Asuransi Contoh""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Personal""
+AND step ""Application"" bertanda selesai di stepper"	Draft
+AC-39.02	US-39	Field wajib Application kosong	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Application"""	"Saya membiarkan ""Product"" dan ""Requested Limit"" kosong
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""This field is required"" di bawah setiap field wajib yang kosong
+AND saya tetap di step ""Application"""	Draft
+AC-39.03	US-39	Batas plafon dan tenor sesuai produk sesuai matriks	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Application""
+AND produk KTA: plafon 5.000.000 s.d. 300.000.000, tenor 6 s.d. 60 bulan"	"Saya mengisi ""Requested Limit"" dan ""Tenor Proposed"" sesuai baris MRTM
+AND saya mengklik tombol ""Next"""	Refer to MRTM Rows: TRM_APP_001 through TRM_APP_008 for comprehensive logic combinations.	Draft
+AC-39.04	US-39	Kembali dari step Application tanpa menyimpan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Application""
+AND saya sudah mengisi beberapa field"	"Saya mengklik tombol ""Back""
+AND saya mengklik tombol ""OK"" di konfirmasi ""Unsaved data will be lost. Continue?"""	"Sistem menampilkan halaman ""Application List""
+AND tidak ada pengajuan baru yang tersimpan"	Draft
+AC-39.05	US-39	Dropdown produk hanya berisi produk aktif dengan rute disetujui	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Application""
+AND produk ""KPR Subsidi"" aktif tetapi belum punya rute disetujui"	"Saya memilih ""Collateral Loan"" di ""Product Category""
+AND saya mengklik dropdown ""Product"""	"Sistem tidak menampilkan ""KPR Subsidi"" di daftar produk"	Draft
+AC-40.01	US-40	Mengisi data pribadi lengkap	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk KTA dengan Requested Limit 20.000.000"	"Saya mengisi ""Full Name"" ""Rudi Hartono"", ""Full Name ID"" ""RUDI HARTONO"", ""Place of Birth"" ""Bandung"", ""Date of Birth"" ""14-02-1990""
+AND saya memilih Gender ""Laki-laki"", Religion ""Islam"", Nationality ""WNI"", Education ""S1"", Marital ""Belum Kawin""
+AND saya mengisi ""Mother Maiden Name"" ""Siti"", ""ID Card Number"" ""3273011402900001"", ""ID Date Issued"" ""10-01-2020""
+AND saya mengisi alamat KTP dengan memilih Province, City, District, Sub District berjenjang
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Occupation"" karena Marital ""Belum Kawin"""	Draft
+AC-40.02	US-40	NIK bukan 16 digit	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal"""	"Saya mengisi ""ID Card Number"" dengan ""327301140290000""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""ID card number must be 16 digits"""	Draft
+AC-40.03	US-40	Usia pemohon di bawah minimum produk	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk KTA mensyaratkan usia 21 s.d. 55 tahun
+AND hari ini 20-10-2026"	"Saya mengisi ""Date of Birth"" dengan ""21-10-2005""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Applicant age must be between 21 and 55 years for this product"""	Draft
+AC-40.04	US-40	Usia pemohon tepat 21 tahun	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk KTA mensyaratkan usia 21 s.d. 55 tahun
+AND hari ini 20-10-2026"	"Saya mengisi ""Date of Birth"" dengan ""20-10-2005"" dan field wajib lain dengan data valid
+AND saya mengklik tombol ""Next"""	Sistem menampilkan step berikutnya	Draft
+AC-40.05	US-40	NPWP wajib untuk limit di atas 50 juta	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND Requested Limit 50.000.001"	"Saya membiarkan ""NPWP Number"" kosong dan field wajib lain terisi
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""NPWP is required for requested limit above 50,000,000"""	Draft
+AC-40.06	US-40	NPWP tidak wajib untuk limit tepat 50 juta	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND Requested Limit 50.000.000"	"Saya membiarkan ""NPWP Number"" kosong dan field wajib lain terisi
+AND saya mengklik tombol ""Next"""	Sistem menampilkan step berikutnya	Draft
+AC-40.07	US-40	Alamat domisili sama dengan KTP	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND alamat KTP sudah terisi"	"Saya mencentang checkbox ""Same as ID Address"""	"Sistem menyalin seluruh field alamat KTP ke section ""Residence Address"" dan field tersebut tidak bisa diedit"	Draft
+AC-41.01	US-41	Mengisi data dari foto KTP yang jelas	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal"""	"Saya mengklik tombol ""Scan ID Card""
+AND saya memilih foto KTP yang jelas
+AND saya mengklik tombol ""Read"""	"Sistem mengisi field NIK, Full Name ID, Place of Birth, Date of Birth, Gender, alamat KTP, Religion, dan Marital dari hasil bacaan
+AND field hasil bacaan diberi tanda ""Read from ID card"" dan tetap bisa diedit"	Draft
+AC-41.02	US-41	Foto tidak terbaca	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal"""	"Saya mengklik tombol ""Scan ID Card""
+AND saya memilih foto buram
+AND saya mengklik tombol ""Read"""	"Sistem menampilkan pesan ""ID card could not be read. Please retake the photo or fill in manually""
+AND field yang sudah terisi tidak berubah"	Draft
+AC-41.03	US-41	Foto melebihi 2 MB	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal"""	"Saya mengklik tombol ""Scan ID Card""
+AND saya memilih foto berukuran 2,1 MB"	"Sistem menampilkan pesan ""File must not exceed 2 MB"""	Draft
+AC-41.04	US-41	Layanan OCR tidak tersedia	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND layanan pembacaan KTP sedang tidak tersedia"	"Saya mengklik tombol ""Scan ID Card""
+AND saya memilih foto KTP
+AND saya mengklik tombol ""Read"""	"Sistem menampilkan pesan ""ID card reading is unavailable. Please fill in manually""
+AND saya tetap bisa mengisi data pribadi secara manual"	Draft
+AC-42.01	US-42	Nomor Taspen ditemukan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk Pension"	"Saya mengisi ""Taspen Number"" dengan ""1234567890""
+AND saya mengklik ikon cari di samping field ""Taspen Number"""	"Sistem mengisi ""Account Number"", ""Pension Amount"", dan ""EDAPEM Date"" dari data EDAPEM
+AND ketiga field tidak bisa diedit"	Draft
+AC-42.02	US-42	Nomor Taspen tidak ditemukan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk Pension"	"Saya mengisi ""Taspen Number"" dengan ""9999999999""
+AND saya mengklik ikon cari"	"Sistem menampilkan pesan ""Taspen number not found in EDAPEM""
+AND tombol ""Next"" tidak melanjutkan ke step berikutnya"	Draft
+AC-42.03	US-42	Lanjut tanpa verifikasi Taspen	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk Pension"	"Saya mengisi semua field wajib tanpa mengklik ikon cari Taspen
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Please verify the Taspen number first"""	Draft
+AC-42.04	US-42	Field Taspen tidak tampil untuk produk non pensiun	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND produk KTA"	Saya scroll ke seluruh section Personal	"Sistem tidak menampilkan field ""Taspen Number"""	Draft
+AC-43.01	US-43	Mengisi data pasangan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Spouse""
+AND Marital pemohon ""Kawin"""	"Saya mengisi ""Spouse Full Name"", ""Spouse ID Number"", ""Spouse Date of Birth""
+AND saya memilih ""Spouse Occupation"" ""Karyawan Swasta"" dan mengisi ""Spouse Monthly Income"" ""6.000.000""
+AND saya memilih ""Prenuptial Agreement"" ""No""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Occupation"""	Draft
+AC-43.02	US-43	NIK pasangan sama dengan NIK pemohon	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Spouse""
+AND NIK pemohon 3273011402900001"	"Saya mengisi ""Spouse ID Number"" dengan ""3273011402900001""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Spouse ID number must be different from applicant ID number"""	Draft
+AC-43.03	US-43	Step Spouse tidak tampil untuk pemohon belum kawin	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND saya memilih Marital ""Cerai Hidup"""	"Saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Occupation"" dan stepper tidak memuat step ""Spouse"""	Draft
+AC-43.04	US-43	Marital diubah dari Kawin menjadi Belum Kawin	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Personal""
+AND data pasangan sudah terisi"	"Saya mengubah Marital menjadi ""Belum Kawin""
+AND saya mengklik tombol ""OK"" di konfirmasi ""Spouse data will be removed. Continue?"""	"Sistem menghapus data pasangan dan step ""Spouse"" hilang dari stepper"	Draft
+AC-44.01	US-44	Mengisi data pekerjaan karyawan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Occupation"""	"Saya memilih ""Bekerja"" di ""Source of Income"", ""Karyawan Swasta"" di ""Occupation"", ""Perdagangan"" di ""Industry of Profession""
+AND saya mengisi ""Tenure at Current Job (Years)"" ""4"" dan ""Monthly Income Allowance"" ""8.000.000""
+AND saya mengisi data perusahaan
+AND saya mengklik tombol ""Next"""	Sistem menampilkan step berikutnya sesuai produk	Draft
+AC-44.02	US-44	Penghasilan bulanan 0	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Occupation""
+AND produk KTA"	"Saya mengisi ""Monthly Income Allowance"" dengan ""0""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Monthly income must be greater than 0"""	Draft
+AC-44.03	US-44	Penghasilan dan lama kerja tidak wajib untuk produk Pension	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Occupation""
+AND produk Pension"	"Saya membiarkan ""Monthly Income Allowance"" dan ""Tenure at Current Job"" kosong
+AND saya mengklik tombol ""Next"""	Sistem menampilkan step berikutnya tanpa pesan wajib isi	Draft
+AC-44.04	US-44	KUR hanya untuk wiraswasta	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Occupation""
+AND produk KUR Kecil"	"Saya memilih ""Karyawan Swasta"" di ""Occupation""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""This product is only available for self-employed applicants"""	Draft
+AC-45.01	US-45	Mengisi data usaha	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Business""
+AND Occupation pemohon ""Wiraswasta"""	"Saya mengisi ""Business Name"" ""Toko Sumber Rejeki"", memilih ""Business Field"" ""Perdagangan Eceran""
+AND saya mengisi ""Annual Sales"" ""600.000.000"" dan ""Business Launch Date"" ""01-03-2018""
+AND saya mengisi alamat usaha
+AND saya mengklik tombol ""Next"""	Sistem menampilkan step berikutnya sesuai produk	Draft
+AC-45.02	US-45	Tanggal mulai usaha di masa depan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Business""
+AND hari ini 20-10-2026"	"Saya mengisi ""Business Launch Date"" dengan ""21-10-2026""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Business launch date must not be in the future"""	Draft
+AC-45.03	US-45	Step Business hanya untuk wiraswasta	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Occupation""
+AND saya memilih Occupation ""Karyawan Swasta"""	"Saya mengklik tombol ""Next"""	"Sistem tidak menampilkan step ""Business"" di stepper"	Draft
+AC-45.04	US-45	Lama usaha kurang dari 6 bulan untuk KUR	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Business""
+AND produk KUR mensyaratkan usaha berjalan minimal 6 bulan
+AND hari ini 20-10-2026"	"Saya mengisi ""Business Launch Date"" dengan ""21-04-2026""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Business must have been running for at least 6 months"""	Draft
+AC-46.01	US-46	Mengisi agunan kendaraan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Collateral""
+AND produk Kredit Agunan"	"Saya memilih ""Kendaraan"" di ""Collateral Type""
+AND saya mengisi Type, Brand, Model, Year ""2021"", Price ""180.000.000"", Color, Machine Number, Frame Number, BPKB Number, Police Number, dan alamat kendaraan
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Document"""	Draft
+AC-46.02	US-46	Agunan KPR otomatis sertifikat	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Collateral""
+AND produk KPR"	"Saya membuka step ""Collateral"""	"Sistem menampilkan ""Collateral Type"" terisi ""Sertifikat"" tanpa pilihan lain
+AND form Certificate Details dan Certificate Address tampil"	Draft
+AC-46.03	US-46	Agunan pensiun berupa SK	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Collateral""
+AND produk Pension"	"Saya mengisi ""Decree Number"" dan ""Decree Date""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan step ""Document"""	Draft
+AC-46.04	US-46	Tahun kendaraan melebihi tahun berjalan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Collateral""
+AND hari ini 20-10-2026"	"Saya mengisi ""Year of Vehicle Release"" dengan ""2027""
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""Vehicle year must not be later than 2026"""	Draft
+AC-46.05	US-46	Step Collateral tidak tampil untuk produk tanpa agunan	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND produk KTA berkategori Non Collateral Loan"	"Saya mengklik tombol ""Next"" di step terakhir sebelum Document"	"Sistem menampilkan step ""Document"" dan stepper tidak memuat step ""Collateral"""	Draft
+AC-46.06	US-46	Field wajib agunan kendaraan kosong	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Collateral""
+AND Collateral Type ""Kendaraan"""	"Saya membiarkan ""Frame Number"" dan ""BPKB Number"" kosong
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan pesan ""This field is required"" di bawah field ""Frame Number"" dan ""BPKB Number"""	Draft
+AC-47.01	US-47	Mengunggah dokumen sesuai checklist	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document""
+AND checklist memuat 7 dokumen"	"Saya mengklik tombol ""Upload"" pada slot ""KTP""
+AND saya memilih file ""ktp.jpg"" berukuran 800 KB"	"Sistem menampilkan nama file ""ktp.jpg"" dengan status ""Uploaded"" pada slot ""KTP""
+AND penghitung kelengkapan menjadi ""1 of 7 documents"""	Draft
+AC-47.02	US-47	Ekstensi file tidak diizinkan	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document"""	"Saya mengklik tombol ""Upload"" pada slot ""NPWP""
+AND saya memilih file ""npwp.exe"""	"Sistem menampilkan pesan ""Allowed file types: png, jpg, jpeg, pdf, docx"""	Draft
+AC-47.03	US-47	File tepat 2 MB diterima	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document"""	"Saya mengklik tombol ""Upload"" pada slot ""Slip Gaji""
+AND saya memilih file PDF berukuran tepat 2 MB"	"Sistem menampilkan status ""Uploaded"" pada slot ""Slip Gaji"""	Draft
+AC-47.04	US-47	File 2,1 MB ditolak	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document"""	"Saya mengklik tombol ""Upload"" pada slot ""Slip Gaji""
+AND saya memilih file PDF berukuran 2,1 MB"	"Sistem menampilkan pesan ""File must not exceed 2 MB"""	Draft
+AC-47.05	US-47	Melihat dan mengganti dokumen	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Document""
+AND slot ""KTP"" sudah berisi file"	"Saya mengklik ikon ganti pada slot ""KTP""
+AND saya memilih file ""ktp-baru.jpg"""	"Sistem menampilkan ""ktp-baru.jpg"" pada slot ""KTP"" dan file lama tidak lagi dipakai"	Draft
+AC-48.01	US-48	Mengisi kontak darurat	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact"""	"Saya mengisi ""Contact Name"" ""Dewi"", ""Mobile Number"" ""081234567890""
+AND saya memilih ""Saudara Kandung"" di ""Relation with Applicant""
+AND saya mengisi alamat kontak"	"Sistem menampilkan tombol ""Save as Draft"" dan ""Submit"" dalam keadaan aktif"	Draft
+AC-48.02	US-48	Nomor HP tidak valid	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact"""	"Saya mengisi ""Mobile Number"" dengan ""12345""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Mobile number must start with 08 and contain 10 to 13 digits"""	Draft
+AC-48.03	US-48	Nomor kontak darurat sama dengan nomor pemohon	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND nomor HP pemohon 081234567890"	"Saya mengisi ""Mobile Number"" dengan ""081234567890""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Emergency contact number must be different from applicant number"""	Draft
+AC-48.04	US-48	Nomor HP 14 digit ditolak	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact"""	"Saya mengisi ""Mobile Number"" dengan ""08123456789012""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Mobile number must start with 08 and contain 10 to 13 digits"""	Draft
+AC-49.01	US-49	Menyimpan draft pertama kali membentuk Loan ID	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND saya sudah mengisi Application Type, Identity Type, Identity Number, Product Category, Product ""KTA"", Full Name, dan Full Name ID
+AND hari ini 20-10-2026
+AND Loan ID KTA terakhir hari ini berakhiran 0000012"	"Saya mengklik tombol ""Save as Draft"""	"Sistem menampilkan pesan ""Application saved as draft. Loan ID: 20102026KTA0000013""
+AND pengajuan tampil di ""Application List"" dengan status ""Draft"""	Draft
+AC-49.02	US-49	Draft tanpa field minimum	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND field Product belum diisi"	"Saya mengklik tombol ""Save as Draft"""	"Sistem menampilkan pesan ""Fill in Application Type, Identity Type, Identity Number, Product Category, Product, Full Name, and Full Name ID to save a draft"""	Draft
+AC-49.03	US-49	Loan ID tidak berubah saat draft disimpan ulang	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND draft ""20102026KTA0000013"" sudah ada"	"Saya mengubah ""Place of Birth""
+AND saya mengklik tombol ""Save as Draft"""	"Sistem menampilkan pesan ""Application saved as draft. Loan ID: 20102026KTA0000013"""	Draft
+AC-49.04	US-49	Pembentukan Loan ID sesuai matriks	"Saya seorang Sales
+AND saya berada di halaman ""New Application"""	"Saya mengklik tombol ""Save as Draft"" untuk draft pertama sesuai baris MRTM"	Refer to MRTM Rows: TRM_LID_001 through TRM_LID_006 for comprehensive logic combinations.	Draft
+AC-49.05	US-49	Melanjutkan draft	"Saya seorang Sales
+AND saya berada di halaman ""Application List""
+AND draft ""20102026KTA0000013"" tersimpan sampai step Occupation"	"Saya mengklik Loan ID ""20102026KTA0000013"""	"Sistem menampilkan form pengajuan pada step ""Occupation"" dengan data sebelumnya terisi"	Draft
+AC-49.06	US-49	Sales lain tidak bisa mengedit draft saya	"Saya seorang Sales ""sales.jkt02""
+AND saya berada di halaman ""Application List""
+AND draft ""20102026KTA0000013"" milik ""sales.jkt01"""	"Saya mencari Loan ID ""20102026KTA0000013"""	Sistem tidak menampilkan draft tersebut di daftar saya	Draft
+AC-50.01	US-50	Submit pengajuan lengkap	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND semua step wajib dan dokumen produk KTA sudah lengkap
+AND rute KTA tidak memakai modul Survey"	"Saya mengklik tombol ""Submit""
+AND saya mengklik tombol ""Yes"" di konfirmasi ""Submit this application?"""	"Sistem menampilkan pesan ""Application submitted. Loan ID: 20102026KTA0000013""
+AND status pengajuan menjadi ""On Progress"" dengan langkah saat ini ""Dedup""
+AND data pengajuan tidak bisa diedit lagi oleh Sales"	Draft
+AC-50.02	US-50	Submit dengan dokumen belum lengkap	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND baru 5 dari 7 dokumen terunggah"	"Saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Please upload all required documents (5 of 7)""
+AND sistem menampilkan step ""Document"""	Draft
+AC-50.03	US-50	Submit dengan field wajib di step lain kosong	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND field ""Education"" di step Personal kosong"	"Saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Please complete all required fields""
+AND step ""Personal"" bertanda error di stepper"	Draft
+AC-50.04	US-50	Langkah pertama mengikuti rute produk	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND pengajuan KPR lengkap dan rute KPR memakai modul Survey"	"Saya mengklik tombol ""Submit""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Application submitted. Loan ID: 20102026KPR0000041""
+AND langkah saat ini ""Survey"" dan pengajuan masuk antrean ""Application LKN - KPR"""	Draft
+AC-50.05	US-50	Email konfirmasi ke pemohon	"Saya seorang Sales
+AND saya berada di halaman ""New Application - Emergency Contact""
+AND email pemohon ""rudi@contoh.com"" terisi"	"Saya mengklik tombol ""Submit""
+AND saya mengklik tombol ""Yes"""	"Sistem mengirim email ke ""rudi@contoh.com"" dengan subjek ""Your loan application 20102026KTA0000013 has been received"""	Draft
+AC-50.06	US-50	Urutan step form pengajuan sesuai matriks	"Saya seorang Sales
+AND saya berada di halaman ""New Application""
+AND produk, status perkawinan, dan pekerjaan sesuai baris MRTM"	"Saya mengklik tombol ""Next"" di setiap step sampai step terakhir"	Refer to MRTM Rows: TRM_STP_001 through TRM_STP_006 for comprehensive logic combinations.	Draft
+AC-51.01	US-51	Simulasi bunga efektif	"Saya seorang Sales
+AND saya berada di halaman ""Installment Simulation"""	"Saya mengisi ""Principal"" ""100.000.000"", ""Tenor (months)"" ""12"", ""Interest Rate (% p.a.)"" ""12""
+AND saya memilih ""Effective"" di ""Interest Type""
+AND saya mengklik tombol ""Calculate"""	Sistem menampilkan angsuran bulanan Rp8.884.879 dan tabel 12 baris berisi pokok, bunga, dan sisa pinjaman, dengan sisa pinjaman baris terakhir Rp0	Draft
+AC-51.02	US-51	Perhitungan angsuran per jenis bunga sesuai matriks	"Saya seorang Sales
+AND saya berada di halaman ""Installment Simulation"""	"Saya mengisi input sesuai baris MRTM
+AND saya mengklik tombol ""Calculate"""	Refer to MRTM Rows: TRM_INS_001 through TRM_INS_007 for comprehensive logic combinations.	Draft
+AC-51.03	US-51	Tenor kosong	"Saya seorang Sales
+AND saya berada di halaman ""Installment Simulation"""	"Saya mengisi ""Principal"" dan ""Interest Rate"" tanpa mengisi ""Tenor (months)""
+AND saya mengklik tombol ""Calculate"""	"Sistem menampilkan pesan ""Tenor is required"""	Draft
+AC-51.04	US-51	Suku bunga 0%	"Saya seorang Sales
+AND saya berada di halaman ""Installment Simulation"""	"Saya mengisi ""Principal"" ""12.000.000"", ""Tenor"" ""12"", ""Interest Rate"" ""0""
+AND saya memilih ""Flat""
+AND saya mengklik tombol ""Calculate"""	Sistem menampilkan angsuran Rp1.000.000 per bulan tanpa bunga	Draft
+AC-52.01	US-52	Mengunduh template upload	"Saya seorang Sales
+AND saya berada di halaman ""Application List"""	"Saya mengklik tombol ""More Action""
+AND saya mengklik ""Download Template"""	Sistem mengunduh file Excel template dengan kolom dropdown berisi pilihan dari General Parameter	Draft
+AC-52.02	US-52	Mengunggah file valid	"Saya seorang Sales
+AND saya berada di halaman ""Application List"""	"Saya mengklik tombol ""More Action""
+AND saya mengklik ""Upload Applications""
+AND saya memilih file template berisi 100 baris
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Upload received. Track progress in Monitor Upload""
+AND file tampil di ""Monitor Upload"" dengan status ""In Progress"""	Draft
+AC-52.03	US-52	File tidak sesuai template	"Saya seorang Sales
+AND saya berada di halaman ""Upload Applications"""	"Saya memilih file Excel dengan kolom berbeda dari template
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""File does not match the template. Please download the latest template"""	Draft
+AC-52.04	US-52	File melebihi 500 baris	"Saya seorang Sales
+AND saya berada di halaman ""Upload Applications"""	"Saya memilih file berisi 501 baris
+AND saya mengklik tombol ""Upload"""	"Sistem menampilkan pesan ""Maximum 500 applications per file"""	Draft
+AC-53.01	US-53	Melihat hasil upload selesai	"Saya seorang Sales
+AND saya berada di halaman ""Monitor Upload""
+AND file ""payroll-okt.xlsx"" selesai diproses dengan 97 berhasil dan 3 gagal"	"Saya melihat baris ""payroll-okt.xlsx"""	"Sistem menampilkan status ""Done"", Total 100, Success 97, Failed 3, dan tombol ""Download Failed"""	Draft
+AC-53.02	US-53	Mengunduh baris gagal	"Saya seorang Sales
+AND saya berada di halaman ""Monitor Upload""
+AND file ""payroll-okt.xlsx"" punya 3 baris gagal"	"Saya mengklik tombol ""Download Failed"""	"Sistem mengunduh file Excel berisi 3 baris gagal dengan kolom terakhir ""Failed Reason"", misalnya ""ID card number must be 16 digits"""	Draft
+AC-53.03	US-53	Tombol unduh tidak tampil bila semua baris berhasil	"Saya seorang Sales
+AND saya berada di halaman ""Monitor Upload""
+AND file ""payroll-nov.xlsx"" selesai dengan 0 baris gagal"	"Saya melihat baris ""payroll-nov.xlsx"""	"Sistem tidak menampilkan tombol ""Download Failed"" pada baris tersebut"	Draft
+AC-53.04	US-53	Hanya file milik company sendiri yang tampil	"Saya seorang Sales company ""001""
+AND saya berada di halaman ""Monitor Upload"""	"Saya membuka halaman ""Monitor Upload"""	"Sistem hanya menampilkan file upload milik company ""001"""	Draft
+AC-53.05	US-53	File gagal diproses seluruhnya	"Saya seorang Sales
+AND saya berada di halaman ""Monitor Upload""
+AND file ""payroll-des.xlsx"" gagal dibaca karena rusak"	"Saya melihat baris ""payroll-des.xlsx"""	"Sistem menampilkan status ""Failed"" dengan keterangan ""File could not be read"""	Draft
+AC-54.01	US-54	Memperoleh token dengan API key valid	"Saya seorang Tim IT mitra dengan API key aktif yang diterbitkan untuk company ""001"""	Saya mengirim permintaan login dengan API key tersebut ke endpoint autentikasi	"Sistem mengembalikan token bertipe Bearer beserta waktu kedaluwarsanya dengan pesan ""Create token successfully"""	Draft
+AC-54.02	US-54	Mengirim pengajuan dengan token valid	Saya seorang Tim IT mitra dengan token Bearer yang masih berlaku	Saya mengirim data pengajuan lengkap ke endpoint insert customer	"Sistem mengembalikan Loan ID baru dan status ""Submitted""
+AND pengajuan tampil di Application Inquiry dengan channel ""API"""	Draft
+AC-54.03	US-54	Token kedaluwarsa	Saya seorang Tim IT mitra dengan token yang sudah kedaluwarsa	Saya mengirim data pengajuan ke endpoint insert customer	"Sistem menolak permintaan dengan kode 401 dan pesan ""Token expired"""	Draft
+AC-54.04	US-54	Data pengajuan tidak valid	Saya seorang Tim IT mitra dengan token valid	Saya mengirim data pengajuan dengan NIK 15 digit	"Sistem menolak permintaan dengan kode 400 dan daftar error berisi ""ID card number must be 16 digits""
+AND tidak ada pengajuan yang dibuat"	Draft
+AC-54.05	US-54	Pengiriman ulang data yang sama tidak membuat pengajuan ganda	"Saya seorang Tim IT mitra dengan token valid
+AND pengajuan dengan reference number mitra ""MTR-0001"" sudah diterima"	"Saya mengirim ulang data dengan reference number ""MTR-0001"""	"Sistem mengembalikan Loan ID yang sama dengan pesan ""Application already received""
+AND tidak ada pengajuan baru yang dibuat"	Draft
+AC-55.01	US-55	Mencatat pembayaran appraisal	"Saya seorang Customer Service
+AND saya berada di halaman ""Application LKN - KPR""
+AND pengajuan ""20102026KPR0000041"" berstatus ""Need Survey"""	"Saya mengklik tombol ""Edit"" pada baris ""20102026KPR0000041""
+AND saya membuka step ""Appraisal""
+AND saya memilih file bukti bayar ""bukti.jpg""
+AND saya mengisi ""Appraisal Fee"" dengan ""750.000""
+AND saya mengklik tombol ""Submit Payment"""	"Sistem menampilkan pesan ""Appraisal payment recorded""
+AND status pengajuan di daftar menjadi ""Waiting Appraisal"""	Draft
+AC-55.02	US-55	Nominal biaya appraisal kosong	"Saya seorang Customer Service
+AND saya berada di halaman ""Appraisal Payment"""	"Saya memilih file bukti bayar tanpa mengisi ""Appraisal Fee""
+AND saya mengklik tombol ""Submit Payment"""	"Sistem menampilkan pesan ""Appraisal fee is required"""	Draft
+AC-55.03	US-55	Biaya appraisal 0	"Saya seorang Customer Service
+AND saya berada di halaman ""Appraisal Payment"""	"Saya mengisi ""Appraisal Fee"" dengan ""0""
+AND saya mengklik tombol ""Submit Payment"""	"Sistem menampilkan pesan ""Appraisal fee must be greater than 0"""	Draft
+AC-55.04	US-55	Surveyor tidak bisa mencatat pembayaran	"Saya seorang Surveyor
+AND saya berada di halaman ""Appraisal Payment""
+AND pembayaran appraisal belum dicatat"	"Saya membuka step ""Appraisal"""	"Sistem menampilkan catatan ""Payment of the appraisal fee must be completed before filling out the appraisal form. Only Customer Service can record the payment"" tanpa form unggah bukti bayar"	Draft
+AC-56.01	US-56	Submit LKN mikro lengkap	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN - Mikro""
+AND saya sudah mengambil tugas pengajuan ""20102026KUR0000012"""	"Saya mengklik tombol ""Edit"" pada baris tersebut
+AND saya mengisi Survey Date, Surveyor, Invitation Date, Meet Person, Relation
+AND saya mengisi data lokasi usaha, pendapatan usaha, biaya usaha, pendapatan dan biaya rumah tangga
+AND saya mengunggah 3 foto survey
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Survey submitted""
+AND pengajuan hilang dari antrean LKN dan langkah saat ini menjadi modul berikutnya di rute"	Draft
+AC-56.02	US-56	Field wajib kunjungan kosong	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN Detail"""	"Saya membiarkan ""Survey Date"" dan ""Meet Person"" kosong
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""This field is required"" di bawah setiap field wajib yang kosong"	Draft
+AC-56.03	US-56	Menyimpan LKN sebagai draft	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN Detail"""	"Saya mengisi sebagian data kunjungan
+AND saya mengklik tombol ""Save as Draft"""	"Sistem menampilkan pesan ""Survey saved as draft""
+AND pengajuan tetap di antrean LKN dengan status ""Draft"""	Draft
+AC-56.04	US-56	Tanggal survey di masa depan	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN Detail""
+AND hari ini 20-10-2026"	"Saya mengisi ""Survey Date"" dengan ""21-10-2026""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Survey date must not be in the future"""	Draft
+AC-56.05	US-56	Menghapus foto survey	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN Detail""
+AND terdapat foto ""survey_rumah.jpg"""	"Saya mengklik ikon hapus pada ""survey_rumah.jpg""
+AND saya mengklik tombol ""Yes"" di konfirmasi"	Sistem menghapus foto dari daftar foto survey	Draft
+AC-57.01	US-57	Submit LKN dan appraisal KPR	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN - KPR""
+AND pengajuan ""20102026KPR0000041"" berstatus ""Waiting Appraisal"""	"Saya mengisi form LKN KPR
+AND saya mengklik tombol ""Next""
+AND saya mengisi Appraiser Name, Appraisal Date, Property Type, Appraisal Method, Market Value ""850.000.000"", Liquidation Value ""680.000.000""
+AND saya mengunggah foto properti
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Survey submitted""
+AND langkah saat ini menjadi modul berikutnya di rute KPR"	Draft
+AC-57.02	US-57	Form appraisal terkunci sebelum biaya dibayar	"Saya seorang Surveyor
+AND saya berada di halaman ""Application LKN - KPR""
+AND pengajuan berstatus ""Need Survey"""	"Saya mengisi form LKN KPR
+AND saya mengklik tombol ""Next"""	"Sistem menampilkan catatan ""Payment of the appraisal fee must be completed before filling out the appraisal form. Only Customer Service can record the payment"""	Draft
+AC-57.03	US-57	Nilai likuidasi melebihi nilai pasar	"Saya seorang Surveyor
+AND saya berada di halaman ""Appraisal"""	"Saya mengisi Market Value ""850.000.000"" dan Liquidation Value ""900.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Liquidation value must not exceed market value"""	Draft
+AC-57.04	US-57	Nilai likuidasi sama dengan nilai pasar diterima	"Saya seorang Surveyor
+AND saya berada di halaman ""Appraisal"""	"Saya mengisi Market Value ""850.000.000"" dan Liquidation Value ""850.000.000"" serta field wajib lain
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Survey submitted"""	Draft
+AC-58.01	US-58	Mengambil tugas	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Document""
+AND pengajuan ""20102026KTA0000013"" belum diambil siapa pun"	"Saya mengklik tombol ""Assign to Me"" pada baris tersebut"	"Sistem menampilkan nama saya di kolom ""Assigned To""
+AND tombol ""Proceed"" tampil untuk saya"	Draft
+AC-58.02	US-58	Tugas milik orang lain tidak bisa dikerjakan	"Saya seorang Verifikator ""veri.02""
+AND saya berada di halaman ""Verification Document""
+AND pengajuan ""20102026KTA0000013"" sudah diambil ""veri.01"""	Saya melihat baris tersebut	"Sistem menampilkan ""veri.01"" di kolom ""Assigned To"" tanpa tombol ""Assign to Me"" dan ""Proceed"" untuk saya"	Draft
+AC-58.03	US-58	Melepas tugas	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Document""
+AND pengajuan ""20102026KTA0000013"" sedang saya ambil"	"Saya mengklik tombol ""Release Me"" pada baris tersebut"	"Sistem mengosongkan kolom ""Assigned To"" dan tugas bisa diambil Verifikator lain"	Draft
+AC-58.04	US-58	Dua pengguna mengambil tugas pada saat bersamaan	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Document""
+AND Verifikator lain mengambil tugas yang sama beberapa detik sebelum saya"	"Saya mengklik tombol ""Assign to Me"""	"Sistem menampilkan pesan ""This task has already been assigned to veri.01"""	Draft
+AC-58.05	US-58	Supervisor melepas tugas yang tertahan	"Saya seorang Supervisor
+AND saya berada di halaman ""Verification Document""
+AND tugas ""20102026KTA0000013"" diambil ""veri.01"" yang sedang cuti"	"Saya mengklik tombol ""Release"" pada baris tersebut
+AND saya mengklik tombol ""Yes"""	"Sistem mengosongkan kolom ""Assigned To"" dan audit trail mencatat pelepasan oleh saya"	Draft
+AC-58.06	US-58	Melepas tugas yang bukan milik saya	"Saya seorang Verifikator ""veri.02""
+AND saya berada di halaman ""Verification Document""
+AND tugas ""20102026KTA0000013"" diambil ""veri.01"""	Saya melihat baris tersebut	"Sistem tidak menampilkan tombol ""Release Me"" untuk saya"	Draft
+AC-59.01	US-59	Hasil dedup dan langkah berikutnya sesuai matriks	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND Dedup Matrix sudah disetujui"	Saya membuka riwayat proses pengajuan yang baru melewati modul Dedup	Refer to MRTM Rows: TRM_DDP_001 through TRM_DDP_006 for comprehensive logic combinations.	Draft
+AC-59.02	US-59	Layanan dedup gagal	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring""
+AND modul Dedup gagal karena gangguan teknis"	Saya mencari Loan ID pengajuan tersebut	"Sistem menampilkan pengajuan dengan status langkah ""Error"" dan pesan error dari modul Dedup"	Draft
+AC-60.01	US-60	Memutuskan Match	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dedup""
+AND saya sudah mengambil tugas ""20102026KTA0000013"" dengan hasil Dedup Review"	"Saya mengklik tombol ""Review""
+AND saya memilih ""Match"" di dropdown ""Final Outcome""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan hilang dari Prescreen Dedup dan langkah saat ini menjadi ""Verification Document"""	Draft
+AC-60.02	US-60	Memutuskan UnMatch	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dedup Detail"""	"Saya memilih ""UnMatch"" di dropdown ""Final Outcome""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND langkah saat ini menjadi ""Dukcapil"""	Draft
+AC-60.03	US-60	Melihat data pembanding	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dedup""
+AND pengajuan mirip dengan 7 data nasabah lama"	"Saya mengklik tombol ""Review"""	Sistem menampilkan data pengajuan baru berdampingan dengan 7 data pembanding beserta kolom yang cocok ditandai, dengan paging 5 data per halaman	Draft
+AC-60.04	US-60	Submit tanpa Final Outcome	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dedup Detail"""	"Saya mengklik tombol ""Submit"" tanpa memilih ""Final Outcome"""	"Sistem menampilkan pesan ""Final outcome is required"""	Draft
+AC-60.05	US-60	Tugas dilepas setelah Final Outcome dipilih tetapi belum disubmit	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dedup Detail""
+AND saya sudah memilih ""Match"" tetapi belum mengklik Submit"	"Saya mengklik tombol ""Release Me""
+AND saya mengklik tombol ""Yes"""	"Sistem melepas tugas tanpa menyimpan pilihan ""Match"" dan pengajuan kembali ke antrean dengan hasil Dedup Review"	Draft
+AC-61.01	US-61	Hasil Dukcapil sesuai matriks	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND bobot nama 60%, nama ibu 40%, ambang Passed 0,90, Review 0,75"	Saya membuka riwayat proses pengajuan yang baru melewati modul Dukcapil	Refer to MRTM Rows: TRM_DKC_001 through TRM_DKC_008 for comprehensive logic combinations.	Draft
+AC-61.02	US-61	Layanan Dukcapil tidak merespons	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring""
+AND layanan Dukcapil tidak merespons dalam 30 detik"	Saya mencari Loan ID pengajuan tersebut	"Sistem menampilkan langkah ""Dukcapil"" dengan status ""Error"" dan pesan ""Dukcapil service timeout"""	Draft
+AC-62.01	US-62	Memutuskan Pass	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dukcapil""
+AND saya sudah mengambil tugas dengan hasil Dukcapil Review"	"Saya mengklik tombol ""Review""
+AND saya memilih ""Pass"" di ""Decision""
+AND saya mengisi ""Notes"" dengan ""Beda ejaan nama""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND langkah saat ini menjadi ""Verification Document"""	Draft
+AC-62.02	US-62	Meneruskan ke Supervisor	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dukcapil Detail"""	"Saya memilih ""Review"" di ""Decision""
+AND saya mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan tampil di antrean ""Supervisor Review"" dengan status ""Manual Verification"""	Draft
+AC-62.03	US-62	Memutuskan Fail	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dukcapil Detail"""	"Saya memilih ""Fail"" di ""Decision""
+AND saya mengisi ""Notes"" dengan ""Nama ibu tidak cocok""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan berstatus ""Finish"" dengan alasan ""Dukcapil review failed"""	Draft
+AC-62.04	US-62	Keputusan tanpa catatan	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dukcapil Detail"""	"Saya memilih ""Fail"" tanpa mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Notes are required"""	Draft
+AC-62.05	US-62	Catatan melebihi 500 karakter	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Dukcapil Detail"""	"Saya memilih ""Pass""
+AND saya mengisi ""Notes"" dengan 501 karakter
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Notes must not exceed 500 characters"""	Draft
+AC-63.01	US-63	Meloloskan pengajuan	"Saya seorang Supervisor
+AND saya berada di halaman ""Supervisor Review""
+AND terdapat pengajuan berstatus ""Manual Verification"""	"Saya mengklik tombol ""Review""
+AND saya memilih ""Pass / Skip Review""
+AND saya mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND langkah saat ini menjadi ""Verification Document"""	Draft
+AC-63.02	US-63	Menggagalkan pengajuan	"Saya seorang Supervisor
+AND saya berada di halaman ""Supervisor Review Detail"""	"Saya memilih ""Fail""
+AND saya mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan berstatus ""Finish"" dengan alasan ""Dukcapil supervisor review failed"""	Draft
+AC-63.03	US-63	Verifikator tidak bisa membuka antrean Supervisor	"Saya seorang Verifikator
+AND saya berada di halaman ""Dashboard"""	"Saya mengetik alamat halaman ""Supervisor Review"" di address bar browser"	"Sistem menampilkan pesan ""You do not have access to this page"""	Draft
+AC-63.04	US-63	Keputusan tanpa catatan	"Saya seorang Supervisor
+AND saya berada di halaman ""Supervisor Review Detail"""	"Saya memilih ""Fail"" tanpa mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Notes are required"""	Draft
+AC-63.05	US-63	Supervisor yang sama dengan Verifikator pengaju	"Saya seorang Supervisor ""sup.01"" yang juga meneruskan pengajuan ini sebagai Verifikator
+AND saya berada di halaman ""Supervisor Review"""	Saya membuka detail pengajuan tersebut	"Sistem menampilkan keterangan ""You cannot review an application you escalated"" tanpa tombol keputusan"	Draft
+AC-64.01	US-64	Semua dokumen Match	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Document""
+AND saya sudah mengambil tugas ""20102026KTA0000013"" dengan 7 dokumen"	"Saya mengklik tombol ""Proceed to Verification""
+AND saya memilih ""Match"" untuk 7 dokumen
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Verification submitted""
+AND langkah saat ini menjadi modul berikutnya di rute"	Draft
+AC-64.02	US-64	Ada dokumen Not Match	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Detail"""	"Saya memilih ""Not Match"" untuk dokumen ""NPWP""
+AND saya mengisi ""Remarks"" dengan ""Nama di NPWP tidak sesuai KTP""
+AND saya memilih ""Match"" untuk dokumen lain
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Verification submitted""
+AND pengajuan kembali ke Sales dengan status ""Draft"" dan catatan ""Nama di NPWP tidak sesuai KTP"" pada dokumen NPWP"	Draft
+AC-64.03	US-64	Not Match tanpa remarks	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Detail"""	"Saya memilih ""Not Match"" untuk dokumen ""NPWP"" tanpa mengisi ""Remarks""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Remarks are required for Not Match documents"""	Draft
+AC-64.04	US-64	Verifikasi sebagian disimpan	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Detail"""	"Saya memilih status untuk 4 dari 7 dokumen
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Verification saved""
+AND pengajuan tetap di antrean saya dengan 4 status tersimpan"	Draft
+AC-64.05	US-64	Pratinjau dokumen	"Saya seorang Verifikator
+AND saya berada di halaman ""Verification Detail"""	"Saya mengklik nama dokumen ""KTP"""	"Sistem menampilkan pratinjau dokumen ""KTP"" di samping daftar dokumen"	Draft
+AC-65.01	US-65	Hasil fraud check sesuai matriks	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND Fraud Matrix sudah disetujui"	Saya membuka riwayat proses pengajuan yang baru melewati modul Fraud	Refer to MRTM Rows: TRM_FRD_001 through TRM_FRD_006 for comprehensive logic combinations.	Draft
+AC-65.02	US-65	Pengajuan dari channel tanpa IP	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan masuk melalui Upload Excel tanpa data IP pemohon"	Saya membuka riwayat proses modul Fraud	"Sistem menampilkan pengecekan IP dengan status ""Not applicable"" dan hasil hanya dari blacklist serta frekuensi"	Draft
+AC-66.01	US-66	Meloloskan pengajuan Suspicious	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Fraud""
+AND saya sudah mengambil tugas dengan hasil Fraud Suspicious karena VPN"	"Saya mengklik tombol ""Review""
+AND saya memilih ""Clear""
+AND saya mengisi ""Notes"" dengan ""Nasabah memakai VPN kantor, terverifikasi via telepon""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND langkah saat ini menjadi modul berikutnya di rute"	Draft
+AC-66.02	US-66	Menolak dan memasukkan ke blacklist	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Fraud Detail"""	"Saya memilih ""Reject and Blacklist""
+AND saya mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan berstatus ""Finish"" dan data pemohon tercatat di blacklist"	Draft
+AC-66.03	US-66	Keputusan tanpa catatan	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Fraud Detail"""	"Saya memilih ""Clear"" tanpa mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Notes are required"""	Draft
+AC-66.04	US-66	Pemohon yang sama di pengajuan lain ikut ditandai	"Saya seorang Verifikator
+AND saya berada di halaman ""Prescreen Fraud Detail""
+AND pemohon punya pengajuan lain yang sedang On Progress"	"Saya memilih ""Reject and Blacklist""
+AND saya mengisi ""Notes""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Review submitted""
+AND pengajuan lain milik pemohon yang sama ditandai ""Blacklisted applicant"" di Application Inquiry"	Draft
+AC-67.01	US-67	Hasil scoring lulus	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND model scoring KTA aktif dengan Constant 200 dan Cut Off 430"	"Saya mengklik langkah ""Scoring"" di timeline pengajuan ""20102026KTA0000013"""	"Sistem menampilkan Total Score 470, Cut Off 430, hasil ""Pass"", dan daftar kriteria yang terpenuhi"	Draft
+AC-67.02	US-67	Kriteria wajib RAC tidak terpenuhi	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan Requested Limit 200.000.000, tenor 36 bulan, bunga efektif 12% p.a. (angsuran 6.642.862), penghasilan 2.000.000, DBR max 40%"	"Saya mengklik langkah ""RAC"" di timeline"	"Sistem menampilkan hasil ""Fail"" dengan alasan ""Installment to Income Ratio 332% exceeds DBR max 40%"""	Draft
+AC-67.03	US-67	Rasio angsuran tepat di DBR max	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND rasio angsuran terhadap penghasilan pengajuan tepat 40% dan DBR max 40%"	"Saya mengklik langkah ""RAC"" di timeline"	"Sistem menampilkan kriteria kemampuan bayar ""Pass"""	Draft
+AC-67.04	US-67	Produk tanpa model scoring aktif	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring""
+AND produk KPR Subsidi belum punya model scoring aktif"	Saya mencari pengajuan KPR Subsidi yang tertahan di modul Scoring	"Sistem menampilkan langkah ""Scoring"" berstatus ""Error"" dengan pesan ""No active scoring model for product KPR Subsidi"""	Draft
+AC-68.01	US-68	Kolektibilitas lancar	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND SLIK mengembalikan kolektibilitas 1"	"Saya mengklik langkah ""SLIK"" di timeline"	"Sistem menampilkan ""Collectibility 1 - Good"""	Draft
+AC-68.02	US-68	Arti kolektibilitas SLIK sesuai matriks	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow"""	"Saya mengklik langkah ""SLIK"" di timeline pengajuan sesuai baris MRTM"	Refer to MRTM Rows: TRM_SLK_001 through TRM_SLK_006 for comprehensive logic combinations.	Draft
+AC-69.01	US-69	Keputusan Go	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND hasil Dedup UnMatch, Dukcapil Passed, Fraud Clean, RAC Pass, Scoring Pass, SLIK Collect 1"	"Saya mengklik langkah ""Decision"" di timeline"	"Sistem menampilkan ""Go"" beserta baris Decision Matrix yang dipakai
+AND langkah berikutnya sesuai rute (SIKP atau Approval)"	Draft
+AC-69.02	US-69	Keputusan NotGo	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND hasil RAC Fail"	"Saya mengklik langkah ""Decision"" di timeline"	"Sistem menampilkan ""NotGo""
+AND pengajuan masuk antrean ""Recontest"" dan email penolakan terkirim ke pemohon"	Draft
+AC-69.03	US-69	Modul yang dilewati rute dianggap Skip	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND rute produk KTA mematikan modul SLIK"	"Saya mengklik langkah ""Decision"" di timeline"	"Sistem menampilkan SLIK bernilai ""Skip"" pada kombinasi yang dipakai Decision Matrix"	Draft
+AC-70.01	US-70	Pemohon belum punya KUR aktif	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan KUR Requested Limit 100.000.000, batas SIKP 50.000.000
+AND SIKP mengembalikan Days Remaining 0"	"Saya mengklik langkah ""SIKP"" di timeline"	"Sistem menampilkan ""SIKP Go - no active KUR at other banks""
+AND langkah berikutnya ""Approval"""	Draft
+AC-70.02	US-70	Pemohon masih punya KUR aktif	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND SIKP mengembalikan Days Remaining 120"	"Saya mengklik langkah ""SIKP"" di timeline"	"Sistem menampilkan ""SIKP NotGo - active KUR found (120 days remaining)""
+AND pengajuan masuk antrean ""Recontest"""	Draft
+AC-70.03	US-70	Limit tepat di batas SIKP	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan KUR Requested Limit 50.000.000, batas SIKP 50.000.000"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""SIKP"" berstatus ""Skipped - condition not met"""	Draft
+AC-70.04	US-70	Limit satu rupiah di atas batas SIKP	"Saya seorang Risk Manager
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan KUR Requested Limit 50.000.001, batas SIKP 50.000.000"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""SIKP"" dijalankan dengan hasilnya"	Draft
+AC-71.01	US-71	Recontest pengajuan NotGo	"Saya seorang Risk Manager
+AND saya berada di halaman ""Recontest""
+AND pengajuan ""20102026KTA0000013"" NotGo karena RAC"	"Saya mengklik tombol ""Recontest"" pada baris tersebut
+AND saya mengisi ""Reason"" dengan ""Limit diturunkan menjadi 15.000.000 sesuai kesepakatan nasabah""
+AND saya mengubah ""Requested Limit"" menjadi ""15.000.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Application resubmitted for processing""
+AND pengajuan memulai proses baru dari modul pertama setelah Data Entry dengan nomor recontest 1
+AND riwayat proses sebelumnya tetap tersimpan"	Draft
+AC-71.02	US-71	Mengakhiri pengajuan	"Saya seorang Risk Manager
+AND saya berada di halaman ""Recontest"""	"Saya mengklik tombol ""Finish"" pada pengajuan
+AND saya mengisi ""Reason""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Application closed""
+AND status pengajuan menjadi ""Finish"""	Draft
+AC-71.03	US-71	Recontest tanpa alasan	"Saya seorang Risk Manager
+AND saya berada di halaman ""Recontest Detail"""	"Saya mengklik tombol ""Submit"" tanpa mengisi ""Reason"""	"Sistem menampilkan pesan ""Reason is required"""	Draft
+AC-71.04	US-71	Batas maksimal recontest	"Saya seorang Risk Manager
+AND saya berada di halaman ""Recontest""
+AND pengajuan sudah di-recontest 3 kali dan batas recontest 3"	Saya melihat baris pengajuan tersebut	"Sistem tidak menampilkan tombol ""Recontest"" dan menampilkan keterangan ""Maximum recontest reached"""	Draft
+AC-71.05	US-71	Recontest setelah pencairan gagal di core	"Saya seorang Risk Manager
+AND saya berada di halaman ""Recontest""
+AND pengajuan berstatus Recontest karena respons core ""GAGAL"""	"Saya mengklik tombol ""Recontest""
+AND saya mengisi ""Reason""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Application resubmitted for processing"""	Draft
+AC-72.01	US-72	Approve pada level terakhir	"Saya seorang Approver level 1 (final)
+AND saya berada di halaman ""Approval""
+AND pengajuan KPR ""20102026KPR0000041"" sudah disetujui approver level 2"	"Saya mengklik tombol ""Detail"" pada baris tersebut
+AND saya mengisi ""Approval Comments"" dengan ""Agunan memadai""
+AND saya mengklik tombol ""Approve""
+AND saya mengklik tombol ""Yes"" di konfirmasi ""Are you sure you want to approve this application?"""	"Sistem menampilkan pesan ""Loan application is successfully approved""
+AND struktur kredit dan jadwal angsuran terbentuk
+AND dokumen SP3K terunduh
+AND langkah saat ini menjadi ""Epolis"""	Draft
+AC-72.02	US-72	Approve pada level bawah meneruskan ke level berikutnya	"Saya seorang Approver level 2
+AND saya berada di halaman ""Approval Detail""
+AND pengajuan butuh 2 level approval"	"Saya mengisi ""Approval Comments""
+AND saya mengklik tombol ""Approve""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Loan application is successfully approved""
+AND pengajuan pindah ke antrean approver level 1 dan timeline approval menandai level 2 ""Approved"""	Draft
+AC-72.03	US-72	Approver level atas menunggu level bawah	"Saya seorang Approver level 1
+AND saya berada di halaman ""Approval Detail""
+AND approver level 2 belum memberi keputusan"	Saya membuka detail pengajuan	"Sistem menampilkan tombol ""Approve"", ""Reject"", dan ""Return"" dalam keadaan nonaktif dengan keterangan ""Waiting for level 2 approval"""	Draft
+AC-72.04	US-72	Approve tanpa komentar	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail"""	"Saya mengklik tombol ""Approve"" tanpa mengisi ""Approval Comments"""	"Sistem menampilkan pesan ""Approval comments are required"""	Draft
+AC-72.05	US-72	Penginput pengajuan tidak bisa menjadi approver	"Saya seorang Approver ""budi.cabang"" yang juga menginput pengajuan ""20102026KTA0000013""
+AND saya berada di halaman ""Approval"""	"Saya mencari pengajuan ""20102026KTA0000013"""	"Sistem menampilkan pengajuan dengan keterangan ""You cannot approve an application you submitted"" tanpa tombol keputusan"	Draft
+AC-72.06	US-72	Routing approval berdasarkan nominal sesuai matriks	"Saya seorang Approver
+AND saya berada di halaman ""Approval""
+AND level approval KPR Bandung: level 2 untuk 0 s.d. 500.000.000 (final), level 1 untuk 500.000.001 s.d. 2.000.000.000 (final)"	Saya membuka antrean approval pengajuan sesuai baris MRTM	Refer to MRTM Rows: TRM_APV_001 through TRM_APV_005 for comprehensive logic combinations.	Draft
+AC-73.01	US-73	Menolak pengajuan	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail"""	"Saya mengisi ""Approval Comments"" dengan ""Penghasilan tidak terverifikasi""
+AND saya mengklik tombol ""Reject""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Loan application has been rejected""
+AND status pengajuan menjadi ""Finish"" dan email penolakan terkirim ke pemohon"	Draft
+AC-73.02	US-73	Mengembalikan pengajuan ke Sales	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail""
+AND level saya mengizinkan aksi Return"	"Saya mengisi ""Approval Comments"" dengan ""Lengkapi rekening koran bulan September""
+AND saya mengklik tombol ""Return""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Application returned to sales""
+AND pengajuan kembali ke Sales berstatus ""Draft"" dengan komentar approver tampil di atas form"	Draft
+AC-73.03	US-73	Tombol Return tidak tampil bila level tidak mengizinkan	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail""
+AND level saya tidak mencentang ""Is Return"""	Saya membuka detail pengajuan	"Sistem tidak menampilkan tombol ""Return"""	Draft
+AC-73.04	US-73	Reject tanpa komentar	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail"""	"Saya mengklik tombol ""Reject"" tanpa mengisi ""Approval Comments"""	"Sistem menampilkan pesan ""Approval comments are required"""	Draft
+AC-73.05	US-73	Komentar melebihi 1.000 karakter	"Saya seorang Approver
+AND saya berada di halaman ""Approval Detail"""	"Saya mengisi ""Approval Comments"" dengan 1.001 karakter
+AND saya mengklik tombol ""Reject"""	"Sistem menampilkan pesan ""Approval comments must not exceed 1000 characters"""	Draft
+AC-74.01	US-74	Pengajuan di bawah batas auto approval disetujui otomatis	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Application Detail - Workflow""
+AND produk KTA Limit Auto Approval 10.000.000
+AND pengajuan Requested Limit 8.000.000 dengan Decision Go"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""Approval"" berstatus ""Auto Approved"" dengan pelaku ""System""
+AND struktur kredit dan jadwal angsuran terbentuk
+AND langkah saat ini ""Epolis"""	Draft
+AC-74.02	US-74	Limit tepat di batas auto approval	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Application Detail - Workflow""
+AND produk KTA Limit Auto Approval 10.000.000
+AND pengajuan Requested Limit 10.000.000 dengan Decision Go"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""Approval"" berstatus ""Auto Approved""
+AND langkah saat ini ""Epolis"""	Draft
+AC-74.03	US-74	Limit satu rupiah di atas batas auto approval	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Application Detail - Workflow""
+AND produk KTA Limit Auto Approval 10.000.000
+AND pengajuan Requested Limit 10.000.001 dengan Decision Go"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""Approval"" berstatus ""Waiting Approval"" di antrean approver"	Draft
+AC-74.04	US-74	Pengajuan NotGo tidak diproses auto approval	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Application Detail - Workflow""
+AND pengajuan Requested Limit 5.000.000 dengan Decision NotGo"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""Recontest"" dan langkah ""Approval"" tidak dijalankan"	Draft
+AC-74.05	US-74	Limit auto approval 0 menonaktifkan auto approval	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Application Detail - Workflow""
+AND produk KPR Limit Auto Approval 0
+AND pengajuan KPR Requested Limit 1.000.000 dengan Decision Go"	Saya membuka timeline pengajuan	"Sistem menampilkan langkah ""Approval"" berstatus ""Waiting Approval"""	Draft
+AC-75.01	US-75	Mengajukan e-polis	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Request Epolis""
+AND saya sudah mengambil tugas ""20102026KPR0000041"" yang disetujui"	"Saya mengklik tombol ""Request Epolis""
+AND saya mengisi ""IJK Value"" dengan ""7.225.000""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Epolis issued. Policy number: POL-2026-000123""
+AND struktur kredit dihitung ulang dengan nilai asuransi 7.225.000
+AND langkah saat ini menjadi ""Validity Check"""	Draft
+AC-75.02	US-75	Nilai IJK kosong	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Request Epolis Form"""	"Saya mengklik tombol ""Submit"" tanpa mengisi ""IJK Value"""	"Sistem menampilkan pesan ""IJK value is required"""	Draft
+AC-75.03	US-75	Nilai IJK 0	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Request Epolis Form"""	"Saya mengisi ""IJK Value"" dengan ""0""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""IJK value must be greater than 0"""	Draft
+AC-75.04	US-75	Layanan asuransi gagal	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Request Epolis Form""
+AND layanan asuransi tidak merespons"	"Saya mengisi ""IJK Value""
+AND saya mengklik tombol ""Submit"""	"Sistem menampilkan pesan ""Insurance service is unavailable. Please try again later""
+AND pengajuan tetap di antrean Request Epolis"	Draft
+AC-76.01	US-76	Data valid dengan tanggal pencairan besok	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Validity Check""
+AND saya sudah mengambil tugas ""20102026KPR0000041""
+AND hari ini 20-10-2026
+AND tanggal pengajuan e-polis 20-10-2026"	"Saya mengklik tombol ""Validity Check""
+AND saya memeriksa Disbursement Detail
+AND saya mengisi ""Disbursement Date"" dengan ""21-10-2026""
+AND saya mengklik tombol ""Valid""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Disbursement data validated""
+AND jadwal angsuran disesuaikan dengan First Installment Date
+AND langkah saat ini menjadi ""Print Akad"""	Draft
+AC-76.02	US-76	Tanggal pencairan hari ini ditolak	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Validity Check Form""
+AND hari ini 20-10-2026"	"Saya mengisi ""Disbursement Date"" dengan ""20-10-2026""
+AND saya mengklik tombol ""Valid"""	"Sistem menampilkan pesan ""Disbursement date must be at least 1 day after today"""	Draft
+AC-76.03	US-76	Tanggal pencairan sebelum tanggal e-polis ditolak	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Validity Check Form""
+AND hari ini 20-10-2026
+AND tanggal pengajuan e-polis 25-10-2026"	"Saya mengisi ""Disbursement Date"" dengan ""24-10-2026""
+AND saya mengklik tombol ""Valid"""	"Sistem menampilkan pesan ""Disbursement date must not be earlier than the epolis date (25-10-2026)"""	Draft
+AC-76.04	US-76	Data tidak valid	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Validity Check Form""
+AND nomor rekening nasabah di Disbursement Detail salah"	"Saya mengklik tombol ""Not Valid""
+AND saya mengisi ""Reason"" dengan ""Nomor rekening salah""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Disbursement data marked as not valid""
+AND pengajuan kembali ke Sales berstatus ""Draft"" dengan catatan ""Nomor rekening salah"""	Draft
+AC-76.05	US-76	First Installment Date diubah	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Validity Check Form""
+AND First Installment Date terisi 21-11-2026"	"Saya mengubah ""First Installment Date"" menjadi ""25-11-2026""
+AND saya mengklik tombol ""Valid""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Disbursement data validated""
+AND semua tanggal jatuh tempo angsuran bergeser mengikuti tanggal 25 setiap bulan"	Draft
+AC-77.01	US-77	Mencetak akad	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Print Akad""
+AND saya sudah mengambil tugas ""20102026KPR0000041"""	"Saya mengklik tombol ""View Detail""
+AND saya mengklik tombol ""Print Akad""
+AND saya memilih Payment Method, Bank Account No, Customer Account No, dan Risk Manager
+AND saya mengklik tombol ""Print"""	"Sistem mengunduh PDF ""Surat Perjanjian Kredit"" sesuai template aktif
+AND langkah saat ini menjadi ""Disbursement"" dan pengajuan tampil di menu ""Reprint Akad"""	Draft
+AC-77.02	US-77	Field cetak wajib kosong	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Print Akad Form"""	"Saya mengklik tombol ""Print"" tanpa memilih ""Risk Manager"""	"Sistem menampilkan pesan ""This field is required"" di bawah field ""Risk Manager"""	Draft
+AC-77.03	US-77	Template akad belum tersedia	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Print Akad Form""
+AND template ""AKAD-KPR"" belum disetujui"	"Saya mengisi semua field
+AND saya mengklik tombol ""Print"""	"Sistem menampilkan pesan ""Document template AKAD-KPR is not available"""	Draft
+AC-78.01	US-78	Mencetak ulang akad	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Reprint Akad""
+AND akad ""20102026KPR0000041"" sudah dicetak"	"Saya mengklik tombol ""View Detail""
+AND saya mengklik tombol ""Reprint Akad""
+AND saya mengklik tombol ""Print"""	"Sistem mengunduh PDF yang isinya sama dengan cetakan pertama
+AND audit trail mencatat cetak ulang oleh saya"	Draft
+AC-78.02	US-78	Data cetak ulang tidak bisa diubah	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Reprint Akad Form"""	"Saya mengklik field ""Customer Account No"""	Sistem menampilkan field dalam keadaan tidak bisa diedit	Draft
+AC-78.03	US-78	Cetak ulang tidak mengubah langkah proses	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Reprint Akad""
+AND pengajuan berada di langkah ""Disbursement"""	Saya mencetak ulang akad	"Sistem tetap menampilkan langkah saat ini ""Disbursement"""	Draft
+AC-79.01	US-79	Membuat file pencairan	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Disbursement""
+AND saya sudah mengambil tugas ""20102026KPR0000041"""	"Saya mengklik tombol ""Disburse""
+AND saya mengklik tombol ""Yes"" di konfirmasi"	"Sistem mengunduh file ""20102026KPR0000041.json"" berisi satu objek pengajuan dengan buss_unit ""LB2"", create_by ""LOS"", obj_code ""HONVAR011""
+AND langkah saat ini menjadi ""Waiting Core Response"""	Draft
+AC-79.02	US-79	Tenor melebihi batas core	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Disbursement""
+AND pengajuan bertenor 36 bulan dan core FAST hanya menerima maksimal 24 bulan"	"Saya mengklik tombol ""Disburse"""	"Sistem menampilkan pesan ""Core banking accepts a maximum tenor of 24 months"""	Draft
+AC-79.03	US-79	Tenor tepat 24 bulan diterima	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Disbursement""
+AND pengajuan bertenor 24 bulan"	"Saya mengklik tombol ""Disburse""
+AND saya mengklik tombol ""Yes"""	Sistem mengunduh file pencairan dengan 24 baris angsuran	Draft
+AC-79.04	US-79	Data agunan kendaraan ikut terisi	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Disbursement""
+AND pengajuan Kredit Agunan dengan agunan kendaraan"	"Saya mengklik tombol ""Disburse""
+AND saya mengklik tombol ""Yes"""	Sistem mengunduh file dengan field nosin, noka, no_polisi, warna, no_bpkb, obj_tahun, dan obj_price terisi dari data agunan	Draft
+AC-80.01	US-80	Respons SUKSES	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Core Disbursement""
+AND core mengirim respons ""SUKSES"" untuk ""20102026KPR0000041"""	"Saya mencari Loan ID ""20102026KPR0000041"""	"Sistem menampilkan respons ""SUKSES"" beserta file respons core
+AND status pengajuan ""Disbursed"" dan langkah ""Finish"""	Draft
+AC-80.02	US-80	Respons GAGAL	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Core Disbursement""
+AND core mengirim respons ""GAGAL"" untuk ""20102026KPR0000041"""	"Saya mencari Loan ID ""20102026KPR0000041"""	"Sistem menampilkan respons ""GAGAL"" beserta alasan dari core
+AND pengajuan masuk antrean ""Recontest"""	Draft
+AC-80.03	US-80	Respons untuk Loan ID yang tidak menunggu respons	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Core Disbursement""
+AND core mengirim respons untuk pengajuan yang sudah Finish"	Saya membuka daftar respons core	"Sistem menampilkan respons tersebut dengan status ""Ignored - application not waiting for core response"""	Draft
+AC-80.04	US-80	Respons ganda untuk pengajuan yang sama	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Core Disbursement""
+AND core mengirim respons ""SUKSES"" dua kali untuk pengajuan yang sama"	Saya membuka daftar respons core	"Sistem menampilkan respons kedua dengan status ""Duplicate - ignored""
+AND status pengajuan tetap ""Disbursed"""	Draft
+AC-81.01	US-81	Melihat dashboard semua produk	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Dashboard"""	"Saya membuka halaman ""Dashboard"""	Sistem menampilkan Total Applications, kartu Save as Draft, Submitted, GO, NOT GO, grafik Disbursement per regional, dan daftar Application State dengan jumlahnya	Draft
+AC-81.02	US-81	Menyaring dashboard per produk	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Dashboard"""	"Saya memilih ""KPR"" di dropdown ""All Products"""	Sistem menampilkan seluruh angka dan grafik hanya untuk produk KPR	Draft
+AC-81.03	US-81	Membuka daftar pengajuan dari kartu status	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Dashboard"""	"Saya mengklik kartu ""NOT GO"""	"Sistem menampilkan halaman ""Application Inquiry"" dengan filter status NOT GO"	Draft
+AC-81.04	US-81	Belum ada pengajuan	"Saya seorang Kepala Cabang company baru
+AND saya berada di halaman ""Dashboard""
+AND belum ada pengajuan"	"Saya membuka halaman ""Dashboard"""	"Sistem menampilkan angka 0 pada semua kartu dan pesan ""No disbursement data yet"" pada grafik"	Draft
+AC-81.05	US-81	Data dibatasi sesuai unit kerja	"Saya seorang Kepala Cabang Bandung
+AND saya berada di halaman ""Dashboard"""	"Saya membuka halaman ""Dashboard"""	Sistem hanya menghitung pengajuan cabang Bandung	Draft
+AC-81.06	US-81	Reset filter	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Dashboard""
+AND filter produk KPR aktif"	"Saya mengklik tombol ""Reset Filter"""	Sistem menampilkan dashboard untuk semua produk	Draft
+AC-81.07	US-81	Pengguna tanpa akses dashboard	"Saya seorang QA tanpa akses menu Dashboard
+AND saya berada di halaman ""Login"""	Saya login	"Sistem menampilkan halaman pertama yang saya punya aksesnya dan menu ""Dashboard"" tidak tampil"	Draft
+AC-82.01	US-82	Mengekspor laporan	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Dashboard"""	"Saya mengklik tombol ""Export Option""
+AND saya memilih periode ""01-10-2026"" s.d. ""31-10-2026"", status ""On Progress"", state ""Approval""
+AND saya mengklik tombol ""Export"""	Sistem mengunduh file Excel berisi pengajuan sesuai filter dengan kolom Loan ID, Nama, Produk, Limit, Status, State, Tanggal	Draft
+AC-82.02	US-82	Periode tidak valid	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Export Option"""	"Saya memilih periode ""31-10-2026"" s.d. ""01-10-2026""
+AND saya mengklik tombol ""Export"""	"Sistem menampilkan pesan ""End date must be on or after start date"""	Draft
+AC-82.03	US-82	Hasil melebihi 50.000 baris	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Export Option"""	"Saya memilih filter yang menghasilkan 50.001 baris
+AND saya mengklik tombol ""Export"""	"Sistem menampilkan pesan ""Export is limited to 50,000 rows. Please narrow the filter"""	Draft
+AC-82.04	US-82	Tidak ada data sesuai filter	"Saya seorang Kepala Cabang
+AND saya berada di halaman ""Export Option"""	"Saya memilih filter yang tidak menghasilkan data
+AND saya mengklik tombol ""Export"""	"Sistem menampilkan pesan ""No data matches the selected filter"""	Draft
+AC-83.01	US-83	Mencari berdasarkan nama tanpa membedakan huruf besar dan kecil	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya mengetik ""rudi"" di field ""Search"""	"Sistem menampilkan pengajuan yang Loan ID atau namanya mengandung ""rudi"", termasuk ""RUDI HARTONO"""	Draft
+AC-83.02	US-83	Menyaring berdasarkan langkah proses	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya membuka filter
+AND saya memilih ""Approval"" di ""State""
+AND saya mengklik tombol ""Apply"""	Sistem menampilkan hanya pengajuan yang berada di langkah Approval	Draft
+AC-83.03	US-83	Mengurutkan kolom	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya mengklik header kolom ""Modified Date"""	Sistem mengurutkan daftar dari tanggal terbaru dan klik kedua mengurutkan dari tanggal terlama	Draft
+AC-83.04	US-83	Pencarian tanpa hasil	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya mengetik ""zzzz"" di field ""Search"""	"Sistem menampilkan pesan ""No applications found"""	Draft
+AC-83.05	US-83	Paging 20 baris per halaman	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry""
+AND terdapat 41 pengajuan"	"Saya mengklik halaman ""3"" di pagination"	"Sistem menampilkan 1 pengajuan dan teks ""41 items"""	Draft
+AC-83.06	US-83	Daftar diperbarui saat langkah pengajuan berubah	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry""
+AND pengajuan ""20102026KTA0000013"" tampil dengan state ""Dedup"""	"Saya tetap berada di halaman ""Application Inquiry"" sampai modul Dedup selesai"	Sistem memperbarui state pengajuan menjadi langkah berikutnya tanpa saya memuat ulang halaman	Draft
+AC-83.07	US-83	Rentang tanggal filter tidak valid	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya membuka filter
+AND saya memilih ""Submitted Date"" dari ""31-10-2026"" sampai ""01-10-2026""
+AND saya mengklik tombol ""Apply"""	"Sistem menampilkan pesan ""End date must be on or after start date"""	Draft
+AC-84.01	US-84	Membuka detail pengajuan	"Saya seorang Sales
+AND saya berada di halaman ""Application Inquiry"""	"Saya mengklik Loan ID ""20102026KPR0000041"""	"Sistem menampilkan ringkasan Loan Number, Application Type, Loan Amount, Tenor Approved dan tab detail dengan tab ""Detail"" terbuka"	Draft
+AC-84.02	US-84	Melihat dan mengunduh dokumen	"Saya seorang Sales
+AND saya berada di halaman ""Application Detail - Document"""	"Saya mengklik ikon ""Download"" pada dokumen ""KTP"""	Sistem mengunduh file KTP dalam format PDF	Draft
+AC-84.03	US-84	Tab yang tidak relevan tidak tampil	"Saya seorang Sales
+AND saya berada di halaman ""Application Detail""
+AND pengajuan KTA pemohon belum kawin dan karyawan"	Saya melihat daftar tab	"Sistem tidak menampilkan tab ""Spouse"", ""Business"", ""LKN"", dan ""Collateral"""	Draft
+AC-84.04	US-84	Pengajuan company lain tidak bisa dibuka	"Saya seorang Sales company ""001"""	"Saya mengetik alamat detail pengajuan milik company ""007"" di address bar browser"	"Sistem menampilkan pesan ""Application not found"""	Draft
+AC-84.05	US-84	Loan ID tidak ada	Saya seorang Sales	"Saya mengetik alamat detail dengan Loan ID ""TIDAKADA"" di address bar browser"	"Sistem menampilkan pesan ""Application not found"""	Draft
+AC-85.01	US-85	Melihat timeline proses	"Saya seorang Sales
+AND saya berada di halaman ""Application Detail"""	"Saya mengklik tombol ""Workflow"""	"Sistem menampilkan timeline langkah (Data Entry, Dedup, Dukcapil, Verification, Fraud, RAC, Scoring, SLIK, Decision, Approval, Epolis, dan seterusnya) dengan Start Date, End Date, Aging (hari), pelaku, dan hasil
+AND diagram rute versi yang dipakai pengajuan tampil dengan langkah saat ini disorot"	Draft
+AC-85.02	US-85	Langkah yang dilewati rute ditandai	"Saya seorang Sales
+AND saya berada di halaman ""Application Workflow""
+AND rute KTA tidak memakai Survey"	Saya melihat timeline	"Sistem menampilkan langkah ""Survey"" dengan status ""Skipped - not in route"""	Draft
+AC-85.03	US-85	Riwayat recontest	"Saya seorang Sales
+AND saya berada di halaman ""Application Workflow""
+AND pengajuan pernah di-recontest 1 kali"	"Saya memilih ""Recontest 1"" di dropdown ""Process"""	Sistem menampilkan timeline proses recontest 1, sedangkan proses awal tetap bisa dipilih	Draft
+AC-85.04	US-85	Aging dihitung dalam hari kalender	"Saya seorang Sales
+AND saya berada di halaman ""Application Workflow""
+AND langkah Approval dimulai 20-10-2026 16:00 dan selesai 22-10-2026 09:00"	Saya melihat baris langkah Approval	"Sistem menampilkan Aging ""2"""	Draft
+AC-85.05	US-85	Pengajuan Draft belum punya riwayat proses	"Saya seorang Sales
+AND saya berada di halaman ""Application Detail""
+AND pengajuan berstatus Draft"	"Saya mengklik tombol ""Workflow"""	"Sistem menampilkan pesan ""Process has not started. Submit the application to start the process"""	Draft
+AC-86.01	US-86	Mengulang langkah yang error	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring""
+AND pengajuan ""20102026KTA0000013"" error di langkah Dukcapil dan layanan Dukcapil sudah pulih"	"Saya mengklik tombol ""View Detail"" pada baris tersebut
+AND saya mengklik tombol ""Retry"""	"Sistem menampilkan pesan ""Step retried""
+AND langkah Dukcapil dijalankan ulang dan pengajuan hilang dari daftar error bila berhasil"	Draft
+AC-86.02	US-86	Menghentikan proses	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring Detail"""	"Saya mengklik tombol ""Finish""
+AND saya mengisi ""Reason"" dengan ""Data nasabah ganda, dibatalkan cabang""
+AND saya mengklik tombol ""Yes"""	"Sistem menampilkan pesan ""Process finished""
+AND status pengajuan menjadi ""Finish"" dengan alasan tersebut"	Draft
+AC-86.03	US-86	Retry yang gagal lagi	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring Detail""
+AND layanan Dukcapil masih tidak tersedia"	"Saya mengklik tombol ""Retry"""	"Sistem menampilkan pesan ""Step failed again: Dukcapil service timeout""
+AND jumlah percobaan bertambah 1"	Draft
+AC-86.04	US-86	Menyaring pengajuan error	"Saya seorang Admin Operasional
+AND saya berada di halaman ""Process Monitoring"""	"Saya memilih ""Error"" di filter ""Status"""	Sistem menampilkan hanya pengajuan yang langkah saat ininya berstatus Error beserta pesan error	Draft
+AC-87.01	US-87	Pemicu dan isi email nasabah sesuai matriks	"Saya seorang Nasabah dengan email ""rudi@contoh.com"" pada pengajuan ""20102026KTA0000013"""	Saya membuka kotak masuk email setelah kejadian pada baris MRTM	Refer to MRTM Rows: TRM_NTF_001 through TRM_NTF_006 for comprehensive logic combinations.	Draft
+AC-88.01	US-88	Melihat beranda	"Saya seorang Sales
+AND saya berada di halaman ""Home (mobile)"""	Saya membuka aplikasi mobile setelah login	Sistem menampilkan Total Sales bulan berjalan, persentase dibanding bulan lalu, dan 4 tile kategori: Non Collateral Loan, Collateral Loan, Pension Credit, Syariah Compliant Finance	Draft
+AC-88.02	US-88	Memilih kategori produk	"Saya seorang Sales
+AND saya berada di halaman ""Home (mobile)"""	"Saya mengetuk tile ""Collateral Loan"""	Sistem menampilkan daftar produk aktif kategori Collateral Loan yang sudah punya rute disetujui	Draft
+AC-88.03	US-88	Kategori tanpa produk	"Saya seorang Sales
+AND saya berada di halaman ""Home (mobile)""
+AND belum ada produk Syariah yang aktif"	"Saya mengetuk tile ""Syariah Compliant Finance"""	"Sistem menampilkan pesan ""No products available in this category"""	Draft
+AC-88.04	US-88	Tanpa koneksi internet	"Saya seorang Sales
+AND saya berada di halaman ""Home (mobile)""
+AND perangkat tidak terhubung internet"	Saya menarik layar ke bawah untuk memuat ulang	"Sistem menampilkan pesan ""No internet connection"" dan data terakhir yang tersimpan"	Draft
+AC-89.01	US-89	Melengkapi section dan submit	"Saya seorang Sales
+AND saya berada di halaman ""Loan Application (mobile)""
+AND semua section bertanda centang hijau"	"Saya mengetuk tombol ""Apply Loan Now""
+AND saya mengetuk tombol ""Yes"" di konfirmasi"	"Sistem menampilkan pesan ""Application submitted. Loan ID: 20102026KTA0000014""
+AND pengajuan tampil di tab ""On Progress"" pada Loan List dengan channel ""Mobile"""	Draft
+AC-89.02	US-89	Tombol Apply nonaktif sebelum section lengkap	"Saya seorang Sales
+AND saya berada di halaman ""Loan Application (mobile)""
+AND section Document belum lengkap"	"Saya melihat tombol ""Apply Loan Now"""	"Sistem menampilkan tombol ""Apply Loan Now"" dalam keadaan nonaktif"	Draft
+AC-89.03	US-89	Section berikutnya terkunci sebelum section sebelumnya selesai	"Saya seorang Sales
+AND saya berada di halaman ""Loan Application (mobile)""
+AND section Personal belum disubmit"	"Saya mengetuk section ""Occupation Details"""	"Sistem menampilkan pesan ""Please complete Personal Details first"""	Draft
+AC-89.04	US-89	Progres section tersimpan saat aplikasi ditutup	"Saya seorang Sales
+AND saya berada di halaman ""Personal Details (mobile)""
+AND saya sudah mengisi step 1 dari 3"	"Saya menutup aplikasi
+AND saya membuka kembali draft dari Loan List tab ""Draft"""	Sistem menampilkan section Personal Details pada step 2 dengan data step 1 terisi	Draft
+AC-89.05	US-89	Validasi field sama dengan web	"Saya seorang Sales
+AND saya berada di halaman ""Personal Details (mobile)"""	"Saya mengisi ""ID Card Number"" dengan 15 digit
+AND saya mengetuk tombol ""Next"""	"Sistem menampilkan pesan ""ID card number must be 16 digits"""	Draft
+AC-90.01	US-90	Melihat tab On Progress	"Saya seorang Sales
+AND saya berada di halaman ""Loan List (mobile)"""	"Saya mengetuk tab ""On Progress"""	Sistem menampilkan pengajuan saya yang sedang diproses dengan Loan ID, nama, limit, tenor, rate, dan langkah saat ini	Draft
+AC-90.02	US-90	Mencari pengajuan	"Saya seorang Sales
+AND saya berada di halaman ""Loan List (mobile)"""	"Saya mengetik ""rudi"" di field pencarian"	"Sistem menampilkan pengajuan saya yang Loan ID atau namanya mengandung ""rudi"""	Draft
+AC-90.03	US-90	Tab kosong	"Saya seorang Sales
+AND saya berada di halaman ""Loan List (mobile)""
+AND belum ada pengajuan yang dicairkan"	"Saya mengetuk tab ""Disburse"""	"Sistem menampilkan pesan ""No disbursed applications yet"""	Draft
+AC-90.04	US-90	Pengajuan On Progress tidak bisa diedit	"Saya seorang Sales
+AND saya berada di halaman ""Loan List (mobile)"""	"Saya mengetuk pengajuan di tab ""On Progress"""	Sistem menampilkan detail pengajuan tanpa tombol edit	Draft
+AC-91.01	US-91	Submit LKN dari mobile	"Saya seorang Surveyor
+AND saya berada di halaman ""List LKN (mobile)""
+AND pengajuan ""20102026KUR0000012"" berstatus Need Survey"	"Saya mengetuk pengajuan tersebut
+AND saya mengisi data kunjungan, usaha, dan rumah tangga
+AND saya mengambil 3 foto dengan kamera
+AND saya mengetuk tombol ""Submit"""	"Sistem menampilkan pesan ""Survey submitted""
+AND pengajuan hilang dari List LKN"	Draft
+AC-91.02	US-91	Foto melebihi 2 MB	"Saya seorang Surveyor
+AND saya berada di halaman ""Detail LKN (mobile)"""	Saya memilih foto 2,1 MB dari galeri	"Sistem menampilkan pesan ""File must not exceed 2 MB"""	Draft
+AC-91.03	US-91	Lokasi foto tercatat	"Saya seorang Surveyor
+AND saya berada di halaman ""Detail LKN (mobile)""
+AND izin lokasi perangkat aktif"	Saya mengambil foto survey	Sistem menyimpan koordinat dan waktu pengambilan pada foto tersebut	Draft
+AC-92.01	US-92	Melihat profil	"Saya seorang Sales
+AND saya berada di halaman ""Profile (mobile)"""	Saya mengetuk ikon profil di bottom bar	Sistem menampilkan Full Name, Username, Role Name, Email, Phone Number serta menu Change Password, Help, dan Logout	Draft
+AC-92.02	US-92	Logout dari mobile	"Saya seorang Sales
+AND saya berada di halaman ""Profile (mobile)"""	"Saya mengetuk menu ""Logout""
+AND saya mengetuk tombol ""Yes"""	Sistem menampilkan halaman Login mobile dan draft lokal yang belum tersimpan dihapus	Draft
+AC-92.03	US-92	Logout saat ada draft yang belum disimpan	"Saya seorang Sales
+AND saya berada di halaman ""Profile (mobile)""
+AND terdapat isian section yang belum disimpan ke server"	"Saya mengetuk menu ""Logout"""	"Sistem menampilkan konfirmasi ""You have unsaved application data. Log out anyway?"""	Draft
+AC-92.04	US-92	Nomor telepon kosong	"Saya seorang Sales tanpa nomor telepon di data user
+AND saya berada di halaman ""Profile (mobile)"""	Saya mengetuk ikon profil	"Sistem menampilkan ""Phone Number"" berisi ""-"""	Draft
+AC-93.01	US-93	Melihat daftar perangkat	"Saya seorang Admin Sistem
+AND saya berada di halaman ""Device Info"""	"Saya membuka halaman ""Device Info"""	Sistem menampilkan daftar perangkat dengan username, model perangkat, versi aplikasi, dan waktu login terakhir	Draft
+AC-93.02	US-93	Melihat lokasi perangkat	"Saya seorang Admin Sistem
+AND saya berada di halaman ""Device Info"""	"Saya mengklik tombol ""Location"" pada salah satu perangkat"	Sistem menampilkan nama lokasi dan koordinat terakhir perangkat	Draft
+AC-93.03	US-93	Perangkat tanpa data lokasi	"Saya seorang Admin Sistem
+AND saya berada di halaman ""Device Info""
+AND perangkat tidak mengizinkan akses lokasi"	"Saya mengklik tombol ""Location"""	"Sistem menampilkan pesan ""Location not available for this device"""	Draft
+AC-93.04	US-93	Sales tidak bisa membuka Device Info	"Saya seorang Sales
+AND saya berada di halaman ""Dashboard"""	"Saya mengetik alamat halaman ""Device Info"" di address bar browser"	"Sistem menampilkan pesan ""You do not have access to this page"""	Draft
+AC-93.05	US-93	Pencarian perangkat tanpa hasil	"Saya seorang Admin Sistem
+AND saya berada di halaman ""Device Info"""	"Saya mengetik ""tidak.ada"" di field ""Search"""	"Sistem menampilkan pesan ""No devices found"""	Draft
+AC-94.01	US-94	Mengatur respons core tiruan	"Saya seorang QA di lingkungan UAT
+AND saya berada di halaman ""Simulation - Core Response""
+AND pengajuan ""20102026KPR0000041"" berada di langkah Waiting Core Response"	"Saya mengklik tombol ""Generate"" pada baris tersebut
+AND saya memilih ""No"" di ""Outcome"" dan mengisi ""Sequence"" dengan ""1""
+AND saya mengklik tombol ""Process"""	"Sistem menampilkan pesan ""Simulated response processed""
+AND pengajuan masuk antrean Recontest"	Draft
+AC-94.02	US-94	Menambah data Dukcapil tiruan	"Saya seorang QA di lingkungan UAT
+AND saya berada di halaman ""Simulation - Dukcapil Data"""	"Saya mengklik tombol ""Add Data""
+AND saya mengisi NIK, nama, tempat lahir, tanggal lahir, dan nama ibu
+AND saya mengklik tombol ""Save"""	"Sistem menampilkan pesan ""Data saved""
+AND modul Dukcapil di UAT memakai data tersebut untuk NIK yang sama"	Draft
+AC-94.03	US-94	Menu simulasi tidak tersedia di produksi	"Saya seorang QA di lingkungan produksi
+AND saya berada di halaman ""Dashboard"""	"Saya mengetik alamat halaman ""Simulation"" di address bar browser"	"Sistem menampilkan pesan ""Page not found"""	Draft
+AC-94.04	US-94	Simulasi untuk pengajuan yang tidak menunggu respons	"Saya seorang QA di lingkungan UAT
+AND saya berada di halaman ""Simulation - Core Response""
+AND pengajuan sudah Finish"	Saya mencari pengajuan tersebut	Sistem tidak menampilkan pengajuan tersebut di daftar	Draft
+AC-94.05	US-94	Sequence kosong ditolak	"Saya seorang QA di lingkungan UAT
+AND saya berada di halaman ""Simulation - Core Response"""	"Saya mengklik tombol ""Generate""
+AND saya memilih ""Yes"" di ""Outcome"" tanpa mengisi ""Sequence""
+AND saya mengklik tombol ""Process"""	"Sistem menampilkan pesan ""Sequence is required"""	Draft
