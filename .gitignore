@@ -1,6 +1,9 @@
-# Dari folder Docs, yang di-push hanya Doc BA (xlsx), us-ac.md, dan TSV.
-# Folder lain (Reverse Engineering OS11, review checklist, overview, design system, konsep TO-BE, gambar) tetap lokal.
+# Dari folder Docs, yang di-push: Doc BA (xlsx, us-ac.md, TSV), design system, BPMN, dan flowchart.
+# Lainnya (Reverse Engineering OS11, review checklist, overview, konsep TO-BE) tetap lokal.
 Docs/*
+!Docs/design-system.md
+!Docs/BPMN LOS.png
+!Docs/Flow Process LOS.png
 !Docs/ba/
 Docs/ba/*
 !Docs/ba/Doc_BA_Cikal_Versi 1.xlsx
