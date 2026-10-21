@@ -23,7 +23,22 @@ Dokumen ini **tidak memilih tech stack**. Bahasa pemrograman, framework, databas
 
 Bagian yang ditandai **[Usulan]** adalah keputusan teknis BA yang boleh diubah tim engineer dengan alasan tertulis. Bagian lain adalah aturan bisnis yang hanya boleh diubah lewat Doc BA.
 
-Dokumen terkait: `cikal-to-be-concept.md`, `cikal-project-overview.md` (AS-IS lengkap), `design-system.md`.
+Dokumen terkait:
+
+- `cikal-to-be-concept.md`, `cikal-project-overview.md` (AS-IS lengkap), `design-system.md`
+- `ba/data-dictionary.md` (struktur entity dan field per modul), `ba/glossary.md`, `ba/data-lineage.md`
+
+**Desain UI (Figma):** https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product
+
+| Halaman Figma | Isi | Tautan |
+|---|---|---|
+| Layout | Kerangka halaman web dan mobile | https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product |
+| Components | Komponen UI (turunan OutSystems UI + brand Perkasa) | https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product |
+| Guidelines | Warna, tipografi, ikon | https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product |
+| UI Flow - Web | Alur layar aplikasi web | https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product?node-id=2003-1917 |
+| UI Flow - Mobile | Alur layar aplikasi mobile (M01) | https://www.figma.com/design/765rmxZwfHj9KSV4qmzOj3/LOS-Product?node-id=2011-1748 |
+
+Desain Figma adalah desain LOS AS-IS. Layar baru Cikal (editor rute produk, konsol lisensi, ChangeRequest generik) belum ada di Figma. Token desain sudah dirangkum di `design-system.md`.
 
 ---
 

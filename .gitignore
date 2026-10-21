@@ -11,6 +11,9 @@ Docs/ba/*
 !Docs/ba/Doc_BA_Cikal_Versi 1.xlsx
 !Docs/ba/us-ac.md
 !Docs/ba/*.tsv
+!Docs/ba/data-dictionary.md
+!Docs/ba/glossary.md
+!Docs/ba/data-lineage.md
 
 # Sesi brainstorming visual companion
 .superpowers/
