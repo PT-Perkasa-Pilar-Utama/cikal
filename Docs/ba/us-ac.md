@@ -5,7 +5,6 @@ Draft TO-BE untuk rebuild LOS (code name Cikal). Disusun dengan aturan skill `my
 - Sumber: Doc BA LOS Versi 1, 63 dokumen teknis LOS OS11, Figma LOS Product, `Docs/cikal-to-be-concept.md`.
 - Label UI dan pesan sistem ditulis dalam bahasa Inggris (Asumsi A-27).
 - Asumsi untuk pertanyaan yang belum dijawab stakeholder tercatat di bagian akhir dokumen dan di sheet "Asumsi" pada xlsx.
-- Governance (Rule AI-01, AI-03): seluruh isi dokumen ini dibuat dengan bantuan AI dan wajib direview BA penanggung jawab sebelum menjadi deliverable resmi.
 
 ## US-01: Masuk dengan Username dan Password
 
