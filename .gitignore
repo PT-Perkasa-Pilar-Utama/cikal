@@ -2,6 +2,8 @@
 # Lainnya (Reverse Engineering OS11, review checklist, overview, konsep TO-BE) tetap lokal.
 Docs/*
 !Docs/design-system.md
+!Docs/cikal-tech-reference.md
+!Docs/cikal-to-be-concept.md
 !Docs/BPMN LOS.png
 !Docs/Flow Process LOS.png
 !Docs/ba/
