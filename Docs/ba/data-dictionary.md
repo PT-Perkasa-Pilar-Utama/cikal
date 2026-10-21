@@ -16,7 +16,7 @@ Struktur data per modul Cikal (CORE dan M01 sampai M15, lihat `Docs/cikal-tech-r
 - **Sumber**: Input user, Sistem (dihitung atau dibentuk sistem), Integrasi (dari sistem eksternal), Referensi (dipilih dari master).
 - **Aturan** merujuk AC, MRTM, atau asumsi di Doc BA Cikal.
 - **Sensitivitas**: PII (data pribadi), Finansial, Rahasia (kredensial), Internal.
-- Penanda **[Konfirmasi]** berarti atribut disimpulkan dari layar atau alur, bukan dari gambar entity AS-IS.
+- Penanda **[Konfirmasi]** berarti atribut disimpulkan dari layar atau alur, bukan dari gambar entity AS-IS. Atribut ini tetap dibangun sesuai definisi yang tertulis; konfirmasi hanya bisa mengubah detailnya.
 - Struktur tabel fisik (indeks, tipe kolom, normalisasi) ditentukan tim engineer.
 
 ## Atribut standar
@@ -39,30 +39,33 @@ Atribut berikut ada di **setiap entity** dan tidak diulang di tabel masing-masin
 | CORE: Identity & Access | User, Role, Menu, RoleAccess, UserAccess, LoginAttempt, PasswordResetToken |
 | CORE: Tenant & License | Company, License, ModuleEntitlement |
 | CORE: Organization | Regional, Branch, SubBranch, Currency, CurrencyRate |
-| CORE: Master Data | GeneralParameter, Province, City, District, SubDistrict, ZipCode, DocumentTemplate, Insurance, InsuranceRate, SystemParameter |
+| CORE: Master Data | GeneralParameter, Province, City, District, SubDistrict, ZipCode, DocumentTemplate, Insurance, InsuranceRate, SystemParameterDefinition, SystemParameterValue |
 | CORE: Product & Route | Product, SubProduct, ProductRoute, ProductRouteVersion, ProductRouteStep, DocumentChecklist, DocumentChecklistItem |
 | CORE: Change Request & Audit | ChangeRequest, AuditLog |
 | CORE: Notification | EmailTemplate, NotificationLog |
 | CORE: Document | DocumentFile, GeneratedDocument, Sp3kCounter |
 | CORE: Application | Application, ApplicationPersonal, ApplicationAddress, ApplicationSpouse, ApplicationOccupation, ApplicationBusiness, ApplicationCollateral, ApplicationDocument, ApplicationEmergencyContact, LoanIdCounter |
 | CORE: Orchestrator & Task | ProcessInstance, StepExecution, HumanTask |
+| CORE: Integration Registry | IntegrationProvider, IntegrationConfig, IntegrationCallLog |
 | CORE: Verification | DocumentVerification |
 | CORE: Approval | ApprovalLevel, ApprovalHierarchy, ApplicationApproval, Financing, Installment |
+| CORE: Calculation | FormulaDefinition, FormulaVersion, FormulaVariable, FormulaTestCase, FormulaExecutionLog, HolidayCalendar |
 | M01 Mobile Sales | Device |
 | M02 API Mitra | PartnerClient, PartnerToken |
 | M03 Bulk Upload | UploadFile, UploadRowResult |
 | M04 OCR KTP | OcrRequestLog |
 | M05 Survey & Appraisal | SurveyMikro, SurveyKpr, Appraisal, SurveyPhoto |
-| M06 Dedup | DedupMatrix, DedupSetting, DedupResult, DedupCandidate, DedupReview |
+| M06 Dedup | DedupMatrix, DedupFieldSetting, DedupResult, DedupCandidate, DedupReview |
 | M07 Dukcapil | DukcapilRule, DukcapilResult, DukcapilReview |
-| M08 Fraud | FraudMatrix, FraudSetting, FraudResult, Blacklist, FraudReview |
+| M08 Fraud | FraudMatrix, FraudVelocityRule, FraudResult, Blacklist, FraudReview |
 | M09 Scoring & RAC | ScoringModel, ScoringCriterion, ScoringModelProduct, ScoringResult, ScoringResultDetail |
-| M10 SLIK | SlikResult |
+| M10 Credit Bureau | CreditBureauOutcomeMapping, CreditBureauResult, CreditFacility |
 | M11 Decision Engine | DecisionMatrix, DecisionResult, Recontest |
-| M12 SIKP | SikpResult |
+| M12 SIKP | SikpOutcomeRule, SikpResult |
 | M13 Kredit Pensiun | PensionVerification |
 | M14 E-Polis | Policy |
 | M15 Pencairan & Core | Disbursement, AkadPrint, DisbursementFile, CoreResponse |
+| M16 Name Screening [Usulan] | ScreeningSetting, ScreeningList, ScreeningListEntry, ScreeningResult, ScreeningHit, ScreeningReview |
 
 ---
 
@@ -118,6 +121,26 @@ Atribut berikut ada di **setiap entity** dan tidak diulang di tabel masing-masin
 | link | Rute halaman | Teks | | Kondisional: sub menu | Input user | | Internal |
 | iconName | Nama ikon (set Lucide) | Teks | | Tidak | Input user | | Internal |
 | moduleCode | Modul lisensi pemilik menu | Pilihan | CORE, M01 s.d. M15, SIM | Ya | Input user | LC-04 | Internal |
+
+**Role awal (seed)** yang dibuat saat tenant diaktifkan. Nama dan hak akses bisa diubah tenant lewat checker-maker; daftar ini hanya titik awal yang sesuai persona Doc BA.
+
+| Role | Tugas utama | Rujukan persona Doc BA |
+|---|---|---|
+| Super User | Setup company, salin konfigurasi, menu | US-15, US-16, US-11 |
+| Admin Sistem | User, role, hak akses | US-07 s.d. US-10 |
+| Maker | Mengusulkan perubahan master data, rumus, parameter, integrasi | US-12 dan semua master |
+| Checker | Menyetujui, merevisi, menolak usulan Maker | US-13 |
+| Sales | Membuat dan memperbaiki pengajuan | US-39 s.d. US-50 |
+| Customer Service | Mencatat pembayaran appraisal | US-55 |
+| Surveyor | LKN Mikro, LKN dan appraisal KPR | US-56, US-57 |
+| Verifikator | Prescreen Dedup, Prescreen Dukcapil tingkat 1, verifikasi dokumen, Prescreen Fraud, unggah laporan Credit Bureau mode MANUAL [Usulan] | US-60, US-62, US-64, US-66 |
+| Supervisor | Prescreen Dukcapil tingkat 2, melepas tugas orang lain | US-63, TQ-03 |
+| Risk Manager | Recontest, Finish pengajuan ditolak | US-71 |
+| Approver | Keputusan approval sesuai hierarki | US-72 s.d. US-74 |
+| Kepala Cabang | Approver tingkat cabang dan pemantauan cabang | Persona Kepala Cabang |
+| Admin Operasional | E-polis, Validity Check, akad, pencairan, Process Monitoring | US-75 s.d. US-79, US-86 |
+| Auditor | Baca saja: inquiry dan log audit | Persona Auditor |
+| Compliance Officer | Review hit Name Screening (M16) | Baru, referensi teknis 10.4 |
 
 ### Entity: RoleAccess (UI: "Role Menu")
 
@@ -270,6 +293,27 @@ Branch tidak bisa dinonaktifkan bila masih punya pengajuan aktif (AC-17.05).
 | fileId | File template .docx | Referensi DocumentFile | Maks 5 MB | Ya | Input user | AC-24.03, AC-24.04 | Internal |
 | placeholders | Daftar placeholder terdeteksi | JSON | Harus ada di katalog placeholder | Ya | Sistem | AC-24.03, DC-05 | Internal |
 
+### Katalog placeholder template dokumen
+
+Aturan DC-05 di referensi teknis. Template Word memakai placeholder berformat `{{Kelompok.atribut}}`. Nama atribut sama persis dengan data dictionary ini.
+
+| Kelompok | Sumber | Contoh |
+|---|---|---|
+| Application | Entity Application | `{{Application.loanId}}`, `{{Application.requestedLimit}}` |
+| Applicant | ApplicationPersonal | `{{Applicant.fullName}}`, `{{Applicant.idCardNumber}}` |
+| AddressId, AddressResidence, AddressCorrespondence | ApplicationAddress per jenis | `{{AddressId.address}}` |
+| Spouse, Occupation, Business, Collateral | Entity dengan nama yang sama | `{{Collateral.certificateNumber}}` |
+| Financing | Struktur kredit | `{{Financing.monthlyInstallment}}` |
+| Installment | Jadwal angsuran; dipakai di baris tabel berulang `{{#Installment}}...{{/Installment}}` | `{{Installment.dueDate}}` |
+| Approval | Approver terakhir yang menyetujui | `{{Approval.approverName}}`, `{{Approval.decidedAt}}` |
+| Company, Branch | Data organisasi pengajuan | `{{Company.companyName}}`, `{{Branch.branchName}}` |
+| Akad | AkadPrint | `{{Akad.riskManagerName}}` |
+| Document | Nomor dokumen hasil generate | `{{Document.documentNumber}}` (contoh nomor SP3K) |
+| Formula | Hasil rumus configurable | `{{Formula.NET_DISBURSEMENT}}` |
+| System | Nilai sistem | `{{System.today}}`, `{{System.printedBy}}` |
+
+Pengubah format: `|money` (contoh 150.000.000), `|date` (contoh 21 Oktober 2026), `|terbilang` (contoh "seratus lima puluh juta rupiah"), `|upper`. Isi dokumen keluaran berbahasa Indonesia, berbeda dari label UI yang berbahasa Inggris (OT-04). Atribut Rahasia tidak boleh dipakai sebagai placeholder.
+
 ### Entity: Insurance dan InsuranceRate
 
 AS-IS memakai tabel tarif dummy dengan kolom Nama, Usia, Year1 s.d. Year15, Company, CurrencyCode.
@@ -277,38 +321,88 @@ AS-IS memakai tabel tarif dummy dengan kolom Nama, Usia, Year1 s.d. Year15, Comp
 | Entity | Atribut | Definisi | Tipe | Wajib | Aturan |
 |---|---|---|---|---|---|
 | Insurance | insuranceCode, insuranceName | Kode dan nama perusahaan asuransi | Teks | Ya | AC-29.03 |
+| Insurance | providerCode | Adapter E-Polis untuk asuransi ini; kosong = penerbitan polis di luar Cikal | Referensi IntegrationProvider | Tidak | IN-02 |
 | InsuranceRate | insuranceId | Asuransi | Referensi | Ya | |
 | InsuranceRate | productId | Produk (opsional) [Konfirmasi] | Referensi | Tidak | |
 | InsuranceRate | age | Usia debitur saat pengajuan | Angka | Ya | |
 | InsuranceRate | tenorYear | Tahun tenor 1 s.d. 15 | Angka | Ya | |
 | InsuranceRate | premiumRate | Tarif premi persen dari plafon | Persen 0 s.d. 100 | Ya | AC-29.02 |
 
-Catatan: dengan tabel ini, nilai IJK bisa dihitung sistem dari usia dan tenor. Asumsi A-23 saat ini menyatakan IJK diisi petugas; perlu diputuskan.
+Tabel ini dipakai rumus `IJK_AMOUNT` lewat fungsi `LOOKUP` (referensi teknis RM-18). Sumber IJK (rumus, input petugas, atau respons asuransi) diatur lewat parameter `IJK_SOURCE`.
 
-### Entity: SystemParameter
+### Entity: SystemParameterDefinition
+
+**Definisi:** Daftar parameter sistem yang disediakan aplikasi (pengganti Site Properties OS11). Tenant tidak bisa menambah atau menghapus baris (PR-01).  
+**Owner:** Tim engineer (daftar dan batas), Maker tenant (nilai, lewat SystemParameterValue).  
 
 | Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
 |---|---|---|---|---|---|---|---|
-| paramKey | Kunci parameter | Teks | Lihat daftar di bawah | Ya | Sistem | | Internal |
-| valueType | Tipe nilai | Pilihan | NUMBER, TEXT, BOOLEAN, SECRET | Ya | Sistem | AC-30.02 | Internal |
-| value | Nilai | Teks | Sesuai valueType dan rentang | Ya | Input user | AC-30.03 | Rahasia bila SECRET |
-| minValue, maxValue | Rentang nilai | Desimal | | Tidak | Sistem | | Internal |
+| paramKey | Kunci parameter | Teks | Unik, lihat daftar di bawah | Ya | Sistem | PR-01 | Internal |
+| label, description | Nama dan penjelasan di UI (contoh "SIKP Minimum Limit") | Teks | | Ya | Sistem | | Internal |
+| moduleCode | Modul pemilik; tidak tampil bila modul tidak berlisensi | Pilihan | CORE, M01 s.d. M15 | Ya | Sistem | PR-08 | Internal |
+| category | Kelompok | Pilihan | BUSINESS, SECURITY, INTEGRATION, DISPLAY | Ya | Sistem | PR-10 | Internal |
+| valueType | Tipe nilai | Pilihan | NUMBER, MONEY, PERCENT, TEXT, BOOLEAN, CHOICE, MULTI_CHOICE, SECRET | Ya | Sistem | PR-02, AC-30.02 | Internal |
+| allowedValues | Daftar pilihan | JSON | Wajib untuk CHOICE dan MULTI_CHOICE | Kondisional | Sistem | PR-02 | Internal |
+| minValue, maxValue | Rentang nilai; untuk SECURITY sekaligus batas pengaman | Desimal | | Kondisional: NUMBER, MONEY, PERCENT | Sistem | PR-10, AC-30.03 | Internal |
+| defaultValue | Nilai bila tenant dan produk belum mengisi | Teks | Sesuai valueType | Ya kecuali SECRET | Sistem | PR-03, PR-11 | Internal |
+| scope | Cakupan | Pilihan | INSTALLATION, TENANT, PRODUCT | Ya | Sistem | PR-03 | Internal |
+| lockOnSubmit | Nilai dikunci saat pengajuan disubmit | Ya/Tidak | | Ya | Sistem | PR-06 | Internal |
 
-Parameter awal (pengganti Site Properties AS-IS):
+### Entity: SystemParameterValue
 
-| paramKey | Default | Asal AS-IS |
-|---|---|---|
-| SIKP_MIN_LIMIT | 50.000.000 | `SIKPFilterLoanAmount` |
-| DUKCAPIL_NAME_WEIGHT / MOTHER_WEIGHT | 0,60 / 0,40 | Dukcapil Matrix |
-| DUKCAPIL_PASSED_THRESHOLD / REVIEW_THRESHOLD | 0,90 / 0,75 | Dukcapil Matrix |
-| DEDUP_FUZZY_THRESHOLD | 50 s.d. 80 (AS-IS) | `LOSCS/FuzzyOutcomes` |
-| FRAUD_MAX_APP_PER_DAY | 3 | Fraud Matrix |
-| RECONTEST_MAX | 3 | Doc BA US-71 |
-| NPWP_REQUIRED_ABOVE | 50.000.000 | Order Application Web |
-| UPLOAD_MAX_MB | 2 | LKN Web |
-| RESET_LINK_MINUTES / LOCK_ATTEMPTS / LOCK_MINUTES / SESSION_IDLE_MINUTES | 10 / 5 / 15 / 30 | Asumsi A-28 |
-| CORE_MAX_TENOR_MONTHS | 24 | File send to Core |
-| OCR_API_KEY, REGION_API_KEY | (rahasia) | `OksaraKey` |
+**Definisi:** Nilai parameter untuk satu tenant, atau satu produk bila cakupannya PRODUCT.  
+**Lifecycle:** WAITING_APPROVAL > ACTIVE > SUPERSEDED (lewat ChangeRequest). Ditolak: tidak pernah ACTIVE.  
+**Retensi:** Versi lama tidak dihapus (PR-05).  
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| definitionId | Parameter | Referensi SystemParameterDefinition | Cakupan bukan INSTALLATION | Ya | Referensi | PR-03 | Internal |
+| productId | Produk; kosong = nilai tenant | Referensi Product | Hanya boleh diisi bila scope = PRODUCT | Tidak | Referensi | PR-03 | Internal |
+| value | Nilai | Teks | Sesuai valueType, rentang, dan allowedValues; MULTI_CHOICE disimpan sebagai daftar | Ya | Input user | PR-02, AC-30.02, AC-30.03 | Rahasia bila SECRET |
+| versionNumber | Nomor versi per parameter + produk | Angka | Berurutan | Ya | Sistem | PR-05 | Internal |
+| status | Status versi | Pilihan | WAITING_APPROVAL, ACTIVE, SUPERSEDED | Ya | Sistem | PR-04, AC-30.01 | Internal |
+| effectiveFrom | Waktu mulai berlaku; boleh di masa depan | Tanggal-waktu | | Ya | Input user | PR-04 | Internal |
+| changeRequestId | Permintaan perubahan asal | Referensi ChangeRequest | | Ya | Sistem | | Internal |
+
+Hanya satu versi ACTIVE per parameter + produk pada satu waktu. Nilai SECRET tidak disimpan di tabel ini; tabel hanya menyimpan rujukan ke penyimpanan rahasia (PR-09).
+
+Snapshot nilai parameter bertanda `lockOnSubmit` disimpan di ProcessInstance atribut `parameterSnapshot` (JSON) saat submit (PR-06).
+
+### Daftar parameter awal
+
+| paramKey | Tipe | Default | Rentang atau pilihan | Cakupan | Kunci saat submit | Modul | Asal AS-IS |
+|---|---|---|---|---|---|---|---|
+| SIKP_MIN_LIMIT | MONEY | 50.000.000 | >= 0; SIKP berjalan bila Requested Limit **lebih dari** nilai ini | PRODUCT | Ya | M12 | `SIKPFilterLoanAmount`; Asumsi A-19, AC-70.03 |
+| RECONTEST_MAX | NUMBER | 3 | 0 s.d. 10 | TENANT | Ya | M11 | Doc BA US-71 |
+| NPWP_REQUIRED_ABOVE | MONEY | 50.000.000 | >= 0 | PRODUCT | Tidak (dicek saat submit) | CORE | Order Application Web |
+| UPLOAD_MAX_MB | NUMBER | 2 | 1 s.d. 20 | TENANT | Tidak | CORE | LKN Web |
+| RESET_LINK_MINUTES | NUMBER | 10 | 5 s.d. 60 | TENANT | Tidak | CORE | Asumsi A-28 |
+| LOCK_ATTEMPTS | NUMBER | 5 | 3 s.d. 10 | TENANT | Tidak | CORE | Asumsi A-28 |
+| LOCK_MINUTES | NUMBER | 15 | 5 s.d. 1.440 | TENANT | Tidak | CORE | Asumsi A-28 |
+| SESSION_IDLE_MINUTES | NUMBER | 30 | 5 s.d. 60 | TENANT | Tidak | CORE | Asumsi A-28 |
+| CORE_MAX_TENOR_MONTHS | NUMBER | 24 | 1 s.d. 360 | TENANT | Ya | M15 | File send to Core |
+| AGING_UNIT | CHOICE | CALENDAR_DAY | CALENDAR_DAY, WORKING_DAY, HOUR | TENANT | Tidak | CORE | BPT_Docs; RM-04 |
+| APPROVAL_RANGE_BOUNDARY | CHOICE | BOTH_INCLUSIVE | BOTH_INCLUSIVE, END_EXCLUSIVE | TENANT | Ya | CORE | Master Approval Setup; RM-06 |
+| LKN_DAY_BASIS | CHOICE | 30 | 30, 360, 365 | PRODUCT | Ya | M05 | RM-09 |
+| CREDIT_BUREAU_AGGREGATION | CHOICE | WORST | WORST, LATEST | TENANT | Ya | M10 | RM-16 |
+| IJK_SOURCE | CHOICE | FORMULA | FORMULA, MANUAL, INSURER | PRODUCT | Ya | M14 | Epolis doc, Asumsi A-23; RM-18 |
+| DUE_DATE_END_OF_MONTH | CHOICE | LAST_DAY | LAST_DAY, NEXT_MONTH_FIRST_DAY | TENANT | Ya | CORE | RM-19 |
+| DASHBOARD_RELEASE_STATUSES | MULTI_CHOICE | DISBURSED | Status pengajuan (Application.status) | TENANT | Tidak | CORE | Dashboard_Web; RM-21 |
+| REQUIRE_CONSENT_FOR_EXTERNAL_CHECK | BOOLEAN | Tidak | Ya, Tidak | TENANT | Ya | CORE | Baru; IN-12, TO-15 |
+| CREDIT_BUREAU_MANUAL_DEADLINE_HOURS | NUMBER | 24 | 1 s.d. 168 | TENANT | Tidak | M10 | Baru; batas tugas unggah laporan mode MANUAL sebelum diberi tanda terlambat |
+| OCR_API_KEY | SECRET | | | TENANT | Tidak | M04 | `OksaraKey` |
+| REGION_API_KEY | SECRET | | | INSTALLATION | Tidak | CORE | `OksaraKey` |
+
+**Bukan parameter sistem** (PR-07, satu nilai satu tempat):
+
+| Nilai | Disimpan di |
+|---|---|
+| Bobot nama dan nama ibu, ambang Passed dan Review Dukcapil | DukcapilRule (M07, US-34) |
+| Algoritma dan ambang kemiripan Dedup | DedupFieldSetting (M06) |
+| Batas frekuensi nama dan IP | FraudVelocityRule (M08) |
+| Konstanta, cut off, batas Review scoring | ScoringModel (M09) |
+| Plafon, tenor, usia, DBR, biaya, limit auto approval | Product |
+| Rumus perhitungan | FormulaVersion |
 
 ## Product & Route
 
@@ -466,6 +560,8 @@ Tidak bisa diubah atau dihapus lewat aplikasi (AD-03). Retensi usulan 5 tahun (N
 | returnNote | Catatan pengembalian terakhir (Verification, Validity, Return approver) | Teks | | Tidak | Sistem | AC-64.02, AC-73.02 | Internal |
 | submittedBy, submittedAt | Penginput dan waktu submit | Referensi User, Tanggal-waktu | | Kondisional | Sistem | AU-05 | Internal |
 | branchId | Cabang pengajuan | Referensi Branch | | Ya | Sistem dari user | | Internal |
+| consentGivenAt, consentChannel | Waktu dan kanal persetujuan nasabah atas pemrosesan data dan pemeriksaan pihak ketiga (WEB, MOBILE, API, PAPER) | Tanggal-waktu, Pilihan | | Kondisional: wajib bila `REQUIRE_CONSENT_FOR_EXTERNAL_CHECK` = Ya | Input user / mitra | IN-12 | PII |
+| consentDocumentId | Formulir persetujuan bertanda tangan bila kanal PAPER | Referensi DocumentFile | | Kondisional | Input user | IN-12 | PII |
 
 **State machine (status pengajuan):**
 
@@ -486,6 +582,20 @@ stateDiagram-v2
     FINISHED_REJECTED --> [*]
     FINISHED_CANCELLED --> [*]
 ```
+
+**Pemetaan status ke label UI** (referensi teknis 6.4):
+
+| Status | Label web (Loan List, inquiry) | Tab mobile (M01) | Kartu dashboard |
+|---|---|---|---|
+| DRAFT | Draft | Draft | Save as Draft |
+| ON_PROGRESS | On Progress | On Progress | Submitted |
+| RECONTEST | Recontest | On Progress | Submitted |
+| APPROVED | Approved | On Progress | Submitted |
+| DISBURSED | Disbursed | Disburse | Submitted |
+| FINISHED_REJECTED | Rejected | On Progress, dengan label "Rejected" [Usulan] | Submitted |
+| FINISHED_CANCELLED | Cancelled | On Progress, dengan label "Cancelled" [Usulan] | Submitted |
+
+Kartu dashboard "GO" dan "NOT GO" tidak memakai status pengajuan, melainkan hasil DecisionResult terakhir per pengajuan.
 
 ### Entity: ApplicationPersonal
 
@@ -634,6 +744,7 @@ Satu pengajuan punya hingga tiga alamat: ID (KTP), RESIDENCE (domisili), CORRESP
 | applicationId | Pengajuan | Referensi | | Ya | Sistem | |
 | recontestNumber | 0 untuk proses awal, 1 dst. untuk recontest | Angka | 0 s.d. RECONTEST_MAX | Ya | Sistem | ER-04, ER-05 |
 | routeVersionId | Versi rute | Referensi | | Ya | Sistem | RT-06 |
+| parameterSnapshot | Nilai parameter sistem bertanda kunci saat submit | JSON | | Ya | Sistem | PR-06 |
 | status | Status proses | Pilihan | RUNNING, WAITING, COMPLETED, CANCELLED | Ya | Sistem | |
 | recontestReason | Alasan recontest | Teks | | Kondisional | Input Risk Manager | AC-71.03 |
 | startedAt, endedAt | Waktu | Tanggal-waktu | | Ya / Tidak | Sistem | |
@@ -644,15 +755,18 @@ Satu pengajuan punya hingga tiga alamat: ID (KTP), RESIDENCE (domisili), CORRESP
 |---|---|---|---|---|---|---|
 | processInstanceId | Proses | Referensi | | Ya | Sistem | |
 | stepCode | Langkah | Pilihan | Kode langkah | Ya | Sistem | |
-| status | Status langkah | Pilihan | PENDING, RUNNING, WAITING_HUMAN, COMPLETED, SKIPPED, ERROR | Ya | Sistem | |
+| status | Status langkah | Pilihan | PENDING, RUNNING, WAITING_HUMAN, WAITING_EXTERNAL, COMPLETED, SKIPPED, ERROR | Ya | Sistem | |
 | outcomeCode | Hasil modul (contoh MATCH, GO) | Teks | | Kondisional | Sistem | |
-| resultType | Hasil kontrak | Pilihan | CONTINUE, WAIT_HUMAN, BACK_TO_DRAFT, RECONTEST, FINISH, ERROR | Kondisional | Sistem | Ref. teknis 5.1 |
-| skipReason | Alasan dilewati | Pilihan | NOT_IN_ROUTE, NOT_LICENSED, CONDITION_NOT_MET | Kondisional: SKIPPED | Sistem | AC-85.02 |
+| resultType | Hasil kontrak | Pilihan | CONTINUE, WAIT_HUMAN, WAIT_EXTERNAL, BACK_TO_DRAFT, RECONTEST, FINISH, ERROR | Kondisional | Sistem | Ref. teknis 5.1 |
+| externalReference, waitDeadline | Rujukan transaksi di pihak ketiga dan batas tunggu | Teks, Tanggal-waktu | | Kondisional: WAITING_EXTERNAL | Sistem | IN-08 |
+| errorCategory | Kategori error integrasi | Pilihan | TIMEOUT, CONNECTION, PROVIDER_ERROR, AUTH, CONFIG, INVALID_RESPONSE, CONSENT_MISSING, FORMULA | Kondisional: ERROR | Sistem | IN-07, FM-09 |
+| reusedFromStepExecutionId | Hasil yang dipakai ulang | Referensi StepExecution | | Tidak | Sistem | IN-10 |
+| skipReason | Alasan dilewati | Pilihan | NOT_IN_ROUTE, NOT_LICENSED, CONDITION_NOT_MET, DEDUP_MATCH | Kondisional: SKIPPED | Sistem | AC-85.02 |
 | attempt | Percobaan ke | Angka | | Ya | Sistem | ER-03 |
 | errorMessage | Pesan error | Teks | | Kondisional: ERROR | Sistem | ER-01 |
 | actorUserId | Pelaku langkah manual | Referensi User | | Kondisional | Sistem | |
 | startedAt, endedAt | Waktu | Tanggal-waktu | | Ya / Tidak | Sistem | |
-| agingDays | Selisih hari kalender | Angka | | Kondisional | Sistem | AC-85.04 |
+| aging | Selisih waktu mulai dan selesai dalam satuan `AGING_UNIT` | Desimal | | Kondisional | Sistem | AC-85.04, RM-04 |
 | summary | Ringkasan untuk timeline | Teks | | Tidak | Sistem | |
 
 ### Entity: HumanTask
@@ -660,12 +774,35 @@ Satu pengajuan punya hingga tiga alamat: ID (KTP), RESIDENCE (domisili), CORRESP
 | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
 |---|---|---|---|---|---|
 | stepExecutionId | Langkah | Referensi | | Ya | TQ-01 |
-| queueCode | Antrean (contoh PRESCREEN_DEDUP, VERIFICATION, APPROVAL_L2) | Pilihan | | Ya | |
+| queueCode | Antrean, lihat katalog di bawah | Pilihan | | Ya | |
 | branchId | Cabang | Referensi | | Ya | |
 | eligibleRoleId | Role yang boleh mengambil | Referensi Role | | Ya | |
 | assignedUserId, assignedAt | Pengambil tugas | Referensi User, Tanggal-waktu | | Tidak | TQ-02, TQ-04 |
 | status | Status tugas | Pilihan | OPEN, ASSIGNED, CLOSED | Ya | |
 | closedAt, closedBy, resultCode | Penutupan | Tanggal-waktu, Referensi, Teks | | Kondisional | TQ-05 |
+
+**Katalog antrean**
+
+| queueCode | Langkah | Role default | Assign to Me | Rujukan |
+|---|---|---|---|---|
+| SURVEY_MIKRO | SURVEY | Surveyor | Ya | US-56 |
+| SURVEY_KPR | SURVEY | Customer Service (pembayaran), Surveyor (LKN dan appraisal) | Tidak | US-55, US-57, TQ-06 |
+| PRESCREEN_DEDUP | DEDUP | Verifikator | Ya | US-60 |
+| PRESCREEN_DUKCAPIL_L1 | DUKCAPIL | Verifikator | Ya | US-62 |
+| PRESCREEN_DUKCAPIL_L2 | DUKCAPIL | Supervisor | Ya | US-63 |
+| SCREENING_REVIEW | NAME_SCREENING | Compliance Officer | Ya | 10.4 |
+| VERIFICATION | VERIFICATION | Verifikator | Ya | US-64 |
+| PRESCREEN_FRAUD | FRAUD | Verifikator | Ya | US-66 |
+| CREDIT_REPORT_UPLOAD | CREDIT_BUREAU (mode MANUAL) | Verifikator [Usulan] | Ya | IN-08 |
+| RECONTEST | Pengajuan berstatus RECONTEST | Risk Manager | Ya | US-71 |
+| APPROVAL | APPROVAL | Approver yang ditetapkan ApprovalHierarchy (per user, bukan per role) | Tidak, sudah ditugaskan | US-72 |
+| EPOLIS | EPOLIS | Admin Operasional | Ya | US-75 |
+| VALIDITY_CHECK | VALIDITY_CHECK | Admin Operasional | Ya | US-76 |
+| PRINT_AKAD | PRINT_AKAD | Admin Operasional | Ya | US-77 |
+| DISBURSEMENT | DISBURSEMENT | Admin Operasional | Ya | US-79 |
+| PROCESS_ERROR | Langkah berstatus ERROR | Admin Operasional | Ya | US-86, ER-02 |
+
+Pengajuan yang kembali ke Draft (BACK_TO_DRAFT) tidak masuk antrean; pengajuan tampil di daftar Draft milik Sales penginputnya beserta `returnNote`.
 
 ## Verification
 
@@ -723,10 +860,13 @@ Dibentuk saat approval selesai; dihitung ulang setelah e-polis.
 | loanAmount | Plafon | Uang | Ya | Sistem | |
 | tenor | Tenor bulan | Angka | Ya | Sistem | |
 | interestType, interestRate, floatingRate, tenorFixed, capRate | Parameter bunga dari SubProduct saat approval | Pilihan, Persen, Angka | Ya | Sistem | MRTM TRM_INS |
-| adminFee | Biaya admin (FAST `admin`) | Uang | Ya | Sistem dari Product | |
-| provisionFee | Biaya provisi | Uang | Ya | Sistem: loanAmount x provisi % [Konfirmasi rumus] | |
-| insuranceValue | Nilai premi (IJK) | Uang | Kondisional: setelah e-polis | Sistem / Input | US-75 |
-| netDisbursement | Nilai cair bersih (FAST `initial_disburs`) | Uang | Ya | Sistem: loanAmount minus potongan [Konfirmasi rumus] | |
+| adminFee | Biaya admin (FAST `admin`) | Uang | Ya | Sistem: rumus `ADMIN_FEE_AMOUNT` | RM-07 |
+| salesFee | Biaya sales | Uang | Tidak | Sistem: rumus `SALES_FEE_AMOUNT` | RM-07 |
+| provisionFee | Biaya provisi | Uang | Ya | Sistem: rumus `PROVISION_FEE_AMOUNT` | RM-07 |
+| insuranceValue | Nilai premi (IJK) | Uang | Kondisional: setelah e-polis | Dari Policy.ijkValue | US-75, RM-18 |
+| netDisbursement | Nilai cair bersih (FAST `initial_disburs`) | Uang | Ya | Sistem: rumus `NET_DISBURSEMENT` | RM-07 |
+| dbrRatio, dsrRatio | Rasio angsuran terhadap penghasilan | Persen | Ya | Sistem: rumus `DBR_RATIO`, `DSR_RATIO` | RM-08 |
+| formulaVersions | Kode dan versi rumus yang dipakai | JSON | Ya | Sistem | FM-05, FM-08 |
 | monthlyInstallment | Angsuran bulanan | Uang | Ya | Sistem | |
 | firstInstallmentDate | Tanggal angsuran pertama | Tanggal | Ya | Sistem, bisa diubah di Validity Check | AC-76.05 |
 
@@ -740,6 +880,158 @@ Dibentuk saat approval selesai; dihitung ulang setelah e-polis.
 | principalAmount | Pokok (FAST `prnc_amt_dtl_cust`) | Uang | Ya | PPMT |
 | interestAmount | Bunga (FAST `intr_amt_dtl_ar`) | Uang | Ya | IPMT |
 | outstandingAmount | Sisa pokok | Uang | Ya | Baris terakhir 0 (AC-51.01) |
+
+## Integration Registry
+
+Konfigurasi penyedia pihak ketiga per tenant dan log panggilan (referensi teknis bagian 10). Kode adapter ada di modul pemiliknya; entity ini hanya menyimpan konfigurasi dan jejak.
+
+### Entity: IntegrationProvider (katalog adapter)
+
+**Owner:** Tim engineer. Satu baris per adapter yang dirilis; tenant tidak bisa menambah.
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| providerCode | Kode adapter (contoh `DUKCAPIL_ASIS`, `CREDIT_BUREAU_MANUAL`, `CORE_FAST`, `SIMULATION_M07`) | Teks | Unik | Ya | Sistem | IN-13 | Internal |
+| moduleCode | Modul pemilik | Pilihan | CORE, M04, M07, M08, M10, M12, M13, M14, M15, M16 | Ya | Sistem | | Internal |
+| providerName | Nama penyedia | Teks | | Ya | Sistem | | Internal |
+| supportedModes | Mode yang didukung | Pilihan ganda | SYNC, ASYNC, MANUAL | Ya | Sistem | IN-08 | Internal |
+| isSimulation | Adapter simulasi | Ya/Tidak | | Ya | Sistem | IN-03 | Internal |
+| settingsSchema | Skema pengaturan khusus penyedia | JSON | | Ya | Sistem | IN-05 | Internal |
+| adapterVersion | Versi adapter | Teks | | Ya | Sistem | IN-14 | Internal |
+
+### Entity: IntegrationConfig
+
+**Definisi:** Penyedia aktif satu modul untuk satu tenant.
+**Lifecycle:** WAITING_APPROVAL > ACTIVE > SUPERSEDED (lewat ChangeRequest).
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| moduleCode | Modul | Pilihan | | Ya | Input user | | Internal |
+| providerId | Adapter | Referensi IntegrationProvider | Simulasi ditolak di produksi kecuali tenant trial | Ya | Input user | IN-03 | Internal |
+| mode | Mode yang dipakai | Pilihan | Salah satu dari supportedModes | Ya | Input user | IN-08 | Internal |
+| endpointUrl | Alamat layanan penyedia | Teks | URL https | Kondisional: SYNC, ASYNC | Input user | IN-05 | Internal |
+| secretRef | Rujukan kredensial di penyimpanan rahasia | Teks | | Kondisional | Sistem | IN-04 | Rahasia |
+| timeoutSeconds | Batas waktu panggilan | Angka | 1 s.d. 120, default 30 | Ya | Input user | COM-04 | Internal |
+| maxRetries | Jumlah retry error sementara | Angka | 0 s.d. 5, default 3 | Ya | Input user | ER-03, IN-07 | Internal |
+| asyncWaitHours | Batas tunggu jawaban asinkron | Angka | 1 s.d. 720 | Kondisional: ASYNC | Input user | IN-08 | Internal |
+| resultReuseDays | Rentang pemakaian ulang hasil untuk NIK yang sama | Angka | 0 s.d. 90, default 0 | Ya | Input user | IN-10 | Internal |
+| settings | Pengaturan khusus penyedia | JSON | Valid terhadap settingsSchema | Tidak | Input user | IN-05 | Internal |
+| lastConnectionTestAt, lastConnectionTestResult | Hasil Test Connection terakhir | Tanggal-waktu, Pilihan (SUCCESS, FAILED) | SUCCESS wajib sebelum diajukan | Ya | Sistem | IN-05 | Internal |
+| status, effectiveFrom | Status versi dan waktu berlaku | Pilihan, Tanggal-waktu | | Ya | Sistem | | Internal |
+
+Satu konfigurasi ACTIVE per tenant per modul. Pengecualian M14: penyedia dipilih per perusahaan asuransi lewat `Insurance.providerCode`, dan IntegrationConfig M14 menyimpan satu baris per penyedia yang dipakai.
+
+### Entity: IntegrationCallLog
+
+| Atribut | Definisi | Tipe | Wajib | Aturan | Sensitivitas |
+|---|---|---|---|---|---|
+| moduleCode, providerCode | Modul dan adapter | Teks | Ya | IN-06 | Internal |
+| direction | Arah | Pilihan: OUTBOUND, INBOUND | Ya | IN-15 | Internal |
+| applicationId, loanId, stepExecutionId | Pengajuan dan langkah | Referensi, Teks | Kondisional | | Internal |
+| correlationId, externalReference | Penelusuran | Teks | Ya / Kondisional | | Internal |
+| attempt | Percobaan ke | Angka | Ya | | Internal |
+| startedAt, durationMs | Waktu dan lama | Tanggal-waktu, Angka | Ya | | Internal |
+| status, errorCategory, errorMessage | Hasil teknis | Pilihan (SUCCESS, ERROR), Pilihan, Teks | Ya / Kondisional | IN-07 | Internal |
+| requestMasked, responseMasked | Isi dengan PII disamarkan | JSON | Ya | IN-06 | Internal |
+| matchStatus | Untuk INBOUND: MATCHED, IGNORED_NOT_WAITING, DUPLICATE, UNKNOWN_REFERENCE | Pilihan | Kondisional | IN-15 | Internal |
+
+Retensi 1 tahun (referensi teknis bagian 13).
+
+## Calculation (rumus dan aturan configurable)
+
+Entity untuk mekanisme referensi teknis bagian 9.7. Dipakai semua perhitungan yang rumusnya tidak tertulis di tech docs OS11 (katalog RM-01 s.d. RM-21 di referensi teknis bagian 11.12). Tidak ada padanan di AS-IS; LOS OS11 menyimpan rumus ini di server action.
+
+### Entity: FormulaDefinition
+
+**Definisi:** Satu perhitungan yang dipanggil modul dengan kode tetap.  
+**Owner:** Bisnis kredit (isi rumus), tim engineer (daftar kode dan rumus default bawaan).  
+**Lifecycle:** dibuat oleh aplikasi saat rilis; tidak bisa dihapus tenant.  
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| formulaCode | Kode rumus (contoh `MAX_LOAN_AMOUNT`, `NET_DISBURSEMENT`) | Teks | Unik | Ya | Sistem | FM-01 | Internal |
+| moduleCode | Modul pemakai | Pilihan | CORE, M01 s.d. M15 | Ya | Sistem | LC-04 | Internal |
+| description | Arti hasil rumus | Teks | | Ya | Sistem | | Internal |
+| resultType | Tipe hasil | Pilihan | MONEY, NUMBER, PERCENT, DATE, BOOLEAN | Ya | Sistem | | Internal |
+| defaultExpression | Rumus default bawaan aplikasi | Teks | Bahasa ekspresi FM-02 | Ya | Sistem | FM-12 | Internal |
+
+### Entity: FormulaVersion
+
+**Definisi:** Isi rumus yang berlaku untuk satu tenant atau satu produk.  
+**Lifecycle:** DRAFT > WAITING_APPROVAL > ACTIVE > SUPERSEDED (lewat ChangeRequest).  
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| formulaId | Rumus | Referensi FormulaDefinition | | Ya | Referensi | | Internal |
+| productId | Produk; kosong = berlaku untuk seluruh tenant | Referensi Product | | Tidak | Referensi | FM-04 | Internal |
+| versionNumber | Nomor versi berurutan per rumus + produk | Angka | | Ya | Sistem | FM-05 | Internal |
+| expression | Isi rumus | Teks | Bahasa ekspresi FM-02; hanya variabel dari katalog; tanpa referensi melingkar | Ya | Input user | FM-02, FM-03 | Internal |
+| roundingMode | Mode pembulatan | Pilihan | HALF_UP (default), UP, DOWN, NONE | Ya | Input user | FM-07 | Internal |
+| roundingScale | Jumlah desimal | Angka | 0 s.d. 6, default 0 untuk uang | Ya | Input user | FM-07 | Internal |
+| status | Status versi | Pilihan | DRAFT, WAITING_APPROVAL, ACTIVE, SUPERSEDED | Ya | Sistem | FM-05 | Internal |
+| effectiveFrom | Waktu mulai berlaku | Tanggal-waktu | | Kondisional: ACTIVE | Input user | FM-05 | Internal |
+
+Hanya satu versi ACTIVE per rumus + produk pada satu waktu.
+
+### Entity: FormulaVariable (katalog variabel)
+
+| Atribut | Definisi | Tipe | Domain | Wajib | Sumber | Aturan | Sensitivitas |
+|---|---|---|---|---|---|---|---|
+| variableCode | Kode yang ditulis di rumus (contoh `loanAmount`, `monthlyIncomeAllowance`, `DBR_RATIO`) | Teks | Unik | Ya | Sistem | FM-03 | Internal |
+| sourceType | Asal nilai | Pilihan | APPLICATION_FIELD, PRODUCT_FIELD, SYSTEM_PARAMETER, FORMULA_RESULT, RATE_TABLE | Ya | Sistem | | Internal |
+| sourcePath | Rujukan ke entity dan atribut di dokumen ini | Teks | | Ya | Sistem | | Internal |
+| dataType | Tipe | Pilihan | MONEY, NUMBER, PERCENT, DATE, TEXT, BOOLEAN | Ya | Sistem | | Internal |
+| moduleCode | Modul pemilik data; variabel modul tanpa lisensi tidak bisa dipilih | Pilihan | | Ya | Sistem | LC-04 | Internal |
+| usableInScoring | Boleh dipakai di kriteria scoring dan RAC | Ya/Tidak | | Ya | Sistem | FM-10 | Internal |
+
+Katalog dikelola tim engineer (menambah variabel butuh rilis), bukan oleh tenant.
+
+### Entity: FormulaTestCase
+
+| Atribut | Definisi | Tipe | Wajib | Aturan |
+|---|---|---|---|---|
+| formulaVersionId | Versi yang diuji | Referensi FormulaVersion | Ya | FM-06 |
+| inputValues | Contoh nilai variabel | JSON | Ya | |
+| expectedResult | Hasil yang diharapkan maker (opsional) | Teks | Tidak | |
+| actualResult, passed | Hasil hitung dan kecocokan dengan harapan | Teks, Ya/Tidak | Ya | |
+| testedBy, testedAt | Penguji | Referensi User, Tanggal-waktu | Ya | |
+
+ChangeRequest rumus ditolak sistem bila belum ada minimal satu kasus uji (FM-06).
+
+### Entity: FormulaExecutionLog
+
+| Atribut | Definisi | Tipe | Wajib | Aturan | Sensitivitas |
+|---|---|---|---|---|---|
+| applicationId, processInstanceId | Pengajuan | Referensi | Kondisional: perhitungan pengajuan | | Internal |
+| formulaVersionId | Versi rumus yang dipakai | Referensi FormulaVersion | Ya | FM-05 | Internal |
+| inputValues | Nilai variabel saat hitung | JSON | Ya | FM-08 | Finansial |
+| result | Hasil setelah pembulatan | Teks | Kondisional: sukses | | Finansial |
+| status, errorMessage | SUCCESS atau ERROR beserta pesan | Pilihan, Teks | Ya | FM-09 | Internal |
+| executedAt | Waktu | Tanggal-waktu | Ya | | Internal |
+
+### Entity: HolidayCalendar
+
+Dipakai bila `AGING_UNIT` = WORKING_DAY (RM-04) dan fungsi `WORKDAYS`.
+
+| Atribut | Definisi | Tipe | Wajib | Aturan |
+|---|---|---|---|---|
+| holidayDate | Tanggal libur | Tanggal | Ya | Unik per tenant |
+| description | Keterangan (contoh libur nasional, cuti bersama) | Teks | Ya | |
+
+### Daftar kode rumus awal
+
+| Kode | Modul | Rujukan |
+|---|---|---|
+| MAX_LOAN_AMOUNT | CORE | RM-01 |
+| APPLICANT_AGE, AGE_AT_MATURITY_MONTH | CORE | RM-02 |
+| ADMIN_FEE_AMOUNT, PROVISION_FEE_AMOUNT, SALES_FEE_AMOUNT, NET_DISBURSEMENT | CORE | RM-07 |
+| DBR_RATIO, DSR_RATIO | CORE | RM-08 |
+| INSTALLMENT_DUE_DATE | CORE, M15 | RM-19 |
+| LKN_BUSINESS_EXPENSE, LKN_BUSINESS_PROFIT, LKN_TOTAL_INCOME, LKN_TOTAL_EXPENSE, LKN_REMAINING_INCOME, LKN_GROSS_PROFIT_MARGIN, LKN_DOH_INVENTORY, LKN_DOH_RECEIVABLE, LKN_DOH_PAYABLE, LKN_WORKING_CAPITAL_NEED, LKN_TOTAL_EXPOSURE | M05 | RM-09 |
+| LKN_KPR_TOTAL_INCOME, LKN_KPR_TOTAL_EXPENSE | M05 | RM-10 |
+| IJK_AMOUNT | M14 | RM-18 |
+
+Tabel aturan configurable ada di modul masing-masing: `DedupFieldSetting` (M06), `FraudVelocityRule` (M08), `CreditBureauOutcomeMapping` (M10), `SikpOutcomeRule` (M12). Parameter pilihan ada di SystemParameterDefinition dan SystemParameterValue.
 
 ---
 
@@ -784,6 +1076,7 @@ Batas 500 baris per file (AC-52.04).
 |---|---|---|---|---|---|
 | OcrRequestLog | applicationId, requestedBy, requestedAt | Permintaan baca KTP | Referensi, Tanggal-waktu | Ya | Internal |
 | OcrRequestLog | status, score, errorMessage | Hasil (SUCCESS, UNREADABLE, SERVICE_ERROR) dan skor evaluasi NIK | Pilihan, Angka, Teks | Ya | Internal |
+| OcrRequestLog | providerCode, fieldConfidence | Adapter dan tingkat keyakinan per field (0 s.d. 1) | Teks, JSON | Ya | Internal |
 | OcrRequestLog | extractedData | Hasil baca: provinsi, kota, NIK, nama, tempat/tanggal lahir, gender, golongan darah, alamat (jalan, RT/RW, kelurahan, kecamatan), agama, status kawin, pekerjaan, kewarganegaraan, masa berlaku, tempat dan tanggal terbit | JSON | Kondisional | PII |
 
 Foto KTP tidak disimpan di log; foto disimpan sebagai dokumen KTP pengajuan bila user memakainya [Usulan].
@@ -805,14 +1098,15 @@ Foto KTP tidak disimpan di log; foto disimpan sebagai dokumen KTP pengajuan bila
 | businessLocation, businessLocationStatus, businessLocationType, marketingAspect, businessType | Kondisi usaha | Pilihan (Lokasi Usaha, Status Tempat Usaha, Jenis Tempat Usaha, Aspek Pemasaran, Jenis Usaha) | | Tidak | Input user | | Internal |
 | distanceLocationBusiness | Jarak lokasi usaha | Desimal | | Tidak | Input user | | Internal |
 | monthlyBusinessIncome, costOfGoodsSold, valueRentContract, employeeSalary, utilityExpense, transportationExpense, otherExpense | Pendapatan dan biaya usaha bulanan | Uang | >= 0 | Tidak | Input user | | Finansial |
-| businessExpense, businessProfit | Total biaya dan laba usaha | Uang | | | Sistem [Konfirmasi rumus] | | Finansial |
-| otherIncome, totalIncome | Pendapatan lain dan total | Uang | | | Input / Sistem | | Finansial |
+| businessExpense, businessProfit | Total biaya dan laba usaha | Uang | | | Sistem: rumus `LKN_BUSINESS_EXPENSE`, `LKN_BUSINESS_PROFIT` | RM-09 | Finansial |
+| otherIncome, totalIncome | Pendapatan lain (input) dan total (rumus `LKN_TOTAL_INCOME`) | Uang | | | Input / Sistem | RM-09 | Finansial |
 | taxRetribution, householdExpense, householdRent, educationCost, utilityBill, householdTransportation, otherHouseholdExpense | Pengeluaran rumah tangga (AS-IS: TaxRetribution, BelanjaRumahTangga, SewaKontrak, Pendidikan, TelpListrikAir, Transportasi, PengeluaranLainnya) | Uang | >= 0 | Tidak | Input user | | Finansial |
-| totalExpense, remainingIncome | Total pengeluaran dan sisa (AS-IS: TotalPengeluaran, SisaPengeluaran) | Uang | | | Sistem | | Finansial |
+| totalExpense, remainingIncome | Total pengeluaran dan sisa (AS-IS: TotalPengeluaran, SisaPengeluaran) | Uang | | | Sistem: rumus `LKN_TOTAL_EXPENSE`, `LKN_REMAINING_INCOME` | RM-09 | Finansial |
 | inventory, accountReceivable, accountPayable | Persediaan, piutang, utang dagang | Uang | | Tidak | Input user | | Finansial |
-| workingInvestmentBalance, dohInventory, dohReceivable, dohPayable, workingCapitalNeedDoh, workingInvestmentNormal, grossProfitMargin | Analisis modal kerja (AS-IS: WINeraca, DOH*, KebutuhanModalKerjaDOH, WINormal, GrossProfitMargin) | Uang, Angka, Persen | | Tidak | Sistem / Input [Konfirmasi rumus] | | Finansial |
+| workingInvestmentBalance, dohInventory, dohReceivable, dohPayable, workingCapitalNeedDoh, workingInvestmentNormal, grossProfitMargin | Analisis modal kerja (AS-IS: WINeraca, DOH*, KebutuhanModalKerjaDOH, WINormal, GrossProfitMargin) | Uang, Angka, Persen | | Tidak | Sistem: rumus `LKN_DOH_INVENTORY`, `LKN_DOH_RECEIVABLE`, `LKN_DOH_PAYABLE`, `LKN_WORKING_CAPITAL_NEED`, `LKN_GROSS_PROFIT_MARGIN` | RM-09 | Finansial |
 | requestedPlafond, requestedTenor | Plafon dan jangka waktu diajukan (AS-IS: PlafondDiajukan, JangkaWaktuDiAjukan) | Uang, Angka | | Tidak | Sistem dari Application | | Finansial |
-| committeeRecommendationAmount, currentInstallment, totalExposure, ujrohMargin, installmentType | Rekomendasi komite, angsuran berjalan, total eksposur, margin ujroh, jenis angsuran | Uang, Persen, Pilihan | | Tidak | Input user | | Finansial |
+| committeeRecommendationAmount, currentInstallment, ujrohMargin, installmentType | Rekomendasi komite, angsuran berjalan, margin ujroh, jenis angsuran | Uang, Persen, Pilihan | | Tidak | Input user | | Finansial |
+| totalExposure | Total eksposur | Uang | | Tidak | Sistem: rumus `LKN_TOTAL_EXPOSURE` | RM-09 | Finansial |
 | recommendation | Rekomendasi surveyor | Teks | | Tidak | Input user | | Internal |
 | status | Status LKN | Pilihan | DRAFT, SUBMITTED | Ya | Sistem | AC-56.03 | Internal |
 
@@ -858,7 +1152,9 @@ Foto KTP tidak disimpan di log; foto disimpan sebagai dokumen KTP pengajuan bila
 | DedupMatrix | nik, dob, pob | Hasil kecocokan exact | Pilihan | MATCH, UNMATCH | Ya | MRTM TRM_DDP |
 | DedupMatrix | fullNameId, motherMaidenName | Hasil kecocokan (AS-IS: `*_Fuzzy`) | Pilihan | MATCH, UNMATCH, FUZZY | Ya | |
 | DedupMatrix | dedupOutcome | Hasil | Pilihan | MATCH, UNMATCH, REVIEW, SKIP | Ya | AC-33.01 |
-| DedupSetting | fuzzyThreshold | Ambang kemiripan % | Angka | 50 s.d. 100 | Ya | AC-33.04 |
+| DedupFieldSetting | fieldCode | Field fuzzy | Pilihan | FULL_NAME_ID, MOTHER_MAIDEN_NAME | Ya | RM-11 |
+| DedupFieldSetting | algorithm | Algoritma kemiripan | Pilihan | LEVENSHTEIN_RATIO (default), JARO_WINKLER, TOKEN_SET_RATIO | Ya | RM-11, FM-11 |
+| DedupFieldSetting | fuzzyThreshold | Ambang kemiripan %; di bawah ambang = UNMATCH, 100 = MATCH | Angka | 50 s.d. 100, default 80 | Ya | AC-33.04 |
 | DedupResult | applicationId, processInstanceId, outcome, matchedApplicationId, ranAt | Hasil cek per pengajuan | Referensi, Pilihan | | Ya | US-59 |
 | DedupCandidate | dedupResultId, candidateApplicationId, nikResult, nameScore, dobResult, pobResult, motherNameScore | Data pembanding | Referensi, Pilihan, Desimal | | Ya | AC-60.03 |
 | DedupReview | dedupResultId, finalOutcome, reviewerUserId, reviewedAt | Keputusan Prescreen Dedup | Pilihan (MATCH, UNMATCH) | | Ya | US-60 |
@@ -867,9 +1163,11 @@ Foto KTP tidak disimpan di log; foto disimpan sebagai dokumen KTP pengajuan bila
 
 | Entity | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
 |---|---|---|---|---|---|---|
-| DukcapilRule | nameWeight, motherNameWeight | Bobot | Persen | Total 100 | Ya | AC-34.02 |
-| DukcapilRule | passedThreshold, reviewThreshold | Ambang | Desimal 0 s.d. 1 | review < passed | Ya | AC-34.03 |
+| DukcapilRule | nameWeight, motherNameWeight | Bobot; satu-satunya sumber nilai ini (PR-07) | Persen | Total 100, default 60 dan 40 | Ya | AC-34.02 |
+| DukcapilRule | notFoundOutcome | Hasil bila NIK tidak ditemukan di sumber data | Pilihan | REVIEW (default), FAILED | Ya | Ref. teknis 11.3, 10.4 |
+| DukcapilRule | passedThreshold, reviewThreshold | Ambang; satu-satunya sumber nilai ini (PR-07) | Desimal 0 s.d. 1 | review < passed, default 0,90 dan 0,75 | Ya | AC-34.01, AC-34.03 |
 | DukcapilResult | applicationId, processInstanceId | Pengajuan | Referensi | | Ya | |
+| DukcapilResult | recordFound, providerCode, providerReference | NIK ditemukan, penyedia, dan rujukan transaksi penyedia | Ya/Tidak, Teks | | Ya | 10.4 |
 | DukcapilResult | dobStatus, pobStatus, fullNameScore, motherNameScore | Hasil per field dari layanan | Pilihan, Desimal | | Ya | MRTM TRM_DKC |
 | DukcapilResult | finalScore, outcome | Skor dan hasil | Desimal, Pilihan (PASSED, REVIEW, FAILED, SKIP) | | Ya | |
 | DukcapilResult | rawResponse, isSuccess, message | Respons layanan | JSON, Ya/Tidak, Teks | | Ya | Kontrak Dukcapil |
@@ -880,8 +1178,12 @@ Foto KTP tidak disimpan di log; foto disimpan sebagai dokumen KTP pengajuan bila
 | Entity | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
 |---|---|---|---|---|---|---|
 | FraudMatrix | nameCondition, ipCondition, riskLevel, fraudOutcome | Aturan | Pilihan | Outcome: CLEAN, SUSPICIOUS, HIGH_FRAUD_POTENTIAL | Ya | MRTM TRM_FRD |
-| FraudSetting | maxApplicationsPerNamePerDay | Batas frekuensi | Angka | 1 s.d. 100 | Ya | AC-35.03 |
-| FraudResult | applicationId, processInstanceId, outcome, isBlacklisted, ipAddress, ipCategory, sameNameCountToday | Hasil cek | Referensi, Pilihan, Ya/Tidak, Teks, Angka | | Ya | US-65 |
+| FraudVelocityRule | dimension | Data yang dihitung | Pilihan | FULL_NAME, ID_CARD_NUMBER, IP_ADDRESS, DEVICE_ID | Ya | RM-14 |
+| FraudVelocityRule | windowValue, windowUnit | Jendela waktu | Angka, Pilihan (MINUTE, HOUR, DAY) | > 0 | Ya | RM-14 |
+| FraudVelocityRule | maxCount | Jumlah maksimal dalam jendela | Angka | 1 s.d. 1.000 | Ya | AC-35.03 |
+| FraudVelocityRule | outcomeWhenExceeded | Hasil bila terlampaui | Pilihan | SUSPICIOUS, HIGH_FRAUD_POTENTIAL | Ya | |
+| FraudVelocityRule | isActive | Aturan dipakai | Ya/Tidak | Default: FULL_NAME lebih dari 3/DAY = HIGH_FRAUD_POTENTIAL (aktif, MRTM TRM_FRD_002); IP_ADDRESS lebih dari 20/HOUR = SUSPICIOUS (nonaktif) | Ya | |
+| FraudResult | applicationId, processInstanceId, outcome, isBlacklisted, ipAddress, ipCategory (NORMAL, VPN_PROXY, LOCATION_MISMATCH, NOT_APPLICABLE), ipProviderCode, velocityHits (aturan yang terlampaui beserta hitungannya) | Hasil cek | Referensi, Pilihan, Ya/Tidak, Teks, Angka | | Ya | US-65 |
 | Blacklist | fullName, idCardNumber, ipAddress, reason, sourceApplicationId, addedBy, addedAt | Daftar hitam | Teks, Referensi | | Ya | AC-66.02 |
 | FraudReview | fraudResultId, decision, notes, reviewerUserId, reviewedAt | Keputusan Prescreen Fraud | Pilihan (CLEAR, REJECT_AND_BLACKLIST), Teks | | Ya | US-66 |
 
@@ -896,6 +1198,7 @@ AS-IS memakai 8 entity DynamicScoring dengan kriteria SQL (`ScoringCriteria.Sql`
 | ScoringModel | modelCode, modelName | Kode dan nama model (AS-IS: `ScoringStrategy`) | Teks | Unik | Ya | |
 | ScoringModel | modelGroup | Jenis | Pilihan | SCORING, RAC (AS-IS: `ModelGroup`) | Ya | |
 | ScoringModel | constant, cutOff | Nilai konstanta dan batas lulus | Angka | | Kondisional: SCORING | US-38 |
+| ScoringModel | reviewLowerBound | Batas bawah hasil Review; skor di antara nilai ini dan cut off = REVIEW. Kosong = tanpa Review | Angka | < cutOff | Tidak | RM-15 |
 | ScoringModel | status | DRAFT, WAITING_APPROVAL, ACTIVE, SUPERSEDED | Pilihan | | Ya | AC-37.05 |
 | ScoringCriterion | modelId, fieldCode, operator, value | Kriteria = field + operator + nilai | Referensi, Pilihan, Teks | Operator: equals, not equals, greater than, greater or equal, less than, less or equal, between, is one of | Ya | AC-37.01, AC-37.03 |
 | ScoringCriterion | weight | Bobot | Angka | -1.000 s.d. 1.000 | Kondisional: SCORING | AC-37.04 |
@@ -904,22 +1207,38 @@ AS-IS memakai 8 entity DynamicScoring dengan kriteria SQL (`ScoringCriteria.Sql`
 | ScoringResult | applicationId, processInstanceId, modelId, modelGroup, totalScore, outcome | Hasil | Referensi, Angka, Pilihan (PASS, FAIL, REVIEW, SKIP) | | Ya | US-67 |
 | ScoringResultDetail | scoringResultId, criterionId, actualValue, isMet, appliedWeight | Rincian per kriteria | Referensi, Teks, Ya/Tidak, Angka | | Ya | AC-38.01 |
 
-Katalog `fieldCode` (field pengajuan yang boleh dipakai kriteria) disusun bersama tim engineer [Konfirmasi].
+`fieldCode` diambil dari katalog variabel yang sama dengan mesin rumus (FormulaVariable), termasuk hasil rumus seperti `DBR_RATIO` (FM-10).
 
-# M10 SLIK
+# M10 Credit Bureau (AS-IS: SLIK)
+
+Modul hibrida: data riwayat kredit dari SLIK OJK atau biro kredit swasta, tafsiran milik Cikal (referensi teknis 10.1, 10.4).
 
 | Entity | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
 |---|---|---|---|---|---|---|
-| SlikResult | applicationId, processInstanceId | Pengajuan | Referensi | | Ya | |
-| SlikResult | collectibility | Kolektibilitas | Angka | 1 s.d. 5, kosong bila tanpa riwayat | Tidak | MRTM TRM_SLK |
-| SlikResult | quality, outcome | Kualitas (GOOD, FAIR, POOR, NO_HISTORY) dan hasil untuk Decision | Pilihan | | Ya | |
-| SlikResult | rawResponse | Respons layanan | JSON | | Ya | |
+| CreditBureauOutcomeMapping | collectibility | Kolektibilitas, atau kosong untuk tanpa riwayat | Angka | 1 s.d. 5 | Tidak | RM-16 |
+| CreditBureauOutcomeMapping | quality, outcome | Kualitas dan hasil untuk Decision | Pilihan | Default sesuai MRTM TRM_SLK: 1 GOOD, 2 FAIR, 3 s.d. 5 POOR, kosong NO_HISTORY | Ya | RM-16 |
+| CreditBureauResult | applicationId, processInstanceId | Pengajuan | Referensi | | Ya | |
+| CreditBureauResult | providerCode, mode | Penyedia dan mode | Teks, Pilihan (SYNC, ASYNC, MANUAL) | | Ya | IN-08 |
+| CreditBureauResult | reportReference, reportDate | Nomor dan tanggal laporan penyedia | Teks, Tanggal | | Kondisional | 10.4 |
+| CreditBureauResult | hasHistory | Debitur punya riwayat kredit | Ya/Tidak | | Ya | |
+| CreditBureauResult | aggregatedCollectibility | Kolektibilitas hasil agregasi fasilitas aktif | Angka | 1 s.d. 5, kosong bila tanpa riwayat | Tidak | `CREDIT_BUREAU_AGGREGATION` |
+| CreditBureauResult | quality, outcome | Kualitas (GOOD, FAIR, POOR, NO_HISTORY) dan hasil untuk Decision | Pilihan | | Ya | MRTM TRM_SLK |
+| CreditBureauResult | reportFileId | Laporan asli (contoh iDeb) | Referensi DocumentFile | | Kondisional: MANUAL wajib | |
+| CreditBureauResult | enteredBy, enteredAt | Petugas yang mengisi pada mode MANUAL | Referensi User, Tanggal-waktu | | Kondisional: MANUAL | |
+| CreditBureauResult | rawResponse | Respons penyedia, terenkripsi | JSON | | Kondisional: SYNC, ASYNC | IN-06 |
+| CreditFacility | creditBureauResultId | Hasil induk | Referensi | | Ya | |
+| CreditFacility | lenderName, facilityType | Pemberi kredit dan jenis fasilitas | Teks | | Ya | |
+| CreditFacility | plafond, outstanding | Plafon dan baki debet | Uang | >= 0 | Ya | |
+| CreditFacility | collectibility, daysPastDue | Kolektibilitas dan hari tunggakan | Angka | 1 s.d. 5; >= 0 | Ya | |
+| CreditFacility | condition, lastUpdated | Kondisi (ACTIVE, CLOSED) dan tanggal data | Pilihan, Tanggal | | Ya | Hanya ACTIVE yang diagregasi |
+
+Mode MANUAL: langkah membuat tugas "Upload Credit Report" untuk role yang ditetapkan; petugas mengunggah laporan dan mengisi fasilitas. Bila fasilitas tidak diisi satu per satu, petugas mengisi minimal satu baris berisi kolektibilitas terburuk.
 
 # M11 Decision Engine
 
 | Entity | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
 |---|---|---|---|---|---|---|
-| DecisionMatrix | dedupOutcome, dukcapilOutcome, fraudOutcome, racOutcome, scoringOutcome, slikOutcome | Kombinasi hasil (AS-IS: `*OutcomesId`, `MainScoringOutcomesId`, `RACScoringOutcomesId`) | Pilihan | Termasuk SKIP | Ya | US-36 |
+| DecisionMatrix | dedupOutcome, dukcapilOutcome, fraudOutcome, racOutcome, scoringOutcome, creditBureauOutcome | Kombinasi hasil (AS-IS: `*OutcomesId`, `MainScoringOutcomesId`, `RACScoringOutcomesId`) | Pilihan | Termasuk SKIP | Ya | US-36 |
 | DecisionMatrix | decisionOutcome | Keputusan | Pilihan | GO, NOTGO | Ya | |
 | DecisionResult | applicationId, processInstanceId, outcomes (6 hasil), decisionOutcome, matrixRowId, description | Keputusan per pengajuan (AS-IS: `Decision`) | Referensi, Pilihan, Teks | | Ya | US-69, AC-36.03 |
 | Recontest | applicationId, fromProcessInstanceId, toProcessInstanceId, reason, changedFields, requestedBy, requestedAt | Riwayat recontest | Referensi, Teks, JSON | | Ya | US-71 |
@@ -934,7 +1253,16 @@ Katalog `fieldCode` (field pengajuan yang boleh dipakai kriteria) disusun bersam
 | daysRemaining | Sisa hari KUR aktif di lembaga lain | Angka | | Ya | AC-70.01, AC-70.02 |
 | registryNumber, plafond, isSubsidized, subsidizedAmount, isLinkage, linkage | Data SIKP (bagian `Data` respons) | Teks, Uang, Ya/Tidak | | Tidak | |
 | outcome | GO, NOTGO | Pilihan | | Ya | |
+| providerCode | Adapter yang dipakai | Teks | | Ya | IN-06 |
+| outcomeRuleId | Baris aturan yang menentukan hasil | Referensi SikpOutcomeRule | | Ya | RM-17 |
 | rawResponse | Respons lengkap (memuat identitas, alamat, NPWP, telepon) | JSON | | Ya | Sensitivitas PII |
+
+| Atribut (SikpOutcomeRule) | Definisi | Tipe | Domain | Wajib | Aturan |
+|---|---|---|---|---|---|
+| responseCode | Kode respons SIKP | Teks | Contoh 07, 12, 15 | Ya | RM-17 |
+| daysRemainingCondition | Kondisi sisa hari | Pilihan | ANY, GREATER_THAN_ZERO, ZERO_OR_LESS | Ya | |
+| outcome | Hasil | Pilihan | GO, NOTGO | Ya | Default: 07 GO; 12 GO; 15 + GREATER_THAN_ZERO NOTGO; 15 + ZERO_OR_LESS GO |
+| priority | Urutan evaluasi; baris pertama yang cocok dipakai | Angka | Unik | Ya | |
 
 # M13 Kredit Pensiun
 
@@ -946,6 +1274,7 @@ Katalog `fieldCode` (field pengajuan yang boleh dipakai kriteria) disusun bersam
 | pensionAmount | Manfaat pensiun | Uang | Kondisional | | Finansial |
 | edapemDate | Tanggal data EDAPEM | Tanggal | Kondisional | | Internal |
 | found, verifiedAt | Hasil dan waktu | Ya/Tidak, Tanggal-waktu | Ya | AC-42.02 | Internal |
+| institution, providerCode, dataDate | Lembaga (TASPEN, ASABRI), adapter, dan tanggal data | Pilihan, Teks, Tanggal | Ya | 10.4 | Internal |
 
 # M14 E-Polis
 
@@ -953,10 +1282,13 @@ Katalog `fieldCode` (field pengajuan yang boleh dipakai kriteria) disusun bersam
 |---|---|---|---|---|---|
 | applicationId | Pengajuan | Referensi | | Ya | |
 | insuranceId | Asuransi | Referensi | | Ya | |
-| ijkValue | Nilai premi | Uang | > 0 | Ya | AC-75.02, AC-75.03, Asumsi A-23 |
+| ijkSource | Asal nilai IJK, mengikuti `IJK_SOURCE` saat diminta | Pilihan | FORMULA, MANUAL, INSURER | Ya | RM-18 |
+| ijkValue | Nilai premi; dari rumus `IJK_AMOUNT`, input petugas, atau respons asuransi | Uang | > 0 | Ya | AC-75.02, AC-75.03, Asumsi A-23 |
 | policyNumber | Nomor polis | Teks | | Kondisional: terbit | AC-75.01 |
 | requestedAt, requestedBy | Waktu dan petugas | Tanggal-waktu, Referensi | | Ya | Batas bawah tanggal pencairan (AC-76.03) |
-| status | REQUESTED, ISSUED, FAILED | Pilihan | | Ya | AC-75.04 |
+| status | REQUESTED, PENDING, ISSUED, REJECTED, FAILED (gagal teknis) | Pilihan | | Ya | AC-75.04, 10.4 |
+| providerCode, externalReference | Adapter asuransi dan rujukan transaksi | Teks | | Kondisional | IN-02, IN-08 |
+| policyFileId, rejectReason | File polis dan alasan penolakan | Referensi DocumentFile, Teks | | Kondisional | 10.4 |
 
 # M15 Pencairan & Core
 
@@ -999,7 +1331,9 @@ AS-IS menerima file teks berisi baris berformat `<JENIS>*<referensi>|<urutan>|<S
 
 | Atribut | Definisi | Tipe | Wajib | Aturan |
 |---|---|---|---|---|
-| loanId | Loan ID dari file | Teks | Ya | |
+| loanId | Loan ID dari respons | Teks | Ya | |
+| providerCode, channel | Adapter core dan cara respons diterima (CALLBACK, FILE, POLLING) | Teks, Pilihan | Ya | IN-15 |
+| coreLoanAccount | Nomor rekening pinjaman di core | Teks | Kondisional: SUKSES | Sensitivitas Finansial |
 | fileReceivedDate, applicationName, branchCode, productCode, sequence | Metadata file | Tanggal, Teks, Angka | Ya | Core Document Detail AS-IS |
 | disburseDate | Tanggal cair | Tanggal | Kondisional: SUKSES | |
 | cif | CIF dari core | Teks | Kondisional | Sensitivitas PII |
@@ -1009,17 +1343,36 @@ AS-IS menerima file teks berisi baris berformat `<JENIS>*<referensi>|<urutan>|<S
 | processingStatus | APPLIED, IGNORED_NOT_WAITING, DUPLICATE | Pilihan | Ya | AC-80.03, AC-80.04 |
 | fileId | File asli | Referensi DocumentFile | Ya | |
 
+# M16 Name Screening [Usulan]
+
+Screening APU-PPT terhadap daftar DTTOT dan DPPSPM. Tidak ada di LOS OS11 (referensi teknis 10.1, TO-14).
+
+| Entity | Atribut | Definisi | Tipe | Domain | Wajib | Aturan |
+|---|---|---|---|---|---|---|
+| ScreeningSetting | matchThreshold | Skor minimal yang dianggap hit (`SCREENING_THRESHOLD`) | Desimal | 0 s.d. 1, default 0,85 | Ya | 10.4 |
+| ScreeningSetting | algorithm | Algoritma kemiripan nama | Pilihan | LEVENSHTEIN_RATIO, JARO_WINKLER (default), TOKEN_SET_RATIO | Ya | FM-11 |
+| ScreeningList | listCode, listName | Daftar (DTTOT, DPPSPM, INTERNAL) | Pilihan, Teks | | Ya | |
+| ScreeningList | sourceFileId, importedAt, importedBy, entryCount | Impor terakhir | Referensi, Tanggal-waktu, Referensi, Angka | Impor baru menggantikan seluruh isi daftar, lewat checker-maker | Kondisional | |
+| ScreeningListEntry | listId, entryReference, fullName, aliases, dateOfBirth, placeOfBirth, nationality, idNumber | Isi daftar | Referensi, Teks, Tanggal | | fullName Ya | Sensitivitas PII |
+| ScreeningResult | applicationId, processInstanceId, providerCode, outcome | Hasil | Referensi, Teks, Pilihan (CLEAR, POTENTIAL_MATCH, CONFIRMED_MATCH, FALSE_POSITIVE) | | Ya | |
+| ScreeningHit | screeningResultId, listCode, entryReference, matchedName, score | Kandidat hit | Referensi, Pilihan, Teks, Desimal | | Ya | |
+| ScreeningReview | screeningResultId, decision, notes, reviewerUserId, reviewedAt | Keputusan Compliance Officer | Referensi, Pilihan (CONFIRMED_MATCH, FALSE_POSITIVE), Teks (maks 1.000, wajib), Referensi, Tanggal-waktu | | Ya | DEP-11 |
+
+CONFIRMED_MATCH mengakhiri proses (FINISHED_REJECTED). Pelaporan ke PPATK dilakukan di luar Cikal.
+
 ---
 
 ## Hal yang perlu dikonfirmasi
 
-| ID | Hal |
-|---|---|
-| DD-01 | Rumus struktur kredit: provisi, nilai cair bersih (`initial_disburs`), komponen yang dipotong |
-| DD-02 | IJK dihitung sistem dari tabel tarif usia x tenor, atau diisi petugas (Asumsi A-23) |
-| DD-03 | Arti flag AS-IS `ScoringApproval`, `IsPaylater`, `UsiaMaksimumMonth` dan apakah dibawa ke Cikal |
-| DD-04 | Rumus field LKN turunan (businessProfit, DOH, working investment) |
-| DD-05 | Katalog field yang boleh dipakai kriteria scoring |
-| DD-06 | Field mandatory Emergency Contact dan mobileNumber pemohon |
-| DD-07 | Retensi data pengajuan dan dokumen kredit |
-| DD-08 | Doc BA US-20 perlu AC untuk SubProduct (suku bunga per periode) |
+Setiap butir punya default sementara agar pembangunan tidak tertahan.
+
+| ID | Hal | Default sementara |
+|---|---|---|
+| DD-01 | Tinjauan rumus default struktur kredit (`ADMIN_FEE_AMOUNT`, `PROVISION_FEE_AMOUNT`, `SALES_FEE_AMOUNT`, `NET_DISBURSEMENT`) | Rumus default RM-07; configurable per tenant |
+| DD-02 | Nilai `IJK_SOURCE` untuk tenant pertama | FORMULA |
+| DD-03 | Arti flag AS-IS `ScoringApproval`, `IsPaylater`, `UsiaMaksimumMonth` | `UsiaMaksimumMonth` dipakai rumus `AGE_AT_MATURITY_MONTH`. `scoringApproval` dan `isPaylater` disimpan tanpa perilaku sampai ada AC |
+| DD-04 | Tinjauan rumus default LKN (RM-09, RM-10) dan basis hari DOH | Rumus default RM-09, RM-10; `LKN_DAY_BASIS` = 30 |
+| DD-05 | Isi awal katalog variabel (FormulaVariable) | Semua atribut Application dan turunannya, Product, SubProduct, Financing, serta hasil rumus; `usableInScoring` = Ya kecuali atribut Rahasia |
+| DD-06 | Field mandatory Emergency Contact dan mobileNumber pemohon | Emergency Contact wajib saat submit (AC-48); mobileNumber pemohon tidak wajib |
+| DD-07 | Retensi data pengajuan dan dokumen kredit | 10 tahun sejak pengajuan selesai, mengikuti kewajiban penyimpanan dokumen keuangan perusahaan [Usulan] |
+| DD-08 | Doc BA US-20 perlu AC untuk SubProduct (suku bunga per periode) | SubProduct dikelola di form Product dan ikut checker-maker Product |

@@ -40,9 +40,11 @@ flowchart LR
     PI --> DK[M07 DukcapilResult]
     PI --> FR[M08 FraudResult]
     PI --> SC[M09 ScoringResult]
-    PI --> SL[M10 SlikResult]
+    PI --> SL[M10 CreditBureauResult]
+    PI --> NS[M16 ScreeningResult]
     DKX[Layanan Dukcapil] --> DK
-    SLX[Layanan SLIK] --> SL
+    SLX[SLIK OJK atau biro kredit] --> SL
+    NSX[Daftar DTTOT dan DPPSPM] --> NS
     DD --> DE[M11 DecisionResult]
     DK --> DE
     FR --> DE
@@ -79,12 +81,15 @@ Tanpa modul tertentu, langkahnya dilewati (StepExecution SKIPPED) dan hasilnya t
 | Hasil Dukcapil | Layanan Dukcapil | Skor nama x bobot + skor ibu x bobot, ambang | DecisionResult | Per proses |
 | Hasil Fraud | Application + IP + Blacklist | Frekuensi nama per hari, kategori IP, matriks | DecisionResult, Blacklist | Per proses |
 | Skor dan RAC | Application + ScoringModel | Kriteria terpenuhi x bobot + konstanta vs cut off | DecisionResult | Per proses |
-| Kolektibilitas | Layanan SLIK | Kolektibilitas 1-5 menjadi kualitas | DecisionResult | Per proses |
+| Kolektibilitas | SLIK OJK atau biro kredit (API) atau laporan iDeb (MANUAL) | Agregasi fasilitas aktif, lalu CreditBureauOutcomeMapping | DecisionResult | Per proses |
+| Hasil screening | Daftar DTTOT dan DPPSPM hasil impor | Kemiripan nama terhadap ambang | ScreeningResult, Application (bila dikonfirmasi) | Per proses |
+| Log integrasi | Semua panggilan adapter | PII disamarkan | IntegrationCallLog | Real-time |
 | Keputusan | 6 hasil pemeriksaan | Lookup DecisionMatrix | Approval atau Recontest | Per proses |
-| Status KUR | Layanan SIKP | Kode 07/12/15 + sisa hari menjadi GO/NOTGO | ApplicationApproval | Per proses, KUR >= batas |
+| Status KUR | Layanan SIKP | Kode 07/12/15 + sisa hari menjadi GO/NOTGO | ApplicationApproval | Per proses, KUR dengan limit > batas SIKP |
 | Rantai approver | ApprovalLevel + ApprovalHierarchy | Nominal menentukan level s.d. final approver | HumanTask, ApplicationApproval | Per proses |
-| Struktur kredit | Application + Product + SubProduct | Rumus angsuran per jenis bunga (TRM_INS) | Installment, akad, DisbursementFile | Saat approval selesai, ulang setelah e-polis |
-| IJK | InsuranceRate atau input petugas | Usia x tenor x plafon (bila dihitung sistem) | Financing, Policy | Saat e-polis |
+| Struktur kredit | Application + Product + SubProduct + FormulaVersion | Angsuran per jenis bunga (TRM_INS); biaya, nilai cair bersih, DBR lewat rumus configurable (RM-07, RM-08) | Installment, akad, DisbursementFile, FormulaExecutionLog | Saat approval selesai, ulang setelah e-polis |
+| IJK | Rumus `IJK_AMOUNT` + InsuranceRate, input petugas, atau respons asuransi (`IJK_SOURCE`) | Default: plafon x tarif(usia, tahun tenor) | Financing, Policy, FormulaExecutionLog | Saat e-polis |
+| Hasil LKN | Input surveyor + FormulaVersion | Rumus configurable RM-09, RM-10 | SurveyMikro, SurveyKpr, kriteria scoring | Saat LKN disimpan |
 | File pencairan | Application + Collateral + Financing + Installment | Pemetaan ke format FAST | Core Banking | Saat Validity Check Valid |
 | Status akhir | CoreResponse | SUKSES menjadi DISBURSED; GAGAL menjadi RECONTEST | Application, notifikasi | Saat file core diterima |
 | Jejak perubahan | Semua aksi user | Data lama + baru dalam JSON | AuditLog | Real-time |
