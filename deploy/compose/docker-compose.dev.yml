@@ -36,10 +36,11 @@ services:
     image: chrislusf/seaweedfs:3.97
     depends_on:
       - storage
-    # weed shell keluar 0 walau filer belum siap, jadi ulangi sampai bucket benar-benar terdaftar.
+    # weed shell keluar 0 walau filer belum siap, dan bisa menggantung bila master belum terpilih;
+    # batasi tiap percobaan 15 detik dan ulangi sampai bucket benar-benar terdaftar.
     entrypoint: >
-      /bin/sh -c "until echo 's3.bucket.list' | weed shell -master=storage:9333 -filer=storage:8888 2>/dev/null | grep -q cikal-dev;
-      do echo 's3.bucket.create -name cikal-dev' | weed shell -master=storage:9333 -filer=storage:8888; sleep 2; done"
+      /bin/sh -c "until echo 's3.bucket.list' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888 2>/dev/null | grep -q cikal-dev;
+      do echo 's3.bucket.create -name cikal-dev' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888; sleep 2; done"
 
   gotenberg:
     image: gotenberg/gotenberg:8.20.1
