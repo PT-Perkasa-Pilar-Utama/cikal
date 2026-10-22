@@ -702,9 +702,9 @@ Kolom `token_number` dan `token_expired_at` (data dictionary) tidak dibuat sampa
 | MS-02 | Runner menemukan folder migrasi relatif terhadap folder modul (`import.meta.dirname`), tidak pernah lewat path absolut |
 | MS-03 | Connection string runner dibaca dari `DATABASE_MIGRATION_URL` (role pemilik skema `cikal_owner`); `api` dan `worker` memakai `DATABASE_URL` (role `cikal_app` tanpa `BYPASSRLS`). Tidak pernah ditulis di kode |
 | MS-04 | Migrasi dijalankan per modul berlisensi dalam urutan dependensi (CORE dulu), masing-masing dengan tabel ledger `__migrations` di skemanya |
-| MS-05 | Perintah tetap: `node dist/platform/migrate/run.js migrate` dan `node dist/platform/migrate/run.js seed --seed=dev|qa`; di repo lewat `pnpm --filter api db:migrate` dan `db:seed` |
+| MS-05 | Perintah tetap: `node dist/platform/migrate/run.js migrate`, `node dist/platform/migrate/run.js seed --seed=base|dev|qa`, dan `node dist/platform/migrate/run.js reset --seed=dev|qa` (ditolak bila `APP_ENV=production`); di repo lewat `pnpm --filter @cikal/api db:migrate`, `db:seed`, dan `db:reset`. Setelah migrasi per skema, runner memberi role aplikasi (user di `DATABASE_URL`) hak `USAGE` dan DML, termasuk default privileges |
 | MS-06 | Dilarang: path absolut, connection string di kode, membaca dan menjalankan satu file `.sql` di luar ledger. Cara itu gagal di image distroless |
-| MS-07 | Seed `dev` dan `qa` terpisah, idempoten (`INSERT ... ON CONFLICT DO NOTHING`), di-commit, per modul di `<modul>/seed/`. Seed `qa` berisi data uji kartu wiring dan MRTM |
+| MS-07 | Seed berlapis `base`, `dev`, `qa`, idempoten (`INSERT ... ON CONFLICT DO NOTHING`), di-commit, per modul di `<modul>/seed/` dan didaftarkan lewat `<modul>.data.ts`. `base` berisi data acuan tanpa user dan nasabah (production); `dev` = `base` + company 001 dan user per role; `qa` = `dev` + data uji kartu wiring dan MRTM. Satu transaksi untuk semua modul |
 
 ```ts
 // apps/api/src/platform/migrate/run.ts

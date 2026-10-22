@@ -33,13 +33,20 @@ for (const code of manifest.modules) {
   entries.push(...modules);
 }
 
+// `IdentityModule` -> `identityData`: kontrak migrasi dan seed yang diekspor index.ts modul (technical-specs 06 §6.12).
+const dataName = (className) => className.charAt(0).toLowerCase() + className.slice(1).replace(/Module$/, "Data");
+
 const lines = [
   `// Dibangkitkan oleh tools/package-builder dari ${values.manifest.replaceAll("\\", "/")}. Jangan diubah manual.`,
-  ...entries.map((e) => `import { ${e.className} } from "${e.importPath}";`),
+  `import type { ModuleData } from "./platform/migrate/module-data.js";`,
+  ...entries.map((e) => `import { ${e.className}, ${dataName(e.className)} } from "${e.importPath}";`),
   "",
   `export const licensedModuleCodes = ${JSON.stringify(manifest.modules)} as const;`,
   "",
   `export const licensedModules = [${entries.map((e) => e.className).join(", ")}];`,
+  "",
+  "/** Urutan dependensi dari module-registry.json: CORE dasar lebih dulu, modul tambahan terakhir (MS-04). */",
+  `export const licensedModuleData: readonly ModuleData[] = [${entries.map((e) => dataName(e.className)).join(", ")}];`,
   "",
 ];
 writeFileSync(resolve(values.out), lines.join("\n"));

@@ -12,7 +12,9 @@ describe("GET /api/health/ready", () => {
 
   beforeAll(async () => {
     container = await new PostgreSqlContainer("postgres:17-alpine").start();
-    app = await createApp(testConfig({ database: { url: container.getConnectionUri(), poolMax: 2 } }));
+    app = await createApp(
+      testConfig({ database: { url: container.getConnectionUri(), migrationUrl: null, poolMax: 2 } }),
+    );
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });

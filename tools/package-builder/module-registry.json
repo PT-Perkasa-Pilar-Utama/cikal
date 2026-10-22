@@ -1,16 +1,28 @@
 {
   "CORE": [
     {
-      "className": "IdentityModule",
-      "importPath": "./modules/core/identity/index.js"
-    },
-    {
       "className": "TenancyModule",
       "importPath": "./modules/core/tenancy/index.js"
     },
     {
+      "className": "AuditModule",
+      "importPath": "./modules/core/audit/index.js"
+    },
+    {
       "className": "OrganizationModule",
       "importPath": "./modules/core/organization/index.js"
+    },
+    {
+      "className": "IdentityModule",
+      "importPath": "./modules/core/identity/index.js"
+    },
+    {
+      "className": "ChangeRequestModule",
+      "importPath": "./modules/core/change-request/index.js"
+    },
+    {
+      "className": "IntegrationModule",
+      "importPath": "./modules/core/integration/index.js"
     },
     {
       "className": "MasterDataModule",
@@ -21,32 +33,28 @@
       "importPath": "./modules/core/product/index.js"
     },
     {
-      "className": "ChangeRequestModule",
-      "importPath": "./modules/core/change-request/index.js"
-    },
-    {
-      "className": "AuditModule",
-      "importPath": "./modules/core/audit/index.js"
-    },
-    {
-      "className": "NotificationModule",
-      "importPath": "./modules/core/notification/index.js"
+      "className": "CalculationModule",
+      "importPath": "./modules/core/calculation/index.js"
     },
     {
       "className": "DocumentModule",
       "importPath": "./modules/core/document/index.js"
     },
     {
+      "className": "NotificationModule",
+      "importPath": "./modules/core/notification/index.js"
+    },
+    {
       "className": "ApplicationModule",
       "importPath": "./modules/core/application/index.js"
     },
     {
-      "className": "OrchestratorModule",
-      "importPath": "./modules/core/orchestrator/index.js"
-    },
-    {
       "className": "TaskQueueModule",
       "importPath": "./modules/core/task-queue/index.js"
+    },
+    {
+      "className": "OrchestratorModule",
+      "importPath": "./modules/core/orchestrator/index.js"
     },
     {
       "className": "VerificationModule",
@@ -55,14 +63,6 @@
     {
       "className": "ApprovalModule",
       "importPath": "./modules/core/approval/index.js"
-    },
-    {
-      "className": "IntegrationModule",
-      "importPath": "./modules/core/integration/index.js"
-    },
-    {
-      "className": "CalculationModule",
-      "importPath": "./modules/core/calculation/index.js"
     },
     {
       "className": "ReportingModule",

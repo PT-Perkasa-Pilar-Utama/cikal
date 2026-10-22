@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/Docs", "!**/*.generated.ts", "!**/routeTree.gen.ts", "!**/drizzle"]
+    "includes": ["**", "!**/Docs", "!**/*.generated.ts", "!**/routeTree.gen.ts", "!**/drizzle", "!**/db/migrations"]
   },
   "formatter": {
     "enabled": true,

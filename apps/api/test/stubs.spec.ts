@@ -153,6 +153,21 @@ describe("Sprint 1 stubs", () => {
     expect(res.json()).toEqual({ status: "ok" });
   });
 
+  it("serves Prometheus metrics to internal callers with request durations (api-specs 27 §27.3)", async () => {
+    await app.inject({ method: "GET", url: "/api/health/live" });
+    const res = await app.inject({ method: "GET", url: "/api/metrics" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toContain("text/plain");
+    expect(res.body).toContain(
+      'http_request_duration_seconds_count{method="GET",route="/api/health/live",status_code="200"}',
+    );
+  });
+
+  it("rejects external metrics callers without the monitoring token", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/metrics", remoteAddress: "203.0.113.5" });
+    expect(res.statusCode).toBe(401);
+  });
+
   it("does not register reset-state when the configuration does not allow it", async () => {
     const res = await app.inject({ method: "POST", url: "/api/admin/reset-state", payload: {} });
     expect(res.statusCode).toBe(404);
@@ -163,7 +178,16 @@ describe("reset-state when enabled (api-specs 27 §27.4)", () => {
   let app: NestFastifyApplication;
 
   beforeAll(async () => {
-    app = await createApp(testConfig({ resetApi: { token: "reset-test-token" } }));
+    app = await createApp(
+      testConfig({
+        database: {
+          url: "postgres://cikal:cikal@127.0.0.1:1/cikal",
+          migrationUrl: "postgres://owner@127.0.0.1:1/cikal",
+          poolMax: 2,
+        },
+        resetApi: { token: "reset-test-token", defaultSeed: "qa" },
+      }),
+    );
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
   });
@@ -182,12 +206,14 @@ describe("reset-state when enabled (api-specs 27 §27.4)", () => {
     expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("RESET_TOKEN_INVALID");
   });
 
-  it("is routed with a valid token", async () => {
+  it("validates the seed before touching the database", async () => {
     const res = await app.inject({
       method: "POST",
       url: "/api/admin/reset-state",
       headers: { "x-reset-token": "reset-test-token" },
+      payload: { seed: "base" },
     });
-    expect(res.statusCode).toBe(501);
+    expect(res.statusCode).toBe(400);
+    expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("VALIDATION_FAILED");
   });
 });
