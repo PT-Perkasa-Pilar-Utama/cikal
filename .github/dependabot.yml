@@ -1,0 +1,27 @@
+# Pembaruan dependensi mingguan (technical-specs 04 §4.10 VP-03). Versi major lewat ADR, jadi dikelompokkan terpisah.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    labels: ["type:chore", "area:infra"]
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    labels: ["type:chore", "area:infra"]
+    groups:
+      actions:
+        patterns: ["*"]
