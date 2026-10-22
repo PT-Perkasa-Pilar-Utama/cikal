@@ -1,9 +1,9 @@
 import type { ResetSeed, ResetStateResponse } from "@cikal/contracts";
 import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
 import pg from "pg";
-import { licensedModuleData } from "../../licensed-modules.generated.js";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
 import { DomainError } from "../http/domain-error.js";
+import { installedModuleData } from "../migrate/installed-modules.js";
 import { appRoleFor, ResetInProgressError, resetState } from "../migrate/runner.js";
 import { StorageService } from "../storage/storage.module.js";
 import { OpsSignals } from "./ops-signals.js";
@@ -33,7 +33,7 @@ export class ResetService implements OnModuleDestroy {
       return await resetState({
         appEnv: this.config.appEnv,
         pool: this.pool,
-        modules: licensedModuleData,
+        modules: installedModuleData,
         appRole: appRoleFor(this.config.database.url, migrationUrl),
         seed: seed ?? this.config.resetApi.defaultSeed,
         emptyBucket: () => this.storage.emptyBucket(),

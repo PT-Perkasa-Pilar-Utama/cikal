@@ -1,9 +1,9 @@
 import type { HealthStatus, ReadyResponse } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
 import type pg from "pg";
-import { licensedModuleData } from "../../licensed-modules.generated.js";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
-import { DB_POOL } from "../db/database.module.js";
+import { DB_POOL } from "../db/database.js";
+import { installedModuleData } from "../migrate/installed-modules.js";
 import { latestMigration } from "../migrate/runner.js";
 import { StorageService } from "../storage/storage.module.js";
 import { OpsSignals } from "./ops-signals.js";
@@ -71,7 +71,7 @@ export class HealthService {
     signal.addEventListener("abort", onAbort, { once: true });
     try {
       await client.query("select 1");
-      return await latestMigration(client, licensedModuleData);
+      return await latestMigration(client, installedModuleData);
     } finally {
       signal.removeEventListener("abort", onAbort);
       if (!signal.aborted) client.release();

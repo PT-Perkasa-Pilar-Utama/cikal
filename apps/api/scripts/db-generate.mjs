@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Membangkitkan migrasi SQL satu modul dari db/schema.ts-nya (technical-specs 06 §6.12 MS-01).
-// Pemakaian (dari apps/api): pnpm db:generate <modul> [nama-migrasi]
+// Pemakaian (dari apps/api): pnpm db:generate <modul|platform> [nama-migrasi]
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
@@ -13,11 +13,14 @@ if (!moduleName) {
 }
 
 const apiDir = join(dirname(fileURLToPath(import.meta.url)), "..");
-const moduleDir = ["core", "addons"]
-  .map((group) => join(apiDir, "src", "modules", group, moduleName))
-  .find((dir) => existsSync(join(dir, "db", "schema.ts")));
+// `platform` adalah skema infrastruktur bersama di src/platform (technical-specs 05 §5.0).
+const candidates =
+  moduleName === "platform"
+    ? [join(apiDir, "src", "platform")]
+    : ["core", "addons"].map((group) => join(apiDir, "src", "modules", group, moduleName));
+const moduleDir = candidates.find((dir) => existsSync(join(dir, "db", "schema.ts")));
 if (!moduleDir) {
-  console.error(`Module ${moduleName} has no db/schema.ts under src/modules/core or src/modules/addons`);
+  console.error(`Module ${moduleName} has no db/schema.ts under src/platform, src/modules/core, or src/modules/addons`);
   process.exit(1);
 }
 

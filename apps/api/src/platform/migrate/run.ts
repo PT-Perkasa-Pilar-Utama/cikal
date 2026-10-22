@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { parseArgs } from "node:util";
 import pg from "pg";
-import { licensedModuleData } from "../../licensed-modules.generated.js";
 import { loadConfig } from "../config/config.js";
 import { createS3Client, emptyBucket } from "../storage/storage.module.js";
+import { installedModuleData } from "./installed-modules.js";
 import type { SeedName } from "./module-data.js";
 import { appRoleFor, migrateModules, resetState, seedModules } from "./runner.js";
 
@@ -40,13 +40,13 @@ const pool = new pg.Pool({ connectionString: migrationUrl, max: 2 });
 try {
   switch (command) {
     case "migrate": {
-      const applied = await migrateModules(pool, licensedModuleData, appRole);
-      console.log(`Applied ${applied} migration(s) across ${licensedModuleData.length} licensed modules`);
+      const applied = await migrateModules(pool, installedModuleData, appRole);
+      console.log(`Applied ${applied} migration(s) across ${installedModuleData.length} schemas`);
       break;
     }
     case "seed": {
       const seed = seedArg(["base", "dev", "qa"]);
-      await seedModules(pool, licensedModuleData, seed);
+      await seedModules(pool, installedModuleData, seed);
       console.log(`Seed ${seed} applied`);
       break;
     }
@@ -58,7 +58,7 @@ try {
       const result = await resetState({
         appEnv: config.appEnv,
         pool,
-        modules: licensedModuleData,
+        modules: installedModuleData,
         appRole,
         seed,
         emptyBucket: () => emptyBucket(s3, config.storage.bucket),

@@ -1,7 +1,7 @@
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { licensedModuleData } from "../src/licensed-modules.generated.js";
+import { installedModuleData } from "../src/platform/migrate/installed-modules.js";
 import type { OpsSignal } from "../src/platform/migrate/runner.js";
 import {
   latestMigration,
@@ -41,15 +41,15 @@ describe("migrate runner", () => {
     await container?.stop();
   });
 
-  it("applies each licensed module's migrations once and records them in the module ledger", async () => {
-    expect(await migrateModules(owner, licensedModuleData, "cikal_app")).toBe(1);
-    expect(await migrateModules(owner, licensedModuleData, "cikal_app")).toBe(0);
-    expect(await latestMigration(app, licensedModuleData)).toBe("tenancy/0000_init");
+  it("applies the platform and each licensed module's migrations once and records them in the module ledger", async () => {
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(3);
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(0);
+    expect(await latestMigration(app, installedModuleData)).toBe("iam/0000_init");
   });
 
   it("applies seed layers idempotently", async () => {
-    await seedModules(owner, licensedModuleData, "qa");
-    await seedModules(owner, licensedModuleData, "qa");
+    await seedModules(owner, installedModuleData, "qa");
+    await seedModules(owner, installedModuleData, "qa");
     expect(await listTenants(owner)).toEqual(["001"]);
   });
 
@@ -71,13 +71,13 @@ describe("migrate runner", () => {
     const result = await resetState({
       appEnv: "test",
       pool: owner,
-      modules: licensedModuleData,
+      modules: installedModuleData,
       appRole: "cikal_app",
       seed: "qa",
       emptyBucket: async () => 3,
     });
 
-    expect(result).toMatchObject({ seed: "qa", migrationsApplied: 1, tenantsSeeded: ["001"], bucketObjectsDeleted: 3 });
+    expect(result).toMatchObject({ seed: "qa", migrationsApplied: 3, tenantsSeeded: ["001"], bucketObjectsDeleted: 3 });
     await expect(app.query("select company_code from tenancy.companies")).resolves.toMatchObject({ rowCount: 1 });
     await new Promise((resolve) => setTimeout(resolve, 500));
     await stop();
@@ -92,7 +92,7 @@ describe("migrate runner", () => {
         resetState({
           appEnv: "test",
           pool: owner,
-          modules: licensedModuleData,
+          modules: installedModuleData,
           appRole: "cikal_app",
           seed: "qa",
           emptyBucket: async () => 0,
@@ -109,7 +109,7 @@ describe("migrate runner", () => {
       resetState({
         appEnv: "production",
         pool: owner,
-        modules: licensedModuleData,
+        modules: installedModuleData,
         appRole: null,
         seed: "qa",
         emptyBucket: async () => 0,

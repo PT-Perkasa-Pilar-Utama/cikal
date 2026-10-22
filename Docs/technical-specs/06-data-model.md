@@ -17,6 +17,7 @@ Model fisik PostgreSQL 17, diturunkan dari `Docs/ba/data-dictionary.md`. Nama en
 | DM-09 | Row-Level Security aktif di setiap tabel ber-`tenant_id`: `USING (tenant_id = current_setting('app.tenant_id')::uuid)` untuk `SELECT`, `INSERT`, `UPDATE`, `DELETE`. Role aplikasi tidak punya `BYPASSRLS` |
 | DM-10 | Foreign key mengikuti XM-05: modul ke CORE boleh; CORE ke modul tambahan dan antar modul tambahan tidak boleh |
 | DM-11 | Kolom `version_number int` + `status` untuk data berversi (rute, rumus, parameter, integrasi, model scoring); hanya satu baris `ACTIVE` per kunci, dijaga indeks unik parsial `WHERE status = 'ACTIVE'` |
+| DM-12 | Pencarian pra-tenant: tabel yang harus dibaca sebelum tenant diketahui punya policy `SELECT` kedua yang hanya membuka baris dengan kunci rahasia yang diketahui pemanggil, dipasang per transaksi lewat `set_config`: `iam.sessions` lewat `app.session_token_hash` (hex SHA-256 cookie), `iam.users` lewat `app.login_username` (BE-S1-01). Policy dibangkitkan `db:generate` dari `pgPolicy`; tidak ada role `BYPASSRLS` atau fungsi `SECURITY DEFINER` |
 
 ## 6.2 ERD (ringkas, antar modul)
 
@@ -60,6 +61,19 @@ erDiagram
 | payload | jsonb | no | | | tanpa field sensitif |
 | published_at | timestamptz | yes | | | null = belum dikirim |
 | attempts | int | no | 0 | | |
+
+### IDEMPOTENCY_KEYS
+Kunci `Idempotency-Key` per user selama 24 jam (`../api-specs/01-conventions.md` 1.7). Skema `platform` dimigrasi sebelum modul mana pun, jadi `tenant_id` dan `user_id` di tabel `platform` tidak memakai foreign key.
+
+| column | type | nullable | default | key | notes |
+|---|---|---|---|---|---|
+| id | uuid | no | | PK | |
+| user_id | uuid | no | | UQ(user_id, idempotency_key) | |
+| idempotency_key | uuid | no | | | header dari klien |
+| request_hash | bytea | no | | | SHA-256 metode, path, dan body |
+| response_status | int | yes | | | null = permintaan pertama masih diproses |
+| response_body | jsonb | yes | | | body sukses pertama untuk ulangan |
+| expires_at | timestamptz | no | | | dibuat + 24 jam; baris kedaluwarsa diganti saat kunci dipakai lagi |
 
 ### TENANT_KEYS
 | column | type | nullable | default | key | notes |

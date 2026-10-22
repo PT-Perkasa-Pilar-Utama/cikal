@@ -3,7 +3,10 @@ import { check, jsonb, pgSchema, text, timestamp, uuid } from "drizzle-orm/pg-co
 
 export const tenancy = pgSchema("tenancy");
 
-/** COMPANIES (UI label: "Company"), technical-specs 06. `id` menjadi `tenant_id` bagi tabel lain. */
+/**
+ * COMPANIES (UI label: "Company"), technical-specs 06. `id` menjadi `tenant_id` bagi tabel lain. Diekspor lewat
+ * `index.ts` hanya untuk foreign key `tenant_id` (XM-05); modul lain tidak membaca tabel ini (XM-02).
+ */
 export const companies = tenancy.table(
   "companies",
   {
