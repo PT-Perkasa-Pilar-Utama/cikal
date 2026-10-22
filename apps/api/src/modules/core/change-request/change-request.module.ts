@@ -4,6 +4,7 @@ import { ApproveChangeRequestUseCase } from "./application/approve-change-reques
 import { ChangeRequestRegistry } from "./application/change-request-registry.js";
 import { GetChangeRequestUseCase } from "./application/get-change-request.use-case.js";
 import { ListChangeRequestsUseCase } from "./application/list-change-requests.use-case.js";
+import { PendingChanges } from "./application/pending-changes.js";
 import { RejectChangeRequestUseCase } from "./application/reject-change-request.use-case.js";
 import { ReviewGate } from "./application/review-gate.js";
 import { SubmitChangeRequest } from "./application/submit-change-request.js";
@@ -20,6 +21,7 @@ import { ChangeRequestsController } from "./http/change-requests.controller.js";
   providers: [
     ChangeRequestsRepository,
     ChangeRequestRegistry,
+    PendingChanges,
     ReviewGate,
     SubmitChangeRequest,
     ListChangeRequestsUseCase,
@@ -27,6 +29,6 @@ import { ChangeRequestsController } from "./http/change-requests.controller.js";
     ApproveChangeRequestUseCase,
     RejectChangeRequestUseCase,
   ],
-  exports: [ChangeRequestRegistry, SubmitChangeRequest],
+  exports: [ChangeRequestRegistry, PendingChanges, SubmitChangeRequest],
 })
 export class ChangeRequestModule {}

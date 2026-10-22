@@ -267,7 +267,7 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 | values.version_number | int | no | |
 | values.status | text | no | `WAITING_APPROVAL`, `ACTIVE`, `SUPERSEDED`; UQ parsial ACTIVE per (tenant_id, definition_id, product_id) |
 | values.effective_from | timestamptz | no | |
-| values.change_request_id | uuid | no | FK cr.change_requests |
+| values.change_request_id | uuid | yes | FK cr.change_requests; kosong untuk nilai hasil seed (layar parameter sistem di luar POC) |
 
 ## 6.7 Product & Route (`product`)
 
@@ -302,7 +302,7 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 | floating_rate, cap_rate | numeric(9,4) | yes | Floating, Hybrid, Capped |
 | tenor_fixed | int | yes | Hybrid |
 | approver_rate_min, approver_rate_max | numeric(9,4) | yes | rentang yang boleh diubah Approver (grooming v2 R-19) |
-| valid_from, valid_to | date | no / yes | tidak tumpang tindih per produk (constraint exclusion `daterange`) |
+| valid_from, valid_to | date | no / yes | tidak tumpang tindih per produk, dijaga aturan domain saat diajukan dan disetujui (AC-97.02); drizzle-kit tidak membangkitkan exclusion constraint, dan pricing satu produk hanya diganti lewat satu ChangeRequest terbuka |
 
 ### PRODUCT_ROUTES, PRODUCT_ROUTE_VERSIONS, PRODUCT_ROUTE_STEPS
 | table.column | type | nullable | notes |

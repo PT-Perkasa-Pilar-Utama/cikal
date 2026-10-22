@@ -7,27 +7,13 @@ import { seedRoleIds } from "../src/modules/core/identity/index.js";
 import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
 import { createRole, createSession } from "./support/session.js";
 
-const productId = c.productIdMock;
+const recordId = c.productIdMock;
 const stubRoleId = "0192b6a4-0001-7000-8000-000000000001";
-const validProduct = {
-  productCode: "KTA",
-  productName: "Kredit Tanpa Agunan",
-  productCategory: "NON_COLLATERAL",
-  interestType: "EFFECTIVE",
-  minPlafond: "5000000.00",
-  maxPlafond: "300000000.00",
-  minTenor: 6,
-  maxTenor: 60,
-  minAge: 21,
-  maxAge: 55,
-  dbrMax: "40.0000",
-  validFrom: "2026-10-01",
-};
 const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: false, canApprove: true };
 
 type Case = [string, "GET" | "POST" | "PUT", string, unknown, number, z.ZodType];
 
-/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03, 08). */
+/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03). */
 const cases: Case[] = [
   ["roles", "GET", "/api/v1/roles", undefined, 200, c.roleListResponseSchema],
   ["menus", "GET", "/api/v1/menus", undefined, 200, c.menuTreeResponseSchema],
@@ -36,35 +22,11 @@ const cases: Case[] = [
     "role access create",
     "POST",
     "/api/v1/role-access",
-    { roleId: stubRoleId, menuId: productId, ...flags },
+    { roleId: stubRoleId, menuId: recordId, ...flags },
     202,
     c.changeRequestAcceptedSchema,
   ],
-  ["role access update", "PUT", `/api/v1/role-access/${productId}`, flags, 202, c.changeRequestAcceptedSchema],
-  ["product list", "GET", "/api/v1/products", undefined, 200, c.productListResponseSchema],
-  ["product detail", "GET", `/api/v1/products/${productId}`, undefined, 200, c.productDetailResponseSchema],
-  ["product create", "POST", "/api/v1/products", validProduct, 202, c.changeRequestAcceptedSchema],
-  [
-    "product update",
-    "PUT",
-    `/api/v1/products/${productId}`,
-    { ...validProduct, isActive: true },
-    202,
-    c.changeRequestAcceptedSchema,
-  ],
-  ["product pricing", "GET", `/api/v1/products/${productId}/pricing`, undefined, 200, c.productPricingResponseSchema],
-  [
-    "product pricing update",
-    "PUT",
-    `/api/v1/products/${productId}/pricing`,
-    {
-      adminFee: "250000.00",
-      provisionFee: "1.0000",
-      subProducts: [{ interestRate: "12.0000", validFrom: "2026-10-01" }],
-    },
-    202,
-    c.changeRequestAcceptedSchema,
-  ],
+  ["role access update", "PUT", `/api/v1/role-access/${recordId}`, flags, 202, c.changeRequestAcceptedSchema],
 ];
 
 const everyRight = { view: true, create: true, update: true, delete: true, approve: true };
@@ -79,10 +41,7 @@ describe("Sprint 1 stubs", () => {
     app = await createApp(db.config);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
-    const roleId = await createRole(db.owner, "Stub Tester", [
-      { menuCode: "MST-PRODUCT", ...everyRight },
-      { menuCode: "IAM-ROLE-ACCESS", ...everyRight },
-    ]);
+    const roleId = await createRole(db.owner, "Stub Tester", [{ menuCode: "IAM-ROLE-ACCESS", ...everyRight }]);
     headers = (await createSession(db.owner, { roleId })).headers;
   });
 
@@ -103,26 +62,24 @@ describe("Sprint 1 stubs", () => {
     expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error.issues)).toBe(true);
   });
 
-  it("maps validation failures to the error envelope with AC messages (AC-20.04)", async () => {
+  it("maps validation failures to the error envelope with field details", async () => {
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/products",
+      url: "/api/v1/role-access",
       headers,
-      payload: { ...validProduct, productCode: "KPRSUB" },
+      payload: { menuId: recordId, ...flags },
     });
     expect(res.statusCode).toBe(400);
     const body = c.errorEnvelopeSchema.parse(res.json());
-    expect(body.code).toBe("VALIDATION_FAILED");
-    expect(body.details).toContainEqual(
-      expect.objectContaining({ field: "productCode", message: "Product code must be 1 to 5 letters or digits" }),
-    );
+    expect(body).toMatchObject({ code: "VALIDATION_FAILED", message: "Please complete all required fields" });
+    expect(body.details).toContainEqual(expect.objectContaining({ field: "roleId" }));
     expect(res.headers["x-correlation-id"]).toBe(body.correlationId);
   });
 
   it("rejects unknown fields in a request body", async () => {
     const res = await app.inject({
       method: "PUT",
-      url: `/api/v1/role-access/${productId}`,
+      url: `/api/v1/role-access/${recordId}`,
       headers,
       payload: { ...flags, x: 1 },
     });

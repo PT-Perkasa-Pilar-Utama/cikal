@@ -19,8 +19,8 @@ export const TAKEN_NAME = "TAKEN";
 export const TAKEN_MESSAGE = "Product code already exists";
 
 /**
- * Tabel data master tiruan untuk handler uji. Modul pemilik asli (produk, role access) dibangun di kartu
- * BE-S1-03 dan BE-S1-04; checker-maker cukup diuji lewat kontrak `EntityHandler`.
+ * Tabel data master tiruan untuk handler uji: checker-maker cukup diuji lewat kontrak `EntityHandler`. Handler uji
+ * memakai jenis entity yang modul pemiliknya belum mendaftar, karena registry menolak dua handler satu jenis.
  */
 export async function createRecordsTable(owner: pg.Pool): Promise<void> {
   await owner.query("create schema cr_test");

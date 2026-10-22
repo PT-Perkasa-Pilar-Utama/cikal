@@ -37,11 +37,11 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
-      recordHandler("PRODUCT", "Product"),
+      recordHandler("DOCUMENT_CHECKLIST", "Document Checklist"),
       recordHandler("ROLE_ACCESS", "Role Access"),
       packageHandler("DECISION_MATRIX", "Decision Matrix"),
     ]);
-    const menus = ["MST-PRODUCT", "IAM-ROLE-ACCESS", "MST-DECISION"];
+    const menus = ["MST-CHECKLIST", "IAM-ROLE-ACCESS", "MST-DECISION"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -55,7 +55,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     const adminRole = await createRole(db.owner, "Admin Uji", [
       { menuCode: "IAM-ROLE-ACCESS", view: true, create: true, approve: true },
     ]);
-    const viewerRole = await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-PRODUCT", view: true }]);
+    const viewerRole = await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-CHECKLIST", view: true }]);
     maker = await createSession(db.owner, { roleId: makerRole });
     checker = await createSession(db.owner, { roleId: checkerRole });
     otherChecker = await createSession(db.owner, { roleId: checkerRole });
@@ -80,11 +80,11 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   const statusOf = async (id: string) =>
     (await db.owner.query<{ status: string }>("select status from cr.change_requests where id = $1", [id])).rows[0]
       ?.status;
-  const newProduct = (name: string) =>
-    submitAs(app, maker, { entityType: "PRODUCT", entityId: null, oldData: null, newData: { name } });
+  const newRecord = (name: string) =>
+    submitAs(app, maker, { entityType: "DOCUMENT_CHECKLIST", entityId: null, oldData: null, newData: { name } });
 
-  it("approves a new product, applies it, and audits the checker with the IP (AC-12.01)", async () => {
-    const { changeRequestId } = await newProduct("KPR Subsidi");
+  it("approves new data, applies it, and audits the checker with the IP (AC-12.01)", async () => {
+    const { changeRequestId } = await newRecord("KPR Subsidi");
     const res = await review(checker, changeRequestId, "approve");
     expect(res.statusCode).toBe(200);
     const body = changeRequestReviewResponseSchema.parse(res.json());
@@ -93,7 +93,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     expect(applied.rows).toEqual([{ id: body.data.entityId }]);
     expect(await lastAudit(db.owner, checker.userId, "APPROVE")).toMatchObject({
       role: "Checker Uji",
-      module: "Product",
+      module: "Document Checklist",
       record_id: body.data.entityId,
       description: "Approve change request",
       ip_address: CHECKER_IP,
@@ -101,23 +101,23 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("stores the checker comment in the audit trail", async () => {
-    const { changeRequestId } = await newProduct("KPR Komentar");
+    const { changeRequestId } = await newRecord("KPR Komentar");
     await review(checker, changeRequestId, "approve", { comment: "Sesuai memo direksi" });
     expect((await lastAudit(db.owner, checker.userId, "APPROVE"))?.description).toBe("Sesuai memo direksi");
   });
 
-  it("rejects a change, leaves the product unchanged, and audits it (AC-12.03)", async () => {
-    const before = await recordCount(db.owner, "PRODUCT");
-    const { changeRequestId } = await newProduct("KTA Ditolak");
+  it("rejects a change, leaves the active data unchanged, and audits it (AC-12.03)", async () => {
+    const before = await recordCount(db.owner, "DOCUMENT_CHECKLIST");
+    const { changeRequestId } = await newRecord("KTA Ditolak");
     const res = await review(checker, changeRequestId, "reject");
     expect(res.statusCode).toBe(200);
     expect(changeRequestReviewResponseSchema.parse(res.json())).toEqual({
       data: { id: changeRequestId, status: "REJECTED" },
       message: "Data rejected",
     });
-    expect(await recordCount(db.owner, "PRODUCT")).toBe(before);
+    expect(await recordCount(db.owner, "DOCUMENT_CHECKLIST")).toBe(before);
     expect(await lastAudit(db.owner, checker.userId, "REJECT")).toMatchObject({
-      module: "Product",
+      module: "Document Checklist",
       ip_address: CHECKER_IP,
     });
   });
@@ -138,15 +138,15 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("enforces the maker-is-not-reviewer rule in the database too (AC-12.04)", async () => {
-    const { changeRequestId } = await newProduct("KPR Check");
+    const { changeRequestId } = await newRecord("KPR Check");
     await expect(
       db.owner.query("update cr.change_requests set reviewed_by = submitted_by where id = $1", [changeRequestId]),
     ).rejects.toThrow(/change_requests_self_review_check/);
   });
 
   it("processes two simultaneous approvals once (AC-12.05)", async () => {
-    const before = await recordCount(db.owner, "PRODUCT");
-    const { changeRequestId } = await newProduct("KTA Bersamaan");
+    const before = await recordCount(db.owner, "DOCUMENT_CHECKLIST");
+    const { changeRequestId } = await newRecord("KTA Bersamaan");
     const results = await Promise.all([
       review(checker, changeRequestId, "approve"),
       review(otherChecker, changeRequestId, "approve"),
@@ -154,11 +154,11 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     expect(results.map((res) => res.statusCode).sort()).toEqual([200, 409]);
     const loser = results.find((res) => res.statusCode === 409);
     expect(loser && errorOf(loser)).toMatchObject(alreadyProcessed);
-    expect(await recordCount(db.owner, "PRODUCT")).toBe(before + 1);
+    expect(await recordCount(db.owner, "DOCUMENT_CHECKLIST")).toBe(before + 1);
   });
 
   it("refuses to reject a request that is already approved (AC-12.05)", async () => {
-    const { changeRequestId } = await newProduct("KTA Selesai");
+    const { changeRequestId } = await newRecord("KTA Selesai");
     await review(checker, changeRequestId, "approve");
     const res = await review(otherChecker, changeRequestId, "reject");
     expect(res.statusCode).toBe(409);
@@ -198,7 +198,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("re-validates the entity rules against current data before applying", async () => {
-    const { changeRequestId } = await newProduct(TAKEN_NAME);
+    const { changeRequestId } = await newRecord(TAKEN_NAME);
     const res = await review(checker, changeRequestId, "approve");
     expect(res.statusCode).toBe(422);
     expect(errorOf(res)).toMatchObject({ code: "BUSINESS_RULE_VIOLATION", message: TAKEN_MESSAGE });
@@ -206,7 +206,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("requires the Approve right on the entity menu", async () => {
-    const { changeRequestId } = await newProduct("KTA Tanpa Hak");
+    const { changeRequestId } = await newRecord("KTA Tanpa Hak");
     const res = await review(viewer, changeRequestId, "approve");
     expect(res.statusCode).toBe(403);
     expect(errorOf(res)).toMatchObject({

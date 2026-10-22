@@ -144,7 +144,7 @@ Produk, harga per periode (SubProduct), rute modul berversi, dan checklist dokum
 
 **Behavior**
 
-1. Periode `validFrom` s.d. `validTo` antar baris tidak boleh tumpang tindih: `422 PRICING_PERIOD_OVERLAP` (AC-97.02; constraint `daterange` di DB).
+1. Periode `validFrom` s.d. `validTo` antar baris tidak boleh tumpang tindih: `422 PRICING_PERIOD_OVERLAP` (AC-97.02; diperiksa lagi saat disetujui).
 2. Rentang Approver tidak mencakup suku bunga: `422 INVALID_APPROVER_RATE_RANGE` (AC-97.03).
 3. Buat ChangeRequest `PRODUCT_PRICING` yang tampil di "Pending Product" (AC-97.01).
 

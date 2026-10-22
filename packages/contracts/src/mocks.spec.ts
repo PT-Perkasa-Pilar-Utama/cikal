@@ -25,12 +25,6 @@ describe("contract mocks", () => {
     expect(result.success, result.success ? "" : JSON.stringify(result.error.issues)).toBe(true);
   });
 
-  it("rejects a product code longer than 5 characters (AC-20.04)", () => {
-    const result = c.productCreateRequestSchema.shape.productCode.safeParse("KPRSUB");
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.message).toBe("Product code must be 1 to 5 letters or digits");
-  });
-
   it("reports the AC message for empty login fields (AC-01.04)", () => {
     const result = c.loginRequestSchema.safeParse({ username: "", password: "" });
     expect(result.success).toBe(false);
