@@ -1,0 +1,17 @@
+# Kategori release notes otomatis untuk tag vX.Y.Z (DEPLOYMENT_PLAN §4.1).
+changelog:
+  exclude:
+    labels: ["duplicate", "invalid", "wontfix"]
+  categories:
+    - title: Fitur
+      labels: ["type:feature", "enhancement"]
+    - title: Perbaikan
+      labels: ["type:bug", "bug"]
+    - title: Refactor
+      labels: ["type:refactor"]
+    - title: Dokumentasi
+      labels: ["type:docs", "documentation"]
+    - title: Tooling dan infrastruktur
+      labels: ["type:chore"]
+    - title: Lainnya
+      labels: ["*"]
