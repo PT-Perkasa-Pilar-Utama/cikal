@@ -1,0 +1,126 @@
+# Sprint Breakdown
+
+Sprint 1 s.d. 6 mengikuti POC di `Docs/TASK_BREAKDOWN.md`: sebuah US masuk sprint pertama yang kartunya mengutip US atau AC-nya. Sprint 7 menampung semua US lain.
+
+## Sprint 1 — Fondasi
+
+1. US-01 — Masuk dengan Username dan Password (Pengguna LOS)
+2. US-06 — Keluar dari Aplikasi (Pengguna LOS)
+3. US-09 — Mengatur Hak Akses Menu per Role (Maker)
+4. US-12 — Menyetujui atau Menolak Perubahan Master Data (Checker)
+5. US-14 — Melihat Jejak Audit Perubahan (Auditor)
+6. US-20 — Mengelola Produk Kredit (Maker)
+7. US-97 — Mengatur Suku Bunga dan Biaya Produk (Maker)
+
+## Sprint 2 — Rute dan orchestrator
+
+1. US-31 — Mengatur Rute Modul per Produk (Maker)
+2. US-39 — Memulai Pengajuan Kredit Baru (Sales)
+3. US-58 — Mengambil dan Melepas Tugas dari Antrean (Pengguna dengan langkah kerja manual)
+4. US-85 — Melihat Riwayat Proses Pengajuan (Pengguna LOS)
+5. US-86 — Memantau dan Memulihkan Proses yang Gagal (Admin Operasional)
+6. US-100 — Menerbitkan File Lisensi On-Premise (Tim internal PPU)
+
+## Sprint 3 — Pengajuan web
+
+1. US-23 — Memperbarui Data Wilayah (Maker)
+2. US-25 — Mengatur Dokumen Wajib Pengajuan (Maker)
+3. US-40 — Mengisi Data Pribadi Pemohon (Sales)
+4. US-44 — Mengisi Data Pekerjaan Pemohon (Sales)
+5. US-47 — Mengunggah Dokumen Pendukung (Sales)
+6. US-48 — Mengisi Kontak Darurat (Sales)
+7. US-49 — Menyimpan Pengajuan sebagai Draft (Sales)
+8. US-50 — Mengirim Pengajuan untuk Diproses (Sales)
+
+## Sprint 4 — Penilaian otomatis
+
+1. US-36 — Mengatur Decision Matrix (Maker)
+2. US-51 — Menghitung Simulasi Angsuran (Sales)
+3. US-59 — Mendapatkan Hasil Pengecekan Duplikasi Otomatis (Risk Manager)
+4. US-61 — Mendapatkan Hasil Verifikasi Dukcapil Otomatis (Risk Manager)
+5. US-65 — Mendapatkan Hasil Fraud Check Otomatis (Risk Manager)
+6. US-67 — Mendapatkan Hasil RAC dan Scoring Otomatis (Risk Manager)
+7. US-68 — Mendapatkan Hasil Kolektibilitas SLIK (Risk Manager)
+8. US-69 — Mendapatkan Keputusan Awal Go atau NotGo (Risk Manager)
+
+## Sprint 5 — Keputusan manusia
+
+1. US-27 — Menetapkan Approver per Level (Maker)
+2. US-37 — Menyusun Model Scoring dan RAC (Maker)
+3. US-64 — Memverifikasi Dokumen Pengajuan (Verifikator)
+4. US-72 — Menyetujui Pengajuan Sesuai Kewenangan (Approver)
+5. US-73 — Menolak atau Mengembalikan Pengajuan (Approver)
+6. US-74 — Menyetujui Otomatis Pengajuan Bernilai Kecil (Approver)
+7. US-83 — Mencari dan Menyaring Daftar Pengajuan (Pengguna LOS)
+8. US-84 — Melihat Detail Pengajuan (Pengguna LOS)
+
+## Sprint 6 — Pasca-approval dan paket on-premise
+
+1. US-38 — Menguji Model Scoring Sebelum Berlaku (Maker)
+2. US-76 — Memvalidasi Data Pencairan (Admin Operasional)
+3. US-77 — Mencetak Akad Kredit (Admin Operasional)
+4. US-101 — Mencatat Hasil Pencairan Manual (Admin Operasional)
+5. US-102 — Mengatur Format Penomoran Dokumen (Maker)
+
+## Sprint 7 — Backlog pasca-POC
+
+1. US-02 — Masuk dengan Akun SSO Perusahaan (Pegawai bank dengan akun SSO)
+2. US-03 — Meminta Tautan Reset Password (Pengguna LOS dengan akun lokal)
+3. US-04 — Mengatur Ulang Password (Pengguna LOS dengan akun lokal)
+4. US-05 — Mengganti Password (Pengguna LOS dengan akun lokal)
+5. US-07 — Mendaftarkan Pengguna Aplikasi (Maker)
+6. US-08 — Mengelola Role (Maker)
+7. US-10 — Mengatur Hak Akses Khusus per Pengguna (Maker)
+8. US-11 — Mengelola Menu Aplikasi (Super User)
+9. US-13 — Meminta dan Mengerjakan Revisi Perubahan (Checker dan Maker)
+10. US-15 — Mendaftarkan Company Baru (Super User)
+11. US-16 — Menyalin Konfigurasi dari Company Lain (Super User)
+12. US-17 — Mengelola Struktur Organisasi Company (Maker)
+13. US-18 — Mengelola Mata Uang Company (Maker)
+14. US-19 — Mengelola Kurs Mata Uang (Maker)
+15. US-21 — Mengelola General Parameter (Maker)
+16. US-22 — Mengimpor dan Mengekspor General Parameter (Maker)
+17. US-24 — Mengelola Template Dokumen (Maker)
+18. US-26 — Mengatur Level Approval (Maker)
+19. US-28 — Mengimpor Setup Approval (Maker)
+20. US-29 — Mengelola Data Perusahaan Asuransi (Maker)
+21. US-30 — Mengatur Parameter Sistem (Maker)
+22. US-32 — Melihat Diagram Rute Produk (Maker, Checker, dan Risk Manager)
+23. US-33 — Mengatur Dedup Matrix (Maker)
+24. US-34 — Mengatur Aturan Verifikasi Dukcapil (Maker)
+25. US-35 — Mengatur Fraud Matrix (Maker)
+26. US-41 — Mengisi Data Pribadi dari Foto KTP (Sales)
+27. US-42 — Memverifikasi Data Pensiun Pemohon (Sales)
+28. US-43 — Mengisi Data Pasangan Pemohon (Sales)
+29. US-45 — Mengisi Data Usaha Pemohon (Sales)
+30. US-46 — Mengisi Data Agunan (Sales)
+31. US-52 — Mengunggah Pengajuan Massal (Sales)
+32. US-53 — Memantau Hasil Upload Massal (Sales)
+33. US-54 — Mengirim Pengajuan melalui API Mitra (Tim IT mitra penyalur)
+34. US-55 — Mencatat Pembayaran Biaya Appraisal (Customer Service)
+35. US-56 — Mengisi Laporan Kunjungan Nasabah Mikro (Surveyor)
+36. US-57 — Mengisi Laporan Kunjungan dan Appraisal KPR (Surveyor)
+37. US-60 — Meninjau Hasil Duplikasi (Verifikator)
+38. US-62 — Meninjau Hasil Dukcapil (Verifikator)
+39. US-63 — Memutuskan Review Dukcapil Tingkat Supervisor (Supervisor)
+40. US-66 — Meninjau Pengajuan Mencurigakan (Verifikator)
+41. US-70 — Mendapatkan Hasil Pengecekan SIKP (Risk Manager)
+42. US-71 — Memproses Ulang Pengajuan yang Ditolak (Risk Manager)
+43. US-75 — Mengajukan E-Polis Asuransi Kredit (Admin Operasional)
+44. US-78 — Mencetak Ulang Akad Kredit (Admin Operasional)
+45. US-79 — Mengirim Data Pencairan ke Core Banking (Admin Operasional)
+46. US-80 — Mencatat Respons Pencairan dari Core Banking (Admin Operasional)
+47. US-81 — Melihat Dashboard Ringkasan Pengajuan (Kepala Cabang)
+48. US-82 — Mengekspor Laporan Pengajuan (Kepala Cabang)
+49. US-87 — Menerima Notifikasi Status Pengajuan (Nasabah)
+50. US-88 — Melihat Beranda Mobile (Sales)
+51. US-89 — Membuat Pengajuan dari Mobile (Sales)
+52. US-90 — Melihat Daftar Pengajuan Saya di Mobile (Sales)
+53. US-91 — Mengisi Laporan Kunjungan dari Mobile (Surveyor)
+54. US-92 — Melihat Profil Pengguna di Mobile (Sales)
+55. US-93 — Melihat Perangkat yang Dipakai Sales (Admin Sistem)
+56. US-94 — Mensimulasikan Respons Layanan Eksternal (QA)
+57. US-95 — Mengelola Blacklist (Risk Manager)
+58. US-96 — Mengelola Aplikasi Mitra API (Maker)
+59. US-98 — Memigrasikan Data LOS OS11 (Admin Sistem)
+60. US-99 — Mengelola Lisensi Modul (Tim internal PPU)
