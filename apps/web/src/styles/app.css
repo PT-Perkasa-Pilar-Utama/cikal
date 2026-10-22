@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Token dari Docs/design-system.md bagian 2 dan 3. Nilai bertanda (verifikasi) di dokumen itu ikut apa adanya. */
+@theme {
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-primary: #0c4fa0;
+  --color-primary-light: #bad4f7;
+  --color-secondary: #458f3a;
+  --color-secondary-light: #b6fcd1;
+
+  --color-neutral-0: #ffffff;
+  --color-neutral-1: #f2f4f7;
+  --color-neutral-2: #e4e7ec;
+  --color-neutral-3: #d0d5dd;
+  --color-neutral-4: #98a2b3;
+  --color-neutral-5: #667085;
+  --color-neutral-6: #475467;
+  --color-neutral-7: #344054;
+  --color-neutral-8: #1d2939;
+  --color-neutral-9: #101828;
+
+  --color-info: #0043cf;
+  --color-info-light: #caddfe;
+  --color-success: #13875f;
+  --color-success-light: #c7e7dc;
+  --color-warning: #ffb800;
+  --color-warning-light: #ffebc2;
+  --color-error: #e60000;
+  --color-error-light: #fcd6d5;
+}
+
+body {
+  @apply bg-neutral-1 font-sans text-sm text-neutral-6;
+}

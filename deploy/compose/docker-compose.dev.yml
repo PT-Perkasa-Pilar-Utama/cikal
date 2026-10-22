@@ -1,0 +1,55 @@
+# Dependensi lokal untuk pengembangan (technical-specs 04 §4.9). Jalankan `pnpm dev:secrets` lebih dulu.
+# SeaweedFS (Apache 2.0) mode S3 hanya untuk dev; cadangan S3 di paket on-premise menunggu cek lisensi legal.
+name: cikal-dev
+
+services:
+  db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: cikal
+      POSTGRES_USER: cikal
+      POSTGRES_PASSWORD: cikal
+    ports:
+      - "55432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cikal -d cikal"]
+      interval: 5s
+      retries: 10
+
+  storage:
+    image: chrislusf/seaweedfs:3.97
+    command: server -dir=/data -s3 -s3.port=9000 -s3.config=/run/secrets/s3_config
+    secrets:
+      - s3_config
+    ports:
+      - "9000:9000"
+    volumes:
+      - storage-data:/data
+
+  storage-init:
+    image: chrislusf/seaweedfs:3.97
+    depends_on:
+      - storage
+    entrypoint: >
+      /bin/sh -c "until echo 's3.bucket.create -name cikal-dev' | weed shell -master=storage:9333 -filer=storage:8888; do sleep 2; done"
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.20.1
+    ports:
+      - "3001:3000"
+
+  mail:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+secrets:
+  s3_config:
+    file: ./.secrets/s3.json
+
+volumes:
+  db-data:
+  storage-data:
