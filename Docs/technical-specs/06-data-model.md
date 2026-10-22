@@ -700,7 +700,7 @@ Kolom `token_number` dan `token_expired_at` (data dictionary) tidak dibuat sampa
 |---|---|
 | MS-01 | Setiap modul menyimpan migrasinya di `<modul>/db/migrations`, dibangkitkan `drizzle-kit generate` dan direview sebagai SQL |
 | MS-02 | Runner menemukan folder migrasi relatif terhadap folder modul (`import.meta.dirname`), tidak pernah lewat path absolut |
-| MS-03 | Connection string dibaca dari `DATABASE_URL`; tidak pernah ditulis di kode |
+| MS-03 | Connection string runner dibaca dari `DATABASE_MIGRATION_URL` (role pemilik skema `cikal_owner`); `api` dan `worker` memakai `DATABASE_URL` (role `cikal_app` tanpa `BYPASSRLS`). Tidak pernah ditulis di kode |
 | MS-04 | Migrasi dijalankan per modul berlisensi dalam urutan dependensi (CORE dulu), masing-masing dengan tabel ledger `__migrations` di skemanya |
 | MS-05 | Perintah tetap: `node dist/platform/migrate/run.js migrate` dan `node dist/platform/migrate/run.js seed --seed=dev|qa`; di repo lewat `pnpm --filter api db:migrate` dan `db:seed` |
 | MS-06 | Dilarang: path absolut, connection string di kode, membaca dan menjalankan satu file `.sql` di luar ledger. Cara itu gagal di image distroless |
@@ -714,7 +714,7 @@ import { Pool } from "pg";
 import { join } from "node:path";
 import { licensedModules } from "../../licensed-modules.generated.js";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({ connectionString: process.env.DATABASE_MIGRATION_URL });
 const db = drizzle(pool);
 
 // licensedModules terurut dependensi; mod.dir = import.meta.dirname milik modul
