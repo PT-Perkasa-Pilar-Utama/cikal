@@ -6,6 +6,10 @@ Docs/*
 !Docs/cikal-to-be-concept.md
 !Docs/BPMN LOS.png
 !Docs/Flow Process LOS.png
+!Docs/TASK_BREAKDOWN.md
+!Docs/business/
+!Docs/technical-specs/
+!Docs/api-specs/
 !Docs/ba/
 Docs/ba/*
 !Docs/ba/Doc_BA_Cikal_Versi 1.xlsx
