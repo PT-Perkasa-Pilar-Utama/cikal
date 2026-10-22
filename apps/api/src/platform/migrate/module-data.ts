@@ -28,16 +28,24 @@ export interface ModuleData {
   schema: string;
   migrationsFolder: string;
   seeds: Partial<Record<SeedName, ModuleSeed>>;
+  /** Tabel yang bagi role aplikasi hanya boleh `SELECT` dan `INSERT`, contoh jejak audit (AD-03). */
+  appendOnlyTables: readonly string[];
 }
 
 /** `moduleUrl` diisi `import.meta.url` milik modul, sehingga folder migrasi tidak pernah berupa path absolut (MS-02). */
 export function defineModuleData(
   moduleUrl: string,
-  data: { code: string; schema: string; seeds?: Partial<Record<SeedName, ModuleSeed>> },
+  data: {
+    code: string;
+    schema: string;
+    seeds?: Partial<Record<SeedName, ModuleSeed>>;
+    appendOnlyTables?: readonly string[];
+  },
 ): ModuleData {
   return {
     ...data,
     migrationsFolder: join(dirname(fileURLToPath(moduleUrl)), "db", "migrations"),
     seeds: data.seeds ?? {},
+    appendOnlyTables: data.appendOnlyTables ?? [],
   };
 }

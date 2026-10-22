@@ -65,7 +65,8 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 |---|---|
 | `login(username, password, channel)` | Pesan gagal seragam untuk username salah dan password salah (AC-01.03). Kunci `LOCK_MINUTES` setelah `LOCK_ATTEMPTS` gagal berturut-turut (AC-01.05). User `INACTIVE` atau `NO_ROLE` ditolak. Password awal mewajibkan ganti sebelum akses lain (AC-05.03). Membuat Session; satu sesi aktif per user per channel |
 | `loginSso(tenant, authorizationCode)` | OIDC code flow; user baru dibuat `NO_ROLE` di company pemilik IdP (A-11); penautan ke user lokal mengikuti AU-01 |
-| `authorize(ctx, menuCode, action)` | `true` bila RoleAccess atau UserAccess yang berlaku hari ini memberi hak; View wajib bila hak lain diberikan (AC-09.03). Dipanggil guard di setiap rute API, bukan hanya di UI (AC-09.04) |
+| `authorize(ctx, menuCode, action)` | `true` bila RoleAccess atau UserAccess yang berlaku hari ini memberi hak; View wajib bila hak lain diberikan (AC-09.03). Dipanggil guard di setiap rute API, bukan hanya di UI (AC-09.04). `allows` memakai aturan yang sama tanpa melempar, untuk menampilkan atau menyembunyikan aksi (contoh `canReview`, api-specs 07 §7.2) |
+| `describeUsers(tx, userIds)` | Username dan nama role user tenant transaksi untuk modul lain (Change Request, Audit). Didaftarkan di port platform `USER_DIRECTORY_PORT` agar modul lain tidak mengimpor Identity, yang sendiri mencatat audit (XM-02) |
 | `dataScope(ctx)` | Unit kerja user (company, regional, branch, sub branch) untuk membatasi data (TN-02) |
 | `deactivateUser(userId)` | Lewat checker-maker; setelah disetujui, sesi dihapus dan tugas yang diambil dilepas ke antrean (AC-07.05, TQ-07) |
 
@@ -137,7 +138,7 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 
 ## 5.7 Audit
 
-**Skema:** `audit`. **US:** US-14. Operasi: `record(event)` dipanggil lewat event outbox; tabel `audit_log` hanya bisa di-`INSERT` oleh role aplikasi (AD-03). Pencarian dibatasi 366 hari (AC-14.04). Nilai `SECRET` tidak pernah dicatat (PR-12).
+**Skema:** `audit`. **US:** US-14. Operasi: `record(tx, actor, event)` dipanggil modul lain di transaksi aksinya, sehingga aksi dan jejaknya commit atau batal bersama (BE-S1-02); Audit modul dasar tanpa dependensi modul, jadi panggilan langsung tidak membuat impor melingkar. Role pelaku dibaca lewat `USER_DIRECTORY_PORT`. Tabel `audit_logs` hanya bisa di-`SELECT` dan `INSERT` oleh role aplikasi (AD-03): runner migrasi mencabut `UPDATE`, `DELETE`, dan `TRUNCATE` (`appendOnlyTables`). Pencarian dibatasi 366 hari (AC-14.04). Nilai `SECRET` tidak pernah dicatat (PR-12).
 
 ## 5.8 Notification
 

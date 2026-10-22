@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
+import type { UserRef } from "../../../../platform/http/user-directory-port.js";
 import { roles, users } from "./schema.js";
 
 export interface UserAuthState {
@@ -72,6 +73,15 @@ export class UsersRepository {
       .update(users)
       .set({ failedLoginCount: 0, lockedUntil: null, lastLoginAt: at, updatedAt: at })
       .where(eq(users.id, id));
+  }
+
+  async findRefs(tx: Tx, ids: readonly string[]): Promise<UserRef[]> {
+    if (ids.length === 0) return [];
+    return tx
+      .select({ id: users.id, username: users.username, roleName: roles.roleName })
+      .from(users)
+      .leftJoin(roles, eq(roles.id, users.roleId))
+      .where(inArray(users.id, [...ids]));
   }
 
   async findProfile(tx: Tx, id: string): Promise<UserProfile | null> {

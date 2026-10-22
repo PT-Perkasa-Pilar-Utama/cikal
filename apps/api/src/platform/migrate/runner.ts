@@ -63,15 +63,21 @@ async function countApplied(db: Queryable, schema: string): Promise<number> {
   return Number(count.rows[0]?.n ?? 0);
 }
 
-/** Hak role aplikasi (tanpa `BYPASSRLS`) atas tabel yang dibuat role pemilik skema. */
-async function grantAppRole(db: Queryable, schema: string, appRole: string): Promise<void> {
-  const s = ident(schema);
+/**
+ * Hak role aplikasi (tanpa `BYPASSRLS`) atas tabel yang dibuat role pemilik skema. Grant diulang setiap migrasi,
+ * jadi pencabutan hak ubah dan hapus pada tabel append-only juga diulang sesudahnya.
+ */
+async function grantAppRole(db: Queryable, module: ModuleData, appRole: string): Promise<void> {
+  const s = ident(module.schema);
   const r = ident(appRole);
   await db.query(`grant usage on schema ${s} to ${r}`);
   await db.query(`grant select, insert, update, delete on all tables in schema ${s} to ${r}`);
   await db.query(`grant usage, select on all sequences in schema ${s} to ${r}`);
   await db.query(`alter default privileges in schema ${s} grant select, insert, update, delete on tables to ${r}`);
   await db.query(`alter default privileges in schema ${s} grant usage, select on sequences to ${r}`);
+  for (const table of module.appendOnlyTables) {
+    await db.query(`revoke update, delete, truncate on ${s}.${ident(table)} from ${r}`);
+  }
 }
 
 /** Role aplikasi dari `DATABASE_URL`; `null` bila sama dengan role migrasi sehingga tidak perlu grant. */
@@ -101,7 +107,7 @@ export async function migrateModules(
       migrationsTable: MIGRATIONS_TABLE,
     });
     applied += (await countApplied(pool, module.schema)) - before;
-    if (appRole) await grantAppRole(pool, module.schema, appRole);
+    if (appRole) await grantAppRole(pool, module, appRole);
   }
   return applied;
 }

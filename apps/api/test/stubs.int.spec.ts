@@ -8,7 +8,7 @@ import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/
 import { createRole, createSession } from "./support/session.js";
 
 const productId = c.productIdMock;
-const changeRequestId = "0192b6a4-0001-7000-8000-000000000001";
+const stubRoleId = "0192b6a4-0001-7000-8000-000000000001";
 const validProduct = {
   productCode: "KTA",
   productName: "Kredit Tanpa Agunan",
@@ -27,7 +27,7 @@ const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: fa
 
 type Case = [string, "GET" | "POST" | "PUT", string, unknown, number, z.ZodType];
 
-/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03, 07, 08). */
+/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03, 08). */
 const cases: Case[] = [
   ["roles", "GET", "/api/v1/roles", undefined, 200, c.roleListResponseSchema],
   ["menus", "GET", "/api/v1/menus", undefined, 200, c.menuTreeResponseSchema],
@@ -36,43 +36,11 @@ const cases: Case[] = [
     "role access create",
     "POST",
     "/api/v1/role-access",
-    { roleId: changeRequestId, menuId: productId, ...flags },
+    { roleId: stubRoleId, menuId: productId, ...flags },
     202,
     c.changeRequestAcceptedSchema,
   ],
   ["role access update", "PUT", `/api/v1/role-access/${productId}`, flags, 202, c.changeRequestAcceptedSchema],
-  [
-    "change request list",
-    "GET",
-    "/api/v1/change-requests?entityType=PRODUCT",
-    undefined,
-    200,
-    c.changeRequestListResponseSchema,
-  ],
-  [
-    "change request detail",
-    "GET",
-    `/api/v1/change-requests/${changeRequestId}`,
-    undefined,
-    200,
-    c.changeRequestDetailResponseSchema,
-  ],
-  [
-    "change request approve",
-    "POST",
-    `/api/v1/change-requests/${changeRequestId}/approve`,
-    {},
-    200,
-    c.changeRequestReviewResponseSchema,
-  ],
-  [
-    "change request reject",
-    "POST",
-    `/api/v1/change-requests/${changeRequestId}/reject`,
-    {},
-    200,
-    c.changeRequestReviewResponseSchema,
-  ],
   ["product list", "GET", "/api/v1/products", undefined, 200, c.productListResponseSchema],
   ["product detail", "GET", `/api/v1/products/${productId}`, undefined, 200, c.productDetailResponseSchema],
   ["product create", "POST", "/api/v1/products", validProduct, 202, c.changeRequestAcceptedSchema],

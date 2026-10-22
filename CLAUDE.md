@@ -50,7 +50,7 @@ cikal/
 ├── apps/web/src/            routes/, features/<f>/, components/, lib/api/client.ts
 ├── packages/contracts/      Zod request/response schemas and mocks (single source of API types)
 ├── packages/formula/        pure formula engine; no NestJS, no DB, no I/O
-├── tools/package-builder/   manifest -> licensed-modules.generated.ts
+├── tools/package-builder/   manifest -> licensed-modules.generated.ts, licensed-module-codes.generated.ts
 ├── deploy/compose/          dev compose, initdb role script
 ├── deploy/manifests/        poc.json (CORE, M06, M07, M08, M09, M10, M11, M15)
 └── Docs/                    all project docs (§1)

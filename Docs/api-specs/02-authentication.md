@@ -36,7 +36,7 @@ Klien SPA menangani `401` apa pun dengan membuang state lokal dan menampilkan ha
 3. `lockedUntil` di masa depan: `423 ACCOUNT_LOCKED`, walau password benar (AC-01.05).
 4. Verifikasi Argon2id. Salah: `failedLoginCount + 1`; mencapai `LOCK_ATTEMPTS` (5) mengisi `lockedUntil = now + LOCK_MINUTES` (15) dan menjawab `423 ACCOUNT_LOCKED`; di bawahnya `401 INVALID_CREDENTIALS` (AC-01.02, AC-01.05).
 5. Status `INACTIVE`: `403 ACCOUNT_INACTIVE` (AC-01.07). Status `NO_ROLE`: `403 ACCOUNT_NO_ROLE`.
-6. Berhasil: `failedLoginCount = 0` (AC-01.06), tandai sesi WEB lama user `REPLACED`, buat sesi baru, isi `lastLoginAt`, catat LoginAttempt dengan IP. Audit `LOGIN`, `LOGIN_FAILED`, dan `LOGOUT` ditulis sejak AuditLog ada (BE-S1-02). Input berisi pola injeksi diperlakukan sebagai teks biasa lewat query terparameter (AC-01.08).
+6. Berhasil: `failedLoginCount = 0` (AC-01.06), tandai sesi WEB lama user `REPLACED`, buat sesi baru, isi `lastLoginAt`, catat LoginAttempt dengan IP. Audit `LOGIN`, `LOGIN_FAILED`, dan `LOGOUT` dengan IP ditulis sejak AuditLog ada (BE-S1-02); `LOGIN_FAILED` hanya untuk username terdaftar, karena jejak audit milik satu tenant (username tak terdaftar tetap tercatat di LoginAttempt). Input berisi pola injeksi diperlakukan sebagai teks biasa lewat query terparameter (AC-01.08).
 
 **Output 200** (+ `Set-Cookie: cikal_sid`, `Set-Cookie: cikal_csrf`)
 

@@ -4,6 +4,9 @@ export const LOCK_MINUTES = 15;
 
 const MS_PER_MINUTE = 60_000;
 
+/** Label modul kejadian login dan logout di "Audit Trail" (AC-14.06). */
+export const AUTHENTICATION_AUDIT_MODULE = "Authentication";
+
 export interface LoginAccount {
   status: string;
   hasRole: boolean;
