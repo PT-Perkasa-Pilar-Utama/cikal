@@ -1,5 +1,6 @@
-import { Module, type OnModuleInit } from "@nestjs/common";
-import { ChangeRequestModule, ChangeRequestRegistry } from "../change-request/index.js";
+import { Inject, Module, type OnModuleInit } from "@nestjs/common";
+import { CHANGE_REQUEST_PORT } from "../../../platform/http/change-request-port.js";
+import type { ChangeRequestPort } from "../change-request/index.js";
 import { GetProductUseCase } from "./application/get-product.use-case.js";
 import { GetProductPricingUseCase } from "./application/get-product-pricing.use-case.js";
 import { ListProductsUseCase } from "./application/list-products.use-case.js";
@@ -15,7 +16,6 @@ import { ProductsController } from "./http/products.controller.js";
 
 /** Product & Route: produk, harga, rute berversi, checklist dokumen (technical-specs 05 §5.5). */
 @Module({
-  imports: [ChangeRequestModule],
   controllers: [ProductsController],
   providers: [
     ProductsRepository,
@@ -33,14 +33,14 @@ import { ProductsController } from "./http/products.controller.js";
 })
 export class ProductModule implements OnModuleInit {
   constructor(
-    private readonly registry: ChangeRequestRegistry,
+    @Inject(CHANGE_REQUEST_PORT) private readonly changeRequests: ChangeRequestPort,
     private readonly productHandler: ProductChangeHandler,
     private readonly pricingHandler: PricingChangeHandler,
   ) {}
 
   /** `registerEntity` untuk `PRODUCT` dan `PRODUCT_PRICING` (technical-specs 05 §5.6). */
   onModuleInit(): void {
-    this.registry.register(this.productHandler);
-    this.registry.register(this.pricingHandler);
+    this.changeRequests.register(this.productHandler);
+    this.changeRequests.register(this.pricingHandler);
   }
 }

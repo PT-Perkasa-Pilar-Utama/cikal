@@ -34,7 +34,7 @@ export interface EntityHandler {
   auditModule: string;
   /** Nama baris di halaman "Pending <Data>" (api-specs 07 §7.2). */
   displayName(newData: JsonRecord): string;
-  /** Aturan entity terhadap data terkini; gagal dengan `422 BUSINESS_RULE_VIOLATION` dan pesan AC. */
+  /** Aturan entity terhadap data terkini; `DomainError` yang dilempar dijawab `422 BUSINESS_RULE_VIOLATION`. */
   validate(tx: Tx, request: ChangeRequestSnapshot): Promise<void>;
   apply(tx: Tx, request: ChangeRequestSnapshot, reviewer: Actor): Promise<ApplyResult>;
   /** Path field yang berubah; tanpa method ini dipakai perbandingan field per field (`changedFields`). */

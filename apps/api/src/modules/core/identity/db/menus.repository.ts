@@ -13,23 +13,38 @@ const grantColumns = (table: typeof roleAccess | typeof userAccess) => ({
   canApprove: table.canApprove,
 });
 
-/** Menu dan semua hak menu user untuk pohon menu sesi (api-specs 02 §2.4). */
+const menuColumns = {
+  id: menus.id,
+  menuCode: menus.menuCode,
+  menuName: menus.menuName,
+  menuIndex: menus.menuIndex,
+  parentMenuId: menus.parentMenuId,
+  link: menus.link,
+  iconName: menus.iconName,
+  moduleCode: menus.moduleCode,
+};
+
+/** Menu instalasi dan hak menu user untuk pohon menu sesi dan Role Access (api-specs 02 §2.4, 03 §3.2). */
 @Injectable()
 export class MenusRepository {
   async listActive(tx: Tx): Promise<MenuRow[]> {
+    return this.list(tx, { includeInactive: false });
+  }
+
+  /** Semua menu instalasi; menu nonaktif hanya bila diminta (api-specs 03 §3.2). */
+  async list(tx: Tx, options: { includeInactive: boolean }): Promise<MenuRow[]> {
     return tx
-      .select({
-        id: menus.id,
-        menuCode: menus.menuCode,
-        menuName: menus.menuName,
-        menuIndex: menus.menuIndex,
-        parentMenuId: menus.parentMenuId,
-        link: menus.link,
-        iconName: menus.iconName,
-        moduleCode: menus.moduleCode,
-      })
+      .select(menuColumns)
       .from(menus)
-      .where(eq(menus.isActive, true));
+      .where(options.includeInactive ? undefined : eq(menus.isActive, true));
+  }
+
+  async findById(tx: Tx, id: string): Promise<(MenuRow & { isActive: boolean }) | null> {
+    const [row] = await tx
+      .select({ ...menuColumns, isActive: menus.isActive })
+      .from(menus)
+      .where(eq(menus.id, id));
+    return row ?? null;
   }
 
   /** RoleAccess role aktif user dan UserAccess yang berlaku `today` (technical-specs 09 §9.4). */

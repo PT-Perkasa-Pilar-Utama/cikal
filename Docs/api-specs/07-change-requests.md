@@ -103,7 +103,7 @@ Hak atas ChangeRequest mengikuti menu entity-nya. Melihat butuh VIEW; approve, r
 2. Peninjau sama dengan pembuat: `403 SELF_REVIEW_NOT_ALLOWED`, juga ditegakkan `CHECK` di database (AC-12.04).
 3. Jalankan `validate` handler entity terhadap data terkini (aturan bisa berubah sejak diajukan, contoh kode produk sudah dipakai).
 4. Jalankan `apply` handler dalam transaksi yang sama: data biasa langsung berlaku; data berversi menjadi `ACTIVE` pada `effectiveFrom` (default sekarang) dan versi lama `SUPERSEDED`. Paket impor diterapkan seluruhnya atau tidak sama sekali (AC-12.07).
-5. Isi `reviewedBy`, `reviewedAt`, status `APPROVED`; publish event `MasterDataChanged` (cache dibuang lewat `NOTIFY`); catat audit dengan data lama dan baru.
+5. Isi `reviewedBy`, `reviewedAt`, status `APPROVED`; catat audit dengan data lama dan baru. Event `MasterDataChanged` untuk membuang cache lewat `NOTIFY` dipasang bersama cache memori pertama (lisensi, parameter sistem, rumus, matrix; technical-specs 04); data yang dibaca per request langsung berlaku.
 6. Pengajuan yang sudah disubmit tidak terpengaruh karena memakai snapshot (AC-20.08, AC-31.03).
 
 **Output 200**

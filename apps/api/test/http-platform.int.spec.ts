@@ -1,37 +1,19 @@
 import * as c from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { z } from "zod";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
 import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
 import { createRole, createSession } from "./support/session.js";
 
+/** Id sembarang: permintaan berikut ditolak skema sebelum data dibaca. */
 const recordId = c.productIdMock;
-const stubRoleId = "0192b6a4-0001-7000-8000-000000000001";
 const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: false, canApprove: true };
-
-type Case = [string, "GET" | "POST" | "PUT", string, unknown, number, z.ZodType];
-
-/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03). */
-const cases: Case[] = [
-  ["roles", "GET", "/api/v1/roles", undefined, 200, c.roleListResponseSchema],
-  ["menus", "GET", "/api/v1/menus", undefined, 200, c.menuTreeResponseSchema],
-  ["role access list", "GET", "/api/v1/role-access", undefined, 200, c.roleAccessListResponseSchema],
-  [
-    "role access create",
-    "POST",
-    "/api/v1/role-access",
-    { roleId: stubRoleId, menuId: recordId, ...flags },
-    202,
-    c.changeRequestAcceptedSchema,
-  ],
-  ["role access update", "PUT", `/api/v1/role-access/${recordId}`, flags, 202, c.changeRequestAcceptedSchema],
-];
 
 const everyRight = { view: true, create: true, update: true, delete: true, approve: true };
 
-describe("Sprint 1 stubs", () => {
+/** Perilaku HTTP bersama: envelope error, validasi body, probe, metrik, dan rute reset (api-specs 01, 27). */
+describe("HTTP platform", () => {
   let db: TestDatabase;
   let app: NestFastifyApplication;
   let headers: Record<string, string>;
@@ -41,25 +23,13 @@ describe("Sprint 1 stubs", () => {
     app = await createApp(db.config);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
-    const roleId = await createRole(db.owner, "Stub Tester", [{ menuCode: "IAM-ROLE-ACCESS", ...everyRight }]);
+    const roleId = await createRole(db.owner, "Platform Tester", [{ menuCode: "IAM-ROLE-ACCESS", ...everyRight }]);
     headers = (await createSession(db.owner, { roleId })).headers;
   });
 
   afterAll(async () => {
     await app?.close();
     await db?.stop();
-  });
-
-  it.each(cases)("%s returns a contract-valid response", async (_name, method, url, payload, status, schema) => {
-    const res = await app.inject({
-      method,
-      url,
-      headers,
-      ...(payload === undefined ? {} : { payload: payload as object }),
-    });
-    expect(res.statusCode, res.body).toBe(status);
-    const parsed = schema.safeParse(res.json());
-    expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error.issues)).toBe(true);
   });
 
   it("maps validation failures to the error envelope with field details", async () => {

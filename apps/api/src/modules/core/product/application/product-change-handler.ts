@@ -7,7 +7,6 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 import type { ApplyResult, ChangeRequestSnapshot, EntityHandler, JsonRecord } from "../../change-request/index.js";
 import { ProductsRepository } from "../db/products.repository.js";
 import { ProductChecks } from "./product-checks.js";
-import { revalidate } from "./revalidate.js";
 
 /** Label modul produk dan pricing di "Audit Trail". */
 export const PRODUCT_AUDIT_MODULE = "Product";
@@ -29,12 +28,10 @@ export class ProductChangeHandler implements EntityHandler {
 
   async validate(tx: Tx, request: ChangeRequestSnapshot): Promise<void> {
     const data = productDataSchema.parse(request.newData);
-    await revalidate(async () => {
-      await this.checks.assertRules(tx, data);
-      if (request.entityId === null) {
-        await this.checks.assertCodeUnused(tx, data.productCode, { includePending: false });
-      }
-    });
+    await this.checks.assertRules(tx, data);
+    if (request.entityId === null) {
+      await this.checks.assertCodeUnused(tx, data.productCode, { includePending: false });
+    }
   }
 
   async apply(tx: Tx, request: ChangeRequestSnapshot, reviewer: Actor): Promise<ApplyResult> {
