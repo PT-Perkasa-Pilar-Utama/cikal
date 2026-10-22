@@ -68,6 +68,42 @@ export class ChangeRequestsRepository {
     return row?.total ?? 0;
   }
 
+  /** Id data yang masih punya permintaan terbuka untuk salah satu jenis entity. */
+  async openEntityIds(
+    tx: Tx,
+    entityTypes: readonly ChangeRequestEntityType[],
+    entityIds: readonly string[],
+  ): Promise<string[]> {
+    if (entityIds.length === 0) return [];
+    const rows = await tx
+      .selectDistinct({ entityId: changeRequests.entityId })
+      .from(changeRequests)
+      .where(
+        and(
+          inArray(changeRequests.entityType, [...entityTypes]),
+          inArray(changeRequests.entityId, [...entityIds]),
+          sql`${changeRequests.status} in (${openStatusList})`,
+        ),
+      );
+    return rows.flatMap((row) => (row.entityId ? [row.entityId] : []));
+  }
+
+  /** Ada permintaan terbuka yang `newData.<field>`-nya sama persis dengan `value`. */
+  async hasOpenWithField(tx: Tx, entityType: ChangeRequestEntityType, field: string, value: string): Promise<boolean> {
+    const [row] = await tx
+      .select({ id: changeRequests.id })
+      .from(changeRequests)
+      .where(
+        and(
+          eq(changeRequests.entityType, entityType),
+          sql`${changeRequests.status} in (${openStatusList})`,
+          sql`${changeRequests.newData} ->> ${field} = ${value}`,
+        ),
+      )
+      .limit(1);
+    return row !== undefined;
+  }
+
   async markReviewed(
     tx: Tx,
     id: string,

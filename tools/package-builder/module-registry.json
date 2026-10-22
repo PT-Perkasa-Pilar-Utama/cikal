@@ -25,12 +25,12 @@
       "importPath": "./modules/core/integration/index.js"
     },
     {
-      "className": "MasterDataModule",
-      "importPath": "./modules/core/masterdata/index.js"
-    },
-    {
       "className": "ProductModule",
       "importPath": "./modules/core/product/index.js"
+    },
+    {
+      "className": "MasterDataModule",
+      "importPath": "./modules/core/masterdata/index.js"
     },
     {
       "className": "CalculationModule",

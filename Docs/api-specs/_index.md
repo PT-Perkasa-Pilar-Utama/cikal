@@ -122,12 +122,12 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /products` | 08 §8.1 | POC | TODO |
-| `GET /products/{id}` | 08 §8.2 | POC | TODO |
-| `POST /products` | 08 §8.3 | POC | TODO |
-| `PUT /products/{id}` | 08 §8.4 | POC | TODO |
-| `GET /products/{id}/pricing` | 08 §8.5 | POC | TODO |
-| `PUT /products/{id}/pricing` | 08 §8.6 | POC | TODO |
+| `GET /products` | 08 §8.1 | POC | OK |
+| `GET /products/{id}` | 08 §8.2 | POC | OK |
+| `POST /products` | 08 §8.3 | POC | OK |
+| `PUT /products/{id}` | 08 §8.4 | POC | OK |
+| `GET /products/{id}/pricing` | 08 §8.5 | POC | OK |
+| `PUT /products/{id}/pricing` | 08 §8.6 | POC | OK |
 | `GET /products/available` | 08 §8.7 | POC | TODO |
 | `PUT /products/{id}/route` | 08 §8.9 | POC | TODO |
 | `GET /products/{id}/route` | 08 §8.10 | POC | TODO |

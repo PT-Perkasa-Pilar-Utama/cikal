@@ -1,27 +1,11 @@
-import { errorEnvelopeSchema, productCreateRequestSchema } from "@cikal/contracts";
+import { errorEnvelopeSchema } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { z } from "zod";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
+import { insertProduct, ktaProduct, nextProductCode } from "./support/product.js";
 import { createRole, createSession } from "./support/session.js";
-
-const validProduct = {
-  productCode: "KTA",
-  productName: "Kredit Tanpa Agunan",
-  productCategory: "NON_COLLATERAL",
-  interestType: "EFFECTIVE",
-  minPlafond: "5000000.00",
-  maxPlafond: "300000000.00",
-  minTenor: 6,
-  maxTenor: 60,
-  minAge: 21,
-  maxAge: 55,
-  dbrMax: "40.0000",
-  validFrom: "2026-10-01",
-} satisfies z.input<typeof productCreateRequestSchema>;
-const productId = "0192b6a5-0001-7000-8000-000000000001";
 
 /** Guard global: sesi, CSRF, ganti password, hak menu (api-specs 02 §2.5, technical-specs 07 §7.2). */
 describe("access guard", () => {
@@ -47,14 +31,23 @@ describe("access guard", () => {
   const listProducts = (headers: Record<string, string>) =>
     app.inject({ method: "GET", url: "/api/v1/products", headers });
   const createProduct = (headers: Record<string, string>) =>
-    app.inject({ method: "POST", url: "/api/v1/products", headers, payload: validProduct });
-  const updateProduct = (headers: Record<string, string>) =>
     app.inject({
+      method: "POST",
+      url: "/api/v1/products",
+      headers,
+      payload: { ...ktaProduct, productCode: nextProductCode("A") },
+    });
+  /** Setiap ubahan memakai produk baru agar tidak tertahan permintaan terbuka uji sebelumnya. */
+  const updateProduct = async (headers: Record<string, string>) => {
+    const productCode = nextProductCode("A");
+    const productId = await insertProduct(db.owner, { productCode });
+    return app.inject({
       method: "PUT",
       url: `/api/v1/products/${productId}`,
       headers,
-      payload: { ...validProduct, isActive: true },
+      payload: { ...ktaProduct, productCode, productName: "KTA Diubah", isActive: true },
     });
+  };
 
   describe("menu rights", () => {
     it("rejects a Sales creating a product through the API with ACTION_DENIED (AC-09.04)", async () => {
