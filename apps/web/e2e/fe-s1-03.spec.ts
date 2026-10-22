@@ -1,6 +1,6 @@
-import type { Page } from "@playwright/test";
 import { expect, test } from "./support/fixtures";
 import { approve, submitProduct } from "./support/master-data";
+import { confirmApprove, openPendingDetail, pendingRow } from "./support/pending";
 
 /*
  * FE-S1-03: form produk dan layar Pending memakai API asli, dan pengajuan ditinjau user lain (api-specs 07, 08).
@@ -8,22 +8,7 @@ import { approve, submitProduct } from "./support/master-data";
  * Checker kedua AC-12.05.
  */
 
-const pendingRow = (page: Page, productName: string) => page.getByRole("row", { name: new RegExp(productName) });
-
-async function openPendingDetail(page: Page, productName: string) {
-  await page.goto("/master/products/pending");
-  await page.getByRole("button", { name: `Detail ${productName}` }).click();
-  const detail = page.getByRole("dialog", { name: "Detail" });
-  await expect(detail).toContainText(productName);
-  return detail;
-}
-
-async function confirmApprove(page: Page) {
-  await page.getByRole("dialog", { name: "Detail" }).getByRole("button", { name: "Approve" }).click();
-  const confirmation = page.getByRole("dialog", { name: "Confirmation" });
-  await expect(confirmation).toContainText("Are you sure you want to approve?");
-  await confirmation.getByRole("button", { name: "Yes" }).click();
-}
+const PENDING_PRODUCT = "/master/products/pending";
 
 test("AC-20.01 a Maker submits a new product from the form and it waits for approval", async ({ pageAs }) => {
   const page = await pageAs("maker.01");
@@ -56,7 +41,7 @@ test("AC-12.01 a Checker approves a new product and it moves from Pending Produc
   await submitProduct("maker.01", "KPR", "KPR Subsidi");
   const page = await pageAs("checker.001");
 
-  await openPendingDetail(page, "KPR Subsidi");
+  await openPendingDetail(page, PENDING_PRODUCT, "KPR Subsidi");
   await confirmApprove(page);
 
   await expect(page.getByText("Data approved")).toBeVisible();
@@ -69,7 +54,7 @@ test("AC-12.04 a user with Create and Approve cannot review their own submission
   await submitProduct("admin.sistem", "KMK", "Kredit Modal Kerja");
   const page = await pageAs("admin.sistem");
 
-  const detail = await openPendingDetail(page, "Kredit Modal Kerja");
+  const detail = await openPendingDetail(page, PENDING_PRODUCT, "Kredit Modal Kerja");
 
   await expect(detail).toContainText("You cannot review your own submission");
   for (const name of ["Approve", "Reject", "Revise"]) {
@@ -80,7 +65,7 @@ test("AC-12.04 a user with Create and Approve cannot review their own submission
 test("AC-12.05 a second Checker gets the processed message and the product is applied once", async ({ pageAs }) => {
   const changeRequestId = await submitProduct("maker.01", "KMG", "Kredit Multiguna");
   const page = await pageAs("checker.001");
-  await openPendingDetail(page, "Kredit Multiguna");
+  await openPendingDetail(page, PENDING_PRODUCT, "Kredit Multiguna");
 
   await approve("admin.sistem", changeRequestId);
   await confirmApprove(page);

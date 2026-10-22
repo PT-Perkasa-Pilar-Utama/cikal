@@ -6,6 +6,8 @@ export interface FieldPresentation {
   labels: Readonly<Record<string, string>>;
   /** Label nilai enum per nama field, contoh `productCategory` `NON_COLLATERAL` menjadi "Non Collateral Loan". */
   valueLabels?: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  /** Field teknis yang tidak ditampilkan, contoh id role yang sudah diwakili nama role. */
+  hidden?: readonly string[];
 }
 
 export interface ComparisonRow {
@@ -87,7 +89,9 @@ export function comparisonRows(
 ): ComparisonRow[] {
   const before = flatten(current);
   const after = flatten(proposed);
-  const paths = inLabelOrder([...new Set([...after.keys(), ...before.keys()])], presentation);
+  const hidden = new Set(presentation.hidden);
+  const shown = [...new Set([...after.keys(), ...before.keys()])].filter((path) => !hidden.has(path));
+  const paths = inLabelOrder(shown, presentation);
   const changed = new Set(current === null ? [] : changedFields);
   return paths.map((path) => ({
     path,

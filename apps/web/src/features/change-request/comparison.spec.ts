@@ -34,6 +34,15 @@ describe("comparisonRows", () => {
 
     expect(rows.some((row) => row.changed)).toBe(false);
   });
+
+  it("leaves out the fields the presentation hides", () => {
+    const rows = comparisonRows(null, { roleId: "0192b6a1-0003-7000-8000-000000000003", roleName: "Sales" }, [], {
+      labels: { roleName: "Role" },
+      hidden: ["roleId"],
+    });
+
+    expect(rows.map((row) => row.label)).toEqual(["Role"]);
+  });
 });
 
 describe("formatValue", () => {
