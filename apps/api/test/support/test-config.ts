@@ -8,7 +8,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     port: 0,
     processRole: "api",
     logLevel: "warn",
-    database: { url: "postgres://cikal:cikal@127.0.0.1:1/cikal", poolMax: 2 },
+    database: { url: "postgres://cikal:cikal@127.0.0.1:1/cikal", migrationUrl: null, poolMax: 2 },
     storage: {
       endpoint: "http://127.0.0.1:1",
       region: "us-east-1",
@@ -17,6 +17,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       secretKey: "test-secret",
       forcePathStyle: true,
     },
+    gotenbergUrl: null,
     monitoringToken: "monitoring-test-token",
     resetApi: null,
     ...overrides,

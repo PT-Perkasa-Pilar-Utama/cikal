@@ -5,16 +5,20 @@ name: cikal-dev
 services:
   db:
     image: postgres:17.6-alpine
+    # Superuser hanya untuk inspeksi; aplikasi memakai cikal_app, migrasi memakai cikal_owner (initdb/10-roles.sh).
     environment:
       POSTGRES_DB: cikal
-      POSTGRES_USER: cikal
-      POSTGRES_PASSWORD: cikal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      CIKAL_OWNER_PASSWORD: cikal_owner
+      CIKAL_APP_PASSWORD: cikal_app
     ports:
       - "55432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cikal -d cikal"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cikal"]
       interval: 5s
       retries: 10
 
@@ -32,8 +36,10 @@ services:
     image: chrislusf/seaweedfs:3.97
     depends_on:
       - storage
+    # weed shell keluar 0 walau filer belum siap, jadi ulangi sampai bucket benar-benar terdaftar.
     entrypoint: >
-      /bin/sh -c "until echo 's3.bucket.create -name cikal-dev' | weed shell -master=storage:9333 -filer=storage:8888; do sleep 2; done"
+      /bin/sh -c "until echo 's3.bucket.list' | weed shell -master=storage:9333 -filer=storage:8888 2>/dev/null | grep -q cikal-dev;
+      do echo 's3.bucket.create -name cikal-dev' | weed shell -master=storage:9333 -filer=storage:8888; sleep 2; done"
 
   gotenberg:
     image: gotenberg/gotenberg:8.20.1

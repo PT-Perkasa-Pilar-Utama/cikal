@@ -161,11 +161,11 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | `.github/workflows/release.yml` | Build dan push dua image saat tag `v*`, tulis digest di job summary | TL-S6-01 | Belum ada |
 | `deploy/compose/docker-compose.single.yml`, `docker-compose.app.yml`, `docker-compose.data.yml` | Service di 2.2, log rotation, healthcheck | TL-S6-01 | Belum ada |
 | `deploy/compose/env/{sit,uat,production-app,production-data}.env.example` | Isi 3.5 | TL-S6-01 | Belum ada |
-| `deploy/compose/initdb/10-roles.sh` | Membuat `cikal_owner` dan `cikal_app` dari file secret | TL-S6-01 | Belum ada |
+| `deploy/compose/initdb/10-roles.sh` | Membuat `cikal_owner` dan `cikal_app` dari file secret | TL-S1-02 | Ada |
 | `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan | TL-S6-01 | Belum ada |
 | `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
-| Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02 | Belum ada (8, F-02) |
-| `POST /api/admin/reset-state` lengkap | Saat ini stub `501` | TL-S1-02 | Stub |
+| Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
+| `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02 | Ada; sesi dan CSRF menunggu TL-S1-03 |
 
 ### 2.6 Perbedaan untuk on-premise client
 
@@ -1142,8 +1142,8 @@ docker image prune -a --filter "until=720h"
 | ID | Temuan | Tindak lanjut |
 |---|---|---|
 | F-01 | MS-03 menyebut runner migrasi membaca `DATABASE_URL`, berbeda dengan 11.2 | Diperbaiki di [technical-specs/06-data-model.md](technical-specs/06-data-model.md) 6.12: runner memakai `DATABASE_MIGRATION_URL` |
-| F-02 | Runner butuh subperintah `seed --seed=base`, `reset --seed=dev\|qa` (menolak di production), dan `create-admin`; seed `dev` dan `qa` dibangun di atas `base` | Perbarui MS-05 dan MS-07 di tech 06 6.12; masuk lingkup TL-S1-02 (reset, seed) dan TL-S6-01 (`base`, `create-admin`) |
-| F-03 | Role `cikal_app` harus mendapat `USAGE` dan hak tabel di setiap skema yang dibuat `cikal_owner` | Runner memberi `GRANT` dan `ALTER DEFAULT PRIVILEGES` setelah migrasi per modul; tambahkan ke tech 06 6.12 |
+| F-02 | Runner butuh subperintah `seed --seed=base`, `reset --seed=dev\|qa` (menolak di production), dan `create-admin`; seed `dev` dan `qa` dibangun di atas `base` | `seed` berlapis dan `reset` selesai di TL-S1-02 (tech 06 6.12 MS-05, MS-07 diperbarui). `create-admin` menunggu tabel `iam` dari BE-S1-01; masuk TL-S6-01 |
+| F-03 | Role `cikal_app` harus mendapat `USAGE` dan hak tabel di setiap skema yang dibuat `cikal_owner` | Selesai di TL-S1-02: runner memberi `GRANT` dan `ALTER DEFAULT PRIVILEGES` setelah migrasi per skema (MS-05) |
 | F-04 | Artefak server di 2.5 (dua Dockerfile, tiga file compose, contoh env, template nginx, image `cikal-postgres`, `release.yml`) melebihi estimasi TL-S6-01 (2.5d) | Pecah menjadi kartu baru di Sprint 6 atau tambah estimasi lewat `/task-breakdown` |
 | F-05 | Koneksi production VM aplikasi ke PostgreSQL dan SeaweedFS lewat jaringan privat tanpa TLS; tech ref bagian 13 meminta semua koneksi memakai TLS | Putuskan: aktifkan TLS PostgreSQL (`sslmode=verify-full`) dan HTTPS SeaweedFS, atau terima jaringan privat sebagai batas untuk POC dan catat sebagai ADR |
 | F-06 | SIT dan UAT publik; `POST /api/admin/reset-state` terjangkau internet walau dilindungi sesi, role `QA-RESET`, dan token | Rekomendasi: template nginx membatasi `location /api/admin/` ke CIDR kantor PPU |

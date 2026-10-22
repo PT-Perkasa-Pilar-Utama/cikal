@@ -17,6 +17,7 @@ export const envSchema = z
     PORT: z.coerce.number().int().positive().default(3000),
     PROCESS_ROLE: z.enum(["api", "worker"]).default("api"),
     DATABASE_URL: z.string().startsWith("postgres"),
+    DATABASE_MIGRATION_URL: z.string().startsWith("postgres").optional(),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
     S3_ENDPOINT: z.url(),
     S3_REGION: z.string().min(1),
@@ -24,9 +25,11 @@ export const envSchema = z
     S3_ACCESS_KEY_FILE: z.string().min(1),
     S3_SECRET_KEY_FILE: z.string().min(1),
     S3_FORCE_PATH_STYLE: flag,
+    GOTENBERG_URL: z.url().optional(),
     MONITORING_TOKEN_FILE: z.string().min(1),
     ENABLE_RESET_API: flag,
     RESET_API_TOKEN_FILE: z.string().optional(),
+    DEFAULT_RESET_SEED: z.enum(["dev", "qa"]).default("qa"),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   })
   .superRefine((env, ctx) => {
@@ -40,6 +43,13 @@ export const envSchema = z
         message: "is required when ENABLE_RESET_API=true",
       });
     }
+    if (env.ENABLE_RESET_API && !env.DATABASE_MIGRATION_URL) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["DATABASE_MIGRATION_URL"],
+        message: "is required when ENABLE_RESET_API=true",
+      });
+    }
   });
 
 export interface AppConfig {
@@ -48,7 +58,8 @@ export interface AppConfig {
   port: number;
   processRole: "api" | "worker";
   logLevel: string;
-  database: { url: string; poolMax: number };
+  /** `migrationUrl`: role pemilik skema untuk runner migrasi dan reset (technical-specs 06 §6.12 MS-03). */
+  database: { url: string; migrationUrl: string | null; poolMax: number };
   storage: {
     endpoint: string;
     region: string;
@@ -57,9 +68,11 @@ export interface AppConfig {
     secretKey: string;
     forcePathStyle: boolean;
   };
+  /** Gotenberg; probe `pdfConverter` dilewati bila kosong. */
+  gotenbergUrl: string | null;
   monitoringToken: string;
   /** Terisi hanya bila rute reset-state boleh didaftarkan (technical-specs 07 §7.8). */
-  resetApi: { token: string } | null;
+  resetApi: { token: string; defaultSeed: "dev" | "qa" } | null;
 }
 
 const RESET_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["dev", "test", "sit", "uat"]);
@@ -81,7 +94,11 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     port: env.PORT,
     processRole: env.PROCESS_ROLE,
     logLevel: env.LOG_LEVEL,
-    database: { url: env.DATABASE_URL, poolMax: env.DATABASE_POOL_MAX },
+    database: {
+      url: env.DATABASE_URL,
+      migrationUrl: env.DATABASE_MIGRATION_URL ?? null,
+      poolMax: env.DATABASE_POOL_MAX,
+    },
     storage: {
       endpoint: env.S3_ENDPOINT,
       region: env.S3_REGION,
@@ -90,8 +107,12 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       secretKey: readSecret(env.S3_SECRET_KEY_FILE),
       forcePathStyle: env.S3_FORCE_PATH_STYLE,
     },
+    gotenbergUrl: env.GOTENBERG_URL ?? null,
     monitoringToken: readSecret(env.MONITORING_TOKEN_FILE),
-    resetApi: resetAllowed && env.RESET_API_TOKEN_FILE ? { token: readSecret(env.RESET_API_TOKEN_FILE) } : null,
+    resetApi:
+      resetAllowed && env.RESET_API_TOKEN_FILE
+        ? { token: readSecret(env.RESET_API_TOKEN_FILE), defaultSeed: env.DEFAULT_RESET_SEED }
+        : null,
   };
 }
 
