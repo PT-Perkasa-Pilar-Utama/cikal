@@ -456,6 +456,12 @@ Format `<type>(<scope>): <kalimat imperatif> (<ID-kartu>)`, mengikuti Convention
 feat(product): add pricing periods with overlap check (BE-S1-03)
 ```
 
+Commit yang ditulis atau dibantu agen AI diakhiri trailer `Co-Authored-By` milik agen itu. Commit yang ditulis manusia tanpa trailer.
+
+```text
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+```
+
 ### 12.2 Nama branch
 
 `<type>/<id-kartu>-<ringkas>`, huruf kecil, contoh `feat/be-s1-03-product-pricing`. Pekerjaan tanpa kartu memakai `docs/` atau `chore/` dengan ringkasan.
