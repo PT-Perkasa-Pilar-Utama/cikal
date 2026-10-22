@@ -317,7 +317,7 @@ umask 077
 mkdir -p secrets && chmod 700 secrets
 
 # 1. Password dan token acak. Hex agar aman di URL koneksi tanpa escape.
-for f in db_postgres_password db_owner_password db_app_password s3_access_key s3_secret_key monitoring_token reset_token; do
+for f in db_postgres_password db_owner_password db_app_password s3_access_key s3_secret_key monitoring_token reset_token seed_user_password; do
   openssl rand -hex 24 > "secrets/$f"
 done
 
@@ -332,8 +332,8 @@ printf '{"identities":[{"name":"cikal","credentials":[{"accessKey":"%s","secretK
 read -rs SMTP_PASSWORD && printf '%s' "$SMTP_PASSWORD" > secrets/smtp_password && unset SMTP_PASSWORD
 read -rs OKSARA_KEY && printf '%s' "$OKSARA_KEY" > secrets/oksara_key && unset OKSARA_KEY
 
-# 5. Production: reset tidak ada, hapus token reset
-#    rm secrets/reset_token
+# 5. Production: reset dan akun seed tidak ada, hapus keduanya
+#    rm secrets/reset_token secrets/seed_user_password
 
 # 6. Container berjalan sebagai user non-root dan harus bisa membaca file;
 #    folder 700 tetap menutup akses user host lain.
@@ -349,6 +349,7 @@ chmod 644 secrets/*
 | `cikal_master_key` | **Wajib** | ada | ada | |
 | `monitoring_token` | Ya | ada | ada | |
 | `reset_token` | Ya | ada | **tidak ada** | |
+| `seed_user_password` | Ya (password akun seed `dev`/`qa`) | ada | **tidak ada** | |
 | `smtp_password`, `oksara_key` | Ya | ada | ada | |
 | `pgbackrest.conf`, `rclone.conf` | Ya | | | ada (3.9) |
 
@@ -414,10 +415,11 @@ REGION_API_KEY_FILE=/run/secrets/oksara_key
 ALLOW_SIMULATION_ADAPTERS=true
 WORKER_CONCURRENCY=5
 
-# Reset state (hapus ketiga baris ini di production)
+# Reset state (hapus keempat baris ini di production)
 ENABLE_RESET_API=true
 RESET_API_TOKEN_FILE=/run/secrets/reset_token
 DEFAULT_RESET_SEED=qa
+SEED_USER_PASSWORD_FILE=/run/secrets/seed_user_password
 ```
 
 Isi password DB dari file secret:
@@ -576,7 +578,7 @@ curl -fsS -H "Authorization: Bearer $(cat secrets/monitoring_token)" "https://$D
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "https://$DOMAIN/api/admin/reset-state"
 ```
 
-Lalu login di browser: SIT/UAT dengan akun seed `qa`, production dengan akun admin dari 3.6.
+Lalu login di browser: SIT/UAT dengan akun seed `qa.01`, production dengan akun admin dari 3.6.
 
 Catat rilis pertama untuk rollback:
 
@@ -899,7 +901,7 @@ cd /opt/cikal && set -a && . ./.env && set +a
 
 # 1. Login sebagai akun QA seed; password dari vault
 read -rs QA_PASSWORD
-printf '{"username":"qa","password":"%s"}' "$QA_PASSWORD" | \
+printf '{"username":"qa.01","password":"%s"}' "$QA_PASSWORD" | \
   curl -fsS -c /tmp/cikal.jar -H 'Content-Type: application/json' --data @- "https://$DOMAIN/api/v1/auth/login" > /dev/null
 unset QA_PASSWORD
 
@@ -963,7 +965,7 @@ Hasil yang diharapkan: status `ok` atau `degraded`, satu baris `qa`, dan jumlah 
 - Lokasi: `apps/api/src/modules/<area>/<modul>/seed/{base,dev,qa}`; hanya modul berlisensi yang ikut ke image.
 - Pilihan: flag `--seed=` pada runner, field `seed` pada API, atau default `DEFAULT_RESET_SEED`.
 - Semua seed idempoten (`INSERT ... ON CONFLICT DO NOTHING`) dan di-commit ([technical-specs/06-data-model.md](technical-specs/06-data-model.md) 6.12, MS-07).
-- Password akun seed `dev` dan `qa` disimpan di vault tim, satu entri per lingkungan.
+- Password akun seed `dev` dan `qa` disimpan di vault tim, satu entri per lingkungan, dan dibaca runner serta reset dari `SEED_USER_PASSWORD_FILE` (`secrets/seed_user_password`). Seed hanya menyimpan hash Argon2id-nya.
 
 ---
 

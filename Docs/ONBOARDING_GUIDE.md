@@ -140,7 +140,7 @@ docker compose -f deploy/compose/docker-compose.dev.yml down -v
 
 ### 3.5 Keadaan aplikasi saat ini
 
-Login dan sesi asli dibangun di kartu BE-S1-01. Sampai kartu itu selesai, web memakai sesi mock dari `packages/contracts`, dan endpoint Sprint 1 yang belum dibangun mengembalikan mock kontrak (stub). Sejak TL-S1-03, guard memeriksa sesi, CSRF, dan hak menu di setiap rute selain `@Public`, jadi stub hanya menjawab request yang membawa cookie sesi yang valid. Status per endpoint ada di Operation Status Tracker [api-specs/_index.md](api-specs/_index.md).
+Login, logout, dan sesi asli ada sejak BE-S1-01. Masuk dengan akun seed `dev` (misal `maker.01` atau `sales.jkt01`) dan password di `deploy/compose/.secrets/seed_user_password`. Guard memeriksa sesi, CSRF, dan hak menu di setiap rute selain `@Public`. Endpoint Sprint 1 yang belum dibangun mengembalikan mock kontrak (stub) bagi request ber-sesi. Status per endpoint ada di Operation Status Tracker [api-specs/_index.md](api-specs/_index.md).
 
 ## 4. Tur kode dan urutan baca
 

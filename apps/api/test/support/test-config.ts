@@ -18,6 +18,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       forcePathStyle: true,
     },
     gotenbergUrl: null,
+    sessionCookieSecure: true,
     monitoringToken: "monitoring-test-token",
     resetApi: null,
     ...overrides,

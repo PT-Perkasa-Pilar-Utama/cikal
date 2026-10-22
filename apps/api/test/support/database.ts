@@ -6,6 +6,10 @@ import type { SeedName } from "../../src/platform/migrate/module-data.js";
 import { migrateModules, seedModules } from "../../src/platform/migrate/runner.js";
 import { testConfig } from "./test-config.js";
 
+/** Password akun seed di lingkungan uji; hanya dipakai container sekali pakai. */
+export const SEED_USER_PASSWORD = "Seed-Test-Password-1";
+export const seedContext = { userPassword: SEED_USER_PASSWORD };
+
 export interface TestDatabase {
   /** Role pemilik skema untuk menyiapkan data uji di luar RLS. */
   owner: pg.Pool;
@@ -32,7 +36,7 @@ export async function startDatabase(seed: SeedName = "dev"): Promise<TestDatabas
   const owner = new pg.Pool({ connectionString: url("cikal_owner", "owner"), max: 3 });
   const app = new pg.Pool({ connectionString: appUrl, max: 2 });
   await migrateModules(owner, installedModuleData, "cikal_app");
-  await seedModules(owner, installedModuleData, seed);
+  await seedModules(owner, installedModuleData, seed, seedContext);
 
   return {
     owner,

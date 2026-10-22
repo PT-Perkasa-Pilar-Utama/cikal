@@ -1,11 +1,10 @@
-import { timingSafeEqual } from "node:crypto";
 import type { Action, MenuCode } from "@cikal/contracts";
 import { type CanActivate, type ExecutionContext, Inject, Injectable, SetMetadata } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { FastifyRequest } from "fastify";
-import { ACCESS_PORT, type AccessPort, type ResolvedSession } from "./access-port.js";
+import { ACCESS_PORT, type AccessPort } from "./access-port.js";
 import { DomainError } from "./domain-error.js";
-import { BACKGROUND_HEADER, CSRF_HEADER, hashToken, SESSION_COOKIE } from "./session-token.js";
+import { BACKGROUND_HEADER, CSRF_HEADER, csrfMatches, SESSION_COOKIE } from "./session-token.js";
 
 export type AccessRule =
   | { kind: "public" }
@@ -31,12 +30,6 @@ export const Requires = (menuCode: MenuCode, action: Action) =>
 /** Rute yang tetap terbuka selama `mustChangePassword` (ganti password, sesi, logout; api-specs 02 §2.1). */
 export const AllowDuringPasswordChange = () => SetMetadata(ALLOW_DURING_PASSWORD_CHANGE, true);
 
-function csrfMatches(session: ResolvedSession, header: string | string[] | undefined): boolean {
-  if (!session.csrfTokenHash || typeof header !== "string" || header.length === 0) return false;
-  const given = hashToken(header);
-  return given.length === session.csrfTokenHash.length && timingSafeEqual(given, session.csrfTokenHash);
-}
-
 /**
  * Guard global dengan urutan api-specs 02 §2.5: sesi, CSRF, ganti password awal, lisensi dan hak menu.
  * Rute tanpa aturan akses ditolak (fail closed); uji arsitektur menolaknya lebih awal.
@@ -59,7 +52,7 @@ export class AccessGuard implements CanActivate {
     if (!token) throw DomainError.standard("UNAUTHENTICATED");
     const session = await this.access.resolveSession(token, { touch: request.headers[BACKGROUND_HEADER] !== "true" });
 
-    if (!SAFE_METHODS.has(request.method) && !csrfMatches(session, request.headers[CSRF_HEADER])) {
+    if (!SAFE_METHODS.has(request.method) && !csrfMatches(session.csrfTokenHash, request.headers[CSRF_HEADER])) {
       throw DomainError.standard("CSRF_TOKEN_INVALID");
     }
     const allowed = this.reflector.getAllAndOverride<boolean | undefined>(ALLOW_DURING_PASSWORD_CHANGE, targets);

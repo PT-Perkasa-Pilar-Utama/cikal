@@ -9,6 +9,11 @@ const flag = z
   .default("false")
   .transform((v) => v === "true");
 
+const secureFlag = z
+  .enum(["true", "false"])
+  .default("true")
+  .transform((v) => v === "true");
+
 /** Environment variable teknis (technical-specs 11 §11.2). Konfigurasi bisnis per tenant tidak ada di sini. */
 export const envSchema = z
   .object({
@@ -26,10 +31,12 @@ export const envSchema = z
     S3_SECRET_KEY_FILE: z.string().min(1),
     S3_FORCE_PATH_STYLE: flag,
     GOTENBERG_URL: z.url().optional(),
+    SESSION_COOKIE_SECURE: secureFlag,
     MONITORING_TOKEN_FILE: z.string().min(1),
     ENABLE_RESET_API: flag,
     RESET_API_TOKEN_FILE: z.string().optional(),
     DEFAULT_RESET_SEED: z.enum(["dev", "qa"]).default("qa"),
+    SEED_USER_PASSWORD_FILE: z.string().min(1).optional(),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   })
   .superRefine((env, ctx) => {
@@ -40,6 +47,13 @@ export const envSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["RESET_API_TOKEN_FILE"],
+        message: "is required when ENABLE_RESET_API=true",
+      });
+    }
+    if (env.ENABLE_RESET_API && !env.SEED_USER_PASSWORD_FILE) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["SEED_USER_PASSWORD_FILE"],
         message: "is required when ENABLE_RESET_API=true",
       });
     }
@@ -70,9 +84,14 @@ export interface AppConfig {
   };
   /** Gotenberg; probe `pdfConverter` dilewati bila kosong. */
   gotenbergUrl: string | null;
+  /** Atribut `Secure` cookie sesi; `false` hanya di dev (technical-specs 11 §11.3). */
+  sessionCookieSecure: boolean;
   monitoringToken: string;
-  /** Terisi hanya bila rute reset-state boleh didaftarkan (technical-specs 07 §7.8). */
-  resetApi: { token: string; defaultSeed: "dev" | "qa" } | null;
+  /**
+   * Terisi hanya bila rute reset-state boleh didaftarkan (technical-specs 07 §7.8). `seedUserPassword` adalah
+   * password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5).
+   */
+  resetApi: { token: string; defaultSeed: "dev" | "qa"; seedUserPassword: string } | null;
 }
 
 const RESET_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["dev", "test", "sit", "uat"]);
@@ -108,10 +127,15 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       forcePathStyle: env.S3_FORCE_PATH_STYLE,
     },
     gotenbergUrl: env.GOTENBERG_URL ?? null,
+    sessionCookieSecure: env.SESSION_COOKIE_SECURE,
     monitoringToken: readSecret(env.MONITORING_TOKEN_FILE),
     resetApi:
-      resetAllowed && env.RESET_API_TOKEN_FILE
-        ? { token: readSecret(env.RESET_API_TOKEN_FILE), defaultSeed: env.DEFAULT_RESET_SEED }
+      resetAllowed && env.RESET_API_TOKEN_FILE && env.SEED_USER_PASSWORD_FILE
+        ? {
+            token: readSecret(env.RESET_API_TOKEN_FILE),
+            defaultSeed: env.DEFAULT_RESET_SEED,
+            seedUserPassword: readSecret(env.SEED_USER_PASSWORD_FILE),
+          }
         : null,
   };
 }

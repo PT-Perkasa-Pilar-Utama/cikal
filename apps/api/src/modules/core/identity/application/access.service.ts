@@ -27,6 +27,7 @@ export class AccessService implements AccessPort {
     return this.db.withLookupTx("app.session_token_hash", tokenHash.toString("hex"), async (tx) => {
       const session = await this.sessions.findByTokenHash(tx, tokenHash);
       if (!session) throw DomainError.standard("UNAUTHENTICATED");
+      if (session.endedReason === "REPLACED") throw DomainError.standard("SESSION_REPLACED");
       const now = new Date();
       if (isSessionExpired(session, now)) throw DomainError.standard("SESSION_EXPIRED");
 

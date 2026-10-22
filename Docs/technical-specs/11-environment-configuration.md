@@ -42,6 +42,7 @@ Konfigurasi teknis per lingkungan diatur lewat environment variable saat deploy 
 | `ENABLE_RESET_API` | Tidak | `true` | Memasang `POST /api/admin/reset-state` |
 | `RESET_API_TOKEN_FILE` | Kondisional | `/run/secrets/reset_token` | Wajib bila `ENABLE_RESET_API=true` |
 | `DEFAULT_RESET_SEED` | Tidak | `qa` | Seed bila body tidak mengirim `seed` |
+| `SEED_USER_PASSWORD_FILE` | Kondisional | `/run/secrets/seed_user_password` | Password akun seed `dev` dan `qa`, satu per lingkungan dari vault. Wajib bila `ENABLE_RESET_API=true` dan untuk `seed --seed=dev` atau `--seed=qa` di runner |
 
 ## 11.3 Nilai per lingkungan untuk variabel yang dikunci
 
@@ -50,6 +51,7 @@ Konfigurasi teknis per lingkungan diatur lewat environment variable saat deploy 
 | `ENABLE_RESET_API` | `true` | `true` | `true` | `true` | **tidak di-set; start ditolak bila `true`** |
 | `RESET_API_TOKEN_FILE` | ada | ada | ada | ada | **tidak ada** |
 | `DEFAULT_RESET_SEED` | `dev` | `qa` | `qa` | `qa` | **tidak ada** |
+| `SEED_USER_PASSWORD_FILE` | ada | ada | ada | ada | **tidak ada** |
 | `ALLOW_SIMULATION_ADAPTERS` | `true` | `true` | `true` | `true` | `false` |
 | `SESSION_COOKIE_SECURE` | `false` | `true` | `true` | `true` | `true` |
 | `LOG_LEVEL` | `debug` | `warn` | `info` | `info` | `info` |
@@ -84,5 +86,6 @@ REGION_API_KEY_FILE=/run/secrets/oksara_key
 ALLOW_SIMULATION_ADAPTERS=true
 ENABLE_RESET_API=true
 RESET_API_TOKEN_FILE=/run/secrets/reset_token
+SEED_USER_PASSWORD_FILE=/run/secrets/seed_user_password
 DEFAULT_RESET_SEED=qa
 ```

@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import { z } from "zod";
-import { type ModuleData, SEED_LAYERS, type SeedName } from "./module-data.js";
+import { type ModuleData, SEED_LAYERS, type SeedContext, type SeedName } from "./module-data.js";
 
 /** Ledger per skema modul (MS-04). */
 export const MIGRATIONS_TABLE = "__migrations";
@@ -107,14 +107,19 @@ export async function migrateModules(
 }
 
 /** Menerapkan lapisan seed (`qa` = base, dev, qa) untuk semua modul dalam satu transaksi. */
-export async function seedModules(pool: pg.Pool, modules: readonly ModuleData[], seed: SeedName): Promise<void> {
+export async function seedModules(
+  pool: pg.Pool,
+  modules: readonly ModuleData[],
+  seed: SeedName,
+  ctx: SeedContext,
+): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query("begin");
     const db = drizzle(client);
     for (const layer of SEED_LAYERS[seed]) {
       for (const module of modules) {
-        await module.seeds[layer]?.(db);
+        await module.seeds[layer]?.(db, ctx);
       }
     }
     await client.query("commit");
@@ -172,6 +177,7 @@ export async function resetState(options: {
   modules: readonly ModuleData[];
   appRole: string | null;
   seed: ResetSeedName;
+  seedContext: SeedContext;
   emptyBucket: () => Promise<number>;
 }): Promise<ResetResult> {
   const { pool, modules, appRole, seed } = options;
@@ -187,7 +193,7 @@ export async function resetState(options: {
         await client.query(`drop schema if exists ${ident(schema)} cascade`);
       }
       const migrationsApplied = await migrateModules(pool, modules, appRole);
-      await seedModules(pool, modules, seed);
+      await seedModules(pool, modules, seed, options.seedContext);
       const tenantsSeeded = await listTenants(pool);
       const bucketObjectsDeleted = await options.emptyBucket();
       return {

@@ -350,7 +350,7 @@ Selama endpoint masih stub, controller mengembalikan mock dari `packages/contrac
 
 ### 8.1 Env hanya lewat `platform/config`
 
-`process.env` hanya dibaca `loadConfig()` di `platform/config`. Pengecualian: pemuatan `.env` di entrypoint (`main.ts`, `worker.ts`, `run.ts`) dan `DATABASE_MIGRATION_URL`/`DATABASE_URL` di runner migrasi (MS-03).
+`process.env` hanya dibaca `loadConfig()` di `platform/config`. Pengecualian: pemuatan `.env` di entrypoint (`main.ts`, `worker.ts`, `run.ts`), serta `DATABASE_MIGRATION_URL`/`DATABASE_URL` (MS-03) dan `SEED_USER_PASSWORD_FILE` di runner migrasi.
 
 ```diff
 - const timeout = Number(process.env.DUKCAPIL_TIMEOUT_MS ?? 5000);

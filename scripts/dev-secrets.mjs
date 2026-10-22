@@ -12,6 +12,8 @@ const secrets = {
   s3_secret_key: () => randomBytes(24).toString("hex"),
   monitoring_token: () => randomBytes(24).toString("hex"),
   reset_token: () => randomBytes(24).toString("hex"),
+  // Password akun seed dev dan qa; satu per lingkungan (DEPLOYMENT_PLAN §6.5).
+  seed_user_password: () => randomBytes(12).toString("base64url"),
 };
 
 for (const [name, make] of Object.entries(secrets)) {

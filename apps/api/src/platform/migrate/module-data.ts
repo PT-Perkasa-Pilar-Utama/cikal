@@ -11,8 +11,13 @@ export const SEED_LAYERS: Record<SeedName, readonly SeedName[]> = {
   qa: ["base", "dev", "qa"],
 };
 
+/** Masukan seed dari luar repo. `userPassword` adalah password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5). */
+export interface SeedContext {
+  userPassword: string | null;
+}
+
 /** Seed berjalan sebagai role pemilik skema di dalam satu transaksi; wajib idempoten (`ON CONFLICT DO NOTHING`). */
-export type ModuleSeed = (db: NodePgDatabase) => Promise<void>;
+export type ModuleSeed = (db: NodePgDatabase, ctx: SeedContext) => Promise<void>;
 
 /**
  * Kontrak satu modul terhadap runner migrasi: skema, folder migrasi, dan seed per lapisan.

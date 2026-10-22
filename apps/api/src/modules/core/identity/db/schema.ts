@@ -116,6 +116,12 @@ export const users = iam.table(
     check("users_password_hash_check", sql`${table.authType} <> 'LOCAL' or ${table.passwordHash} is not null`),
     check("users_status_check", sql`${table.status} in ('NO_ROLE', 'ACTIVE', 'INACTIVE', 'LOCKED')`),
     tenantIsolation(),
+    // DM-12: login membaca user berdasarkan username sebelum tenant diketahui (api-specs 02 §2.2).
+    pgPolicy("login_lookup", {
+      as: "permissive",
+      for: "select",
+      using: sql`lower(${table.username}) = nullif(current_setting('app.login_username', true), '')`,
+    }),
   ],
 );
 
@@ -168,7 +174,8 @@ export const userAccess = iam.table(
 
 /**
  * SESSIONS, technical-specs 06 §6.4. Policy `session_lookup` (DM-12) membuka satu baris yang hash token-nya
- * dipasang di `app.session_token_hash`, karena guard belum tahu tenant saat membaca cookie.
+ * dipasang di `app.session_token_hash`, karena guard belum tahu tenant saat membaca cookie. Sesi yang diganti
+ * login baru disimpan dengan `ended_reason = 'REPLACED'` agar cookie lamanya dijawab SESSION_REPLACED (AC-06.05).
  */
 export const sessions = iam.table(
   "sessions",
@@ -184,10 +191,16 @@ export const sessions = iam.table(
     lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     ipAddress: inet("ip_address"),
+    endedReason: text("ended_reason"),
     ...auditColumns(),
   },
   (table) => [
     check("sessions_channel_check", sql`${table.channel} in ('WEB', 'MOBILE')`),
+    check("sessions_ended_reason_check", sql`${table.endedReason} in ('REPLACED')`),
+    // Satu sesi hidup per user per channel (api-specs 02 §2.1).
+    uniqueIndex("sessions_user_channel_live_unique")
+      .on(table.userId, table.channel)
+      .where(sql`${table.endedReason} is null`),
     tenantIsolation(),
     pgPolicy("session_lookup", {
       as: "permissive",
@@ -196,3 +209,12 @@ export const sessions = iam.table(
     }),
   ],
 );
+
+/** LOGIN_ATTEMPTS [instalasi]: username yang tidak terdaftar tidak punya tenant (technical-specs 06 §6.4). */
+export const loginAttempts = iam.table("login_attempts", {
+  id: uuid("id").primaryKey(),
+  username: text("username").notNull(),
+  success: boolean("success").notNull(),
+  ipAddress: inet("ip_address").notNull(),
+  attemptedAt: timestamp("attempted_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { z } from "zod";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
-import { startDatabase, type TestDatabase } from "./support/database.js";
+import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
 import { createRole, createSession } from "./support/session.js";
 
 const productId = c.productIdMock;
@@ -204,7 +204,7 @@ describe("reset-state when enabled (api-specs 27 §27.4)", () => {
     app = await createApp({
       ...db.config,
       database: { ...db.config.database, migrationUrl: "postgres://owner@127.0.0.1:1/cikal" },
-      resetApi: { token: "reset-test-token", defaultSeed: "qa" },
+      resetApi: { token: "reset-test-token", defaultSeed: "qa", seedUserPassword: SEED_USER_PASSWORD },
     });
     await app.init();
     await app.getHttpAdapter().getInstance().ready();

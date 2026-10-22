@@ -58,7 +58,8 @@ export const sessionResponseSchema = z.object({
     mustChangePassword: z.boolean(),
     license: z.object({
       status: z.enum(["ACTIVE", "EXPIRED"]),
-      validTo: z.iso.date(),
+      /** `null` sampai lisensi bertanda tangan dipasang (TL-S2-02); modul dari manifest paket. */
+      validTo: z.iso.date().nullable(),
       modules: z.array(z.string()),
     }),
     menus: z.array(sessionMenuSchema),
