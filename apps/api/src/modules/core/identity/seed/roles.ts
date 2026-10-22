@@ -35,7 +35,7 @@ function roleIdOf(key: string): string {
 }
 
 /** Hak dengan huruf V, C, U, D, A seperti matriks technical-specs 09 §9.5. */
-type Rights = "V" | "VA" | "VU" | "VCU" | "VCUD";
+type Rights = "V" | "VA" | "VU" | "VCU" | "VCUD" | "VCUDA";
 
 const IAM_MENUS: MenuCode[] = ["IAM-USER", "IAM-ROLE", "IAM-ROLE-ACCESS", "IAM-USER-ACCESS"];
 const MASTER_MENUS: MenuCode[] = [
@@ -129,21 +129,36 @@ export async function seedRoles(db: NodePgDatabase): Promise<void> {
     .values(entries.map(({ id, name }) => ({ id, tenantId, roleName: name })))
     .onConflictDoNothing();
   const rows = entries.flatMap(({ id, access }) =>
-    [["APP-INQUIRY", "V"] satisfies [MenuCode, Rights], ...access].map(([code, rights]) => {
-      const menuId = seedMenuId(code);
-      return {
-        // Segmen kedua ID role dan segmen terakhir ID menu membuat ID baris tetap.
-        id: `0192b6a3-${id.slice(9, 13)}-7000-8000-${menuId.slice(-12)}`,
-        tenantId,
-        roleId: id,
-        menuId,
-        canView: rights.includes("V"),
-        canCreate: rights.includes("C"),
-        canUpdate: rights.includes("U"),
-        canDelete: rights.includes("D"),
-        canApprove: rights.includes("A"),
-      };
-    }),
+    [["APP-INQUIRY", "V"] satisfies [MenuCode, Rights], ...access].map(([code, rights]) =>
+      roleAccessRow(id, code, rights),
+    ),
   );
   await db.insert(roleAccess).values(rows).onConflictDoNothing();
+}
+
+function roleAccessRow(roleId: string, code: MenuCode, rights: Rights) {
+  const menuId = seedMenuId(code);
+  return {
+    // Segmen kedua ID role dan segmen terakhir ID menu membuat ID baris tetap.
+    id: `0192b6a3-${roleId.slice(9, 13)}-7000-8000-${menuId.slice(-12)}`,
+    tenantId: seedCompanyIds.company001,
+    roleId,
+    menuId,
+    canView: rights.includes("V"),
+    canCreate: rights.includes("C"),
+    canUpdate: rights.includes("U"),
+    canDelete: rights.includes("D"),
+    canApprove: rights.includes("A"),
+  };
+}
+
+/**
+ * Hak MRTM TRM_ACC_004 untuk seed `qa`: Admin Sistem memegang semua aksi Product, jadi bisa mengajukan sekaligus
+ * menyetujui pengajuan orang lain (AC-12.04, AC-12.05). Matriks awal technical-specs 09 §9.5 tidak memberinya.
+ */
+export async function seedMrtmAccess(db: NodePgDatabase): Promise<void> {
+  await db
+    .insert(roleAccess)
+    .values(roleAccessRow(seedRoleIds.adminSistem, "MST-PRODUCT", "VCUDA"))
+    .onConflictDoNothing();
 }

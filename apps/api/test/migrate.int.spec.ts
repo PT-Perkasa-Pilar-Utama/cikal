@@ -54,6 +54,15 @@ describe("migrate runner", () => {
     expect(await listTenants(owner)).toEqual(["001"]);
   });
 
+  it("gives Admin Sistem every Product right in the qa seed (MRTM TRM_ACC_004)", async () => {
+    const { rows } = await owner.query(
+      `select can_view, can_create, can_update, can_delete, can_approve from iam.role_access ra
+       join iam.roles r on r.id = ra.role_id join iam.menus m on m.id = ra.menu_id
+       where r.role_name = 'Admin Sistem' and m.menu_code = 'MST-PRODUCT'`,
+    );
+    expect(rows).toEqual([{ can_view: true, can_create: true, can_update: true, can_delete: true, can_approve: true }]);
+  });
+
   it("lets the application role read and write data but not change the schema", async () => {
     const { rows } = await app.query("select company_code from tenancy.companies");
     expect(rows).toEqual([{ company_code: "001" }]);
