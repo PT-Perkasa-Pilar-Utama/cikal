@@ -1,0 +1,281 @@
+{
+  "id": "73bbfada-b952-4403-8d41-60b5738f8d7c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "cr.change_requests": {
+      "name": "change_requests",
+      "schema": "cr",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "old_data": {
+          "name": "old_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "new_data": {
+          "name": "new_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "package_size": {
+          "name": "package_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'WAITING_APPROVAL'"
+        },
+        "revise_reason": {
+          "name": "revise_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_by": {
+          "name": "submitted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "change_requests_open_entity_unique": {
+          "name": "change_requests_open_entity_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"cr\".\"change_requests\".\"status\" in ('WAITING_APPROVAL', 'REVISE')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "change_requests_pending_list_idx": {
+          "name": "change_requests_pending_list_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "change_requests_tenant_id_companies_id_fk": {
+          "name": "change_requests_tenant_id_companies_id_fk",
+          "tableFrom": "change_requests",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "change_requests_submitted_by_users_id_fk": {
+          "name": "change_requests_submitted_by_users_id_fk",
+          "tableFrom": "change_requests",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "submitted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "change_requests_reviewed_by_users_id_fk": {
+          "name": "change_requests_reviewed_by_users_id_fk",
+          "tableFrom": "change_requests",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "change_requests_entity_type_check": {
+          "name": "change_requests_entity_type_check",
+          "value": "\"cr\".\"change_requests\".\"entity_type\" in ('ROLE_ACCESS', 'PRODUCT', 'PRODUCT_PRICING', 'ROUTE', 'DOCUMENT_CHECKLIST', 'APPROVAL_HIERARCHY', 'SCORING_MODEL', 'DECISION_MATRIX', 'DOCUMENT_NUMBER_FORMAT', 'INTEGRATION_CONFIG')"
+        },
+        "change_requests_action_check": {
+          "name": "change_requests_action_check",
+          "value": "\"cr\".\"change_requests\".\"action\" in ('CREATE', 'UPDATE')"
+        },
+        "change_requests_status_check": {
+          "name": "change_requests_status_check",
+          "value": "\"cr\".\"change_requests\".\"status\" in ('WAITING_APPROVAL', 'REVISE', 'APPROVED', 'REJECTED')"
+        },
+        "change_requests_package_size_check": {
+          "name": "change_requests_package_size_check",
+          "value": "\"cr\".\"change_requests\".\"package_size\" >= 1"
+        },
+        "change_requests_revise_reason_check": {
+          "name": "change_requests_revise_reason_check",
+          "value": "char_length(\"cr\".\"change_requests\".\"revise_reason\") <= 500"
+        },
+        "change_requests_self_review_check": {
+          "name": "change_requests_self_review_check",
+          "value": "\"cr\".\"change_requests\".\"reviewed_by\" <> \"cr\".\"change_requests\".\"submitted_by\""
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "cr": "cr"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

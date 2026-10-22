@@ -1,6 +1,6 @@
 import type { SessionResponse } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { licensedModuleCodes } from "../../../../licensed-modules.generated.js";
+import { licensedModuleCodes } from "../../../../licensed-module-codes.generated.js";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";

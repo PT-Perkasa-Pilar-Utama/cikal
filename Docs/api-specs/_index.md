@@ -112,10 +112,10 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /change-requests` | 07 §7.2 | POC | TODO |
-| `GET /change-requests/{id}` | 07 §7.3 | POC | TODO |
-| `POST /change-requests/{id}/approve` | 07 §7.4 | POC | TODO |
-| `POST /change-requests/{id}/reject` | 07 §7.5 | POC | TODO |
+| `GET /change-requests` | 07 §7.2 | POC | OK |
+| `GET /change-requests/{id}` | 07 §7.3 | POC | OK |
+| `POST /change-requests/{id}/approve` | 07 §7.4 | POC | OK |
+| `POST /change-requests/{id}/reject` | 07 §7.5 | POC | OK |
 | `POST /change-requests/{id}/revise`, `/resubmit` | 07 §7.6 | Backlog | TODO |
 
 ### Products and routes

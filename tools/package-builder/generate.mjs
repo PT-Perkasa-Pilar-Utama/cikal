@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Membangkitkan apps/api/src/licensed-modules.generated.ts dari manifest client (technical-specs 02 §2.4).
+// Membangkitkan apps/api/src/licensed-modules.generated.ts dari manifest client (technical-specs 02 §2.4), dan
+// licensed-module-codes.generated.ts di folder yang sama. Kode lisensi dipisah agar modul (contoh guard identity)
+// bisa membacanya tanpa mengimpor semua modul, yang membuat impor melingkar.
 // Pemakaian: node generate.mjs --manifest <path> --out <path>
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -36,12 +38,15 @@ for (const code of manifest.modules) {
 // `IdentityModule` -> `identityData`: kontrak migrasi dan seed yang diekspor index.ts modul (technical-specs 06 §6.12).
 const dataName = (className) => className.charAt(0).toLowerCase() + className.slice(1).replace(/Module$/, "Data");
 
+const header = `// Dibangkitkan oleh tools/package-builder dari ${values.manifest.replaceAll("\\", "/")}. Jangan diubah manual.`;
+const codesOut = join(dirname(resolve(values.out)), "licensed-module-codes.generated.ts");
+const codeLines = [header, "", `export const licensedModuleCodes = ${JSON.stringify(manifest.modules)} as const;`, ""];
+writeFileSync(codesOut, codeLines.join("\n"));
+
 const lines = [
-  `// Dibangkitkan oleh tools/package-builder dari ${values.manifest.replaceAll("\\", "/")}. Jangan diubah manual.`,
+  header,
   `import type { ModuleData } from "./platform/migrate/module-data.js";`,
   ...entries.map((e) => `import { ${e.className}, ${dataName(e.className)} } from "${e.importPath}";`),
-  "",
-  `export const licensedModuleCodes = ${JSON.stringify(manifest.modules)} as const;`,
   "",
   `export const licensedModules = [${entries.map((e) => e.className).join(", ")}];`,
   "",

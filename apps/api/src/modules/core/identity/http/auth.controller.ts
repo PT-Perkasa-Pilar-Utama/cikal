@@ -45,7 +45,7 @@ export class AuthController {
   @HttpCode(204)
   @Public()
   async logout(@Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<void> {
-    await this.logouts.execute(request.cookies[SESSION_COOKIE], request.headers[CSRF_HEADER]);
+    await this.logouts.execute(request.cookies[SESSION_COOKIE], request.headers[CSRF_HEADER], request.ip);
     clearSessionCookies(reply, this.config.sessionCookieSecure);
   }
 

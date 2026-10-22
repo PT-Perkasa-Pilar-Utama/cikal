@@ -80,7 +80,8 @@ export const roles = iam.table(
 
 /**
  * USERS (UI label: "User Application"), technical-specs 06 §6.4. Foreign key unit kerja ke skema `org`
- * ditambahkan saat tabel Organization dibuat.
+ * ditambahkan saat tabel Organization dibuat. Diekspor lewat `index.ts` hanya untuk foreign key modul lain
+ * (XM-05); modul lain membaca user lewat `USER_DIRECTORY_PORT` (XM-02).
  */
 export const users = iam.table(
   "users",

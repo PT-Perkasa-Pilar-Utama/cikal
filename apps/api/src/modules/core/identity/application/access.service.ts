@@ -1,6 +1,6 @@
 import type { Action, MenuCode } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { licensedModuleCodes } from "../../../../licensed-modules.generated.js";
+import { licensedModuleCodes } from "../../../../licensed-module-codes.generated.js";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import { bindTenant, type TenantContext, TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { AccessPort, ResolvedSession } from "../../../../platform/http/access-port.js";
@@ -9,7 +9,7 @@ import { hashToken } from "../../../../platform/http/session-token.js";
 import { AccessRepository } from "../db/access.repository.js";
 import { SessionsRepository } from "../db/sessions.repository.js";
 import { UsersRepository } from "../db/users.repository.js";
-import { decideAccess } from "../domain/access-policy.js";
+import { type AccessDecision, decideAccess } from "../domain/access-policy.js";
 import { isSessionExpired } from "../domain/session-policy.js";
 
 /** `identity.authorize` dan validasi sesi yang dipanggil guard di setiap rute (technical-specs 05 §5.1, 07 §7.2). */
@@ -46,9 +46,17 @@ export class AccessService implements AccessPort {
   }
 
   async authorize(ctx: TenantContext, menuCode: MenuCode, action: Action): Promise<void> {
+    const decision = await this.decide(ctx, menuCode, action);
+    if (decision !== "ALLOW") throw DomainError.standard(decision);
+  }
+
+  async allows(ctx: TenantContext, menuCode: MenuCode, action: Action): Promise<boolean> {
+    return (await this.decide(ctx, menuCode, action)) === "ALLOW";
+  }
+
+  private async decide(ctx: TenantContext, menuCode: MenuCode, action: Action): Promise<AccessDecision> {
     const today = businessDate(new Date());
     const facts = await this.db.withTenantTx(ctx, (tx) => this.access.findMenuAccess(tx, ctx.userId, menuCode, today));
-    const decision = decideAccess({ ...facts, licensedModules: licensedModuleCodes }, action);
-    if (decision !== "ALLOW") throw DomainError.standard(decision);
+    return decideAccess({ ...facts, licensedModules: licensedModuleCodes }, action);
   }
 }

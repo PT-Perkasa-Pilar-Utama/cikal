@@ -18,6 +18,14 @@ export const changeRequestEntityTypeSchema = z.enum([
 export type ChangeRequestEntityType = z.infer<typeof changeRequestEntityTypeSchema>;
 
 export const changeRequestStatusSchema = z.enum(["WAITING_APPROVAL", "REVISE", "APPROVED", "REJECTED"]);
+export type ChangeRequestStatus = z.infer<typeof changeRequestStatusSchema>;
+
+/** Daftar dipisah koma di query string, contoh `PRODUCT,PRODUCT_PRICING`. */
+const commaList = <T extends z.ZodType<string, string>>(item: T) =>
+  z
+    .string()
+    .transform((value) => value.split(",").map((part) => part.trim()))
+    .pipe(z.array(item).min(1));
 
 const userRefSchema = z.object({ id, username: z.string() });
 
@@ -34,15 +42,16 @@ export const changeRequestListItemSchema = z.object({
   canReview: z.boolean(),
 });
 
-/** `GET /change-requests` (api-specs 07 §7.2). */
+/** `GET /change-requests` (api-specs 07 §7.2). Satu-satunya kolom urut adalah `submittedAt`. */
 export const changeRequestListQuerySchema = z.object({
-  entityType: z.string().min(1),
-  status: z.string().optional(),
+  entityType: commaList(changeRequestEntityTypeSchema),
+  status: commaList(changeRequestStatusSchema).default(["WAITING_APPROVAL", "REVISE"]),
   submittedBy: id.optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  sort: z.string().optional(),
+  sort: z.enum(["submittedAt,asc", "submittedAt,desc"]).default("submittedAt,desc"),
 });
+export type ChangeRequestListQuery = z.infer<typeof changeRequestListQuerySchema>;
 export const changeRequestListResponseSchema = pageEnvelope(changeRequestListItemSchema);
 export type ChangeRequestListResponse = z.infer<typeof changeRequestListResponseSchema>;
 
@@ -64,6 +73,7 @@ export const changeRequestReviewRequestSchema = z.strictObject({
 });
 export type ChangeRequestReviewRequest = z.infer<typeof changeRequestReviewRequestSchema>;
 
+/** `data` approve dan reject; `versionNumber` hanya untuk entity berversi (api-specs 07 §7.4). */
 export const changeRequestReviewResponseSchema = dataEnvelope(
   z.object({
     id,

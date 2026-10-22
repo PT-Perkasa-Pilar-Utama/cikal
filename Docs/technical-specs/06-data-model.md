@@ -345,12 +345,14 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 Indeks unik parsial `(tenant_id, entity_type, entity_id) WHERE status IN ('WAITING_APPROVAL','REVISE')` (AC-12.06).
 
 ### AUDIT_LOGS
+`user_id` tanpa foreign key karena skema `audit` dimigrasi sebelum `iam`.
+
 | column | type | nullable | notes |
 |---|---|---|---|
 | user_id | uuid | yes | null untuk aksi sistem |
 | role | text | yes | |
 | module | text | no | |
-| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `VIEW_APPLICATION` (grooming v2 R-18) |
+| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `LOGOUT` (api-specs 17 §17.2), `VIEW_APPLICATION` (grooming v2 R-18) |
 | record_id | text | yes | |
 | description | text | yes | |
 | old_data, new_data | jsonb | yes | tanpa nilai SECRET |

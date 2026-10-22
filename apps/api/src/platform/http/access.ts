@@ -64,6 +64,7 @@ export class AccessGuard implements CanActivate {
       tenantId: session.tenantId,
       userId: session.userId,
       mustChangePassword: session.mustChangePassword,
+      ipAddress: request.ip,
     };
     return true;
   }

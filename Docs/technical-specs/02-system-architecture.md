@@ -149,7 +149,7 @@ Setiap modul punya satu folder di `apps/api/src/modules/<modul>`, satu skema Pos
 
 | Modul | Folder | Skema DB | Bergantung pada |
 |---|---|---|---|
-| Identity & Access | `core/identity` | `iam` | Tenant & License, Organization |
+| Identity & Access | `core/identity` | `iam` | Tenant & License, Organization, Audit |
 | Tenant & License | `core/tenancy` | `tenancy` | (dasar) |
 | Organization | `core/organization` | `org` | Tenant & License |
 | Master Data | `core/masterdata` | `masterdata` | Change Request, Integration Registry |
@@ -175,7 +175,7 @@ Setiap modul punya satu folder di `apps/api/src/modules/<modul>`, satu skema Pos
 | XM-01 | Modul hanya memanggil modul lain lewat antarmuka publik (`modules/<x>/index.ts`) | Lint `noRestrictedImports` Biome dan pengecek dependensi di CI |
 | XM-02 | Modul tidak membaca atau menulis tabel skema modul lain | Role database per skema tidak dipakai di runtime; dicek review dan uji arsitektur (query ke skema lain gagal di test) |
 | XM-03 | Langkah proses dipanggil orchestrator lewat antarmuka `StepHandler` (`12-orchestrator-step-contract.md`) | Registrasi wajib per modul langkah |
-| XM-04 | Efek samping lintas modul (notifikasi, audit, reporting) lewat event outbox, bukan panggilan langsung | Event ditulis di transaksi yang sama, dikirim worker |
+| XM-04 | Efek samping lintas modul (notifikasi, reporting) lewat event outbox, bukan panggilan langsung. Pengecualian: jejak audit ditulis lewat `audit.record` di transaksi aksi (05 §5.7), karena harus commit bersama aksinya | Event ditulis di transaksi yang sama, dikirim worker |
 | XM-05 | Foreign key: dari modul mana pun ke tabel CORE boleh; dari CORE ke modul tambahan dilarang; antar modul tambahan dilarang | Dicek di review migrasi |
 | XM-06 | Modul tambahan tidak bergantung pada modul tambahan lain kecuali DEP-02 (M06 s.d. M10 ke M11 lewat hasil langkah), DEP-04, DEP-08 | Dicek generator paket (PK-03) |
 | XM-07 | Reporting membaca lewat view di skema `reporting`; view didefinisikan di migrasi Reporting dan hanya `SELECT` | View tidak pernah dipakai modul lain |
