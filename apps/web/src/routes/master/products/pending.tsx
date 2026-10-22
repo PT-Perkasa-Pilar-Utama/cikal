@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PendingList } from "../../../features/change-request/PendingList";
+import { PRODUCT_PRESENTATION } from "../../../features/product/labels";
 import { MenuGuard } from "../../../features/session/MenuGuard";
 
 export const Route = createFileRoute("/master/products/pending")({
   component: () => (
     <MenuGuard menuCode="MST-PRODUCT">
-      <PendingList title="Pending Product" entityTypes={["PRODUCT", "PRODUCT_PRICING"]} />
+      <PendingList
+        title="Pending Product"
+        entityTypes={["PRODUCT", "PRODUCT_PRICING"]}
+        presentation={PRODUCT_PRESENTATION}
+      />
     </MenuGuard>
   ),
 });

@@ -49,6 +49,8 @@ declare module "@tanstack/react-router" {
   interface HistoryState {
     /** Pesan sesi berakhir yang tampil di halaman "Login". */
     loginMessage?: string;
+    /** Pesan sukses yang dibawa ke halaman tujuan, contoh "Data submitted for approval". */
+    notice?: string;
   }
 }
 
