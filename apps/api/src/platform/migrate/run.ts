@@ -27,8 +27,8 @@ function fail(message: string, code = 1): never {
 }
 
 function seedArg<T extends SeedName>(allowed: readonly T[]): T {
-  const seed = values.seed as T | undefined;
-  if (!seed || !allowed.includes(seed)) fail(`--seed must be one of: ${allowed.join(", ")}`, 2);
+  const seed = allowed.find((name) => name === values.seed);
+  if (!seed) fail(`--seed must be one of: ${allowed.join(", ")}`, 2);
   return seed;
 }
 
