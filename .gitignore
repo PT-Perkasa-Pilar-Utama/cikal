@@ -46,3 +46,4 @@ deploy/compose/.secrets/
 # Playwright
 playwright-report/
 test-results/
+**/playwright/.auth/
