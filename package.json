@@ -28,6 +28,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "argon2",
       "@swc/core",
       "esbuild"
     ],

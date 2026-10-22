@@ -153,8 +153,11 @@ Kunci `Idempotency-Key` per user selama 24 jam (`../api-specs/01-conventions.md`
 | last_activity_at | timestamptz | no | now() | | idle > `SESSION_IDLE_MINUTES` = kedaluwarsa |
 | expires_at | timestamptz | no | | | batas absolut 12 jam |
 | ip_address | inet | yes | | | |
+| ended_reason | text | yes | | UQ(user_id, channel) WHERE null | `REPLACED` = diganti login baru (AC-06.05); null = sesi hidup |
 
-### LOGIN_ATTEMPTS, PASSWORD_RESET_TOKENS
+### LOGIN_ATTEMPTS [instalasi], PASSWORD_RESET_TOKENS
+`login_attempts` tanpa `tenant_id` karena username yang tidak terdaftar tidak punya tenant.
+
 | table.column | type | nullable | notes |
 |---|---|---|---|
 | login_attempts.username | text | no | |

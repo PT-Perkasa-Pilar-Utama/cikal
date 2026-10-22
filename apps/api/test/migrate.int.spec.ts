@@ -12,6 +12,7 @@ import {
   seedModules,
 } from "../src/platform/migrate/runner.js";
 import { listenOpsSignals } from "../src/platform/ops/ops-signals.js";
+import { seedContext } from "./support/database.js";
 
 /** Runner migrasi, seed, dan reset terhadap PostgreSQL 17 dengan role seperti instalasi (technical-specs 06 §6.12). */
 describe("migrate runner", () => {
@@ -42,14 +43,14 @@ describe("migrate runner", () => {
   });
 
   it("applies the platform and each licensed module's migrations once and records them in the module ledger", async () => {
-    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(3);
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(4);
     expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(0);
-    expect(await latestMigration(app, installedModuleData)).toBe("iam/0000_init");
+    expect(await latestMigration(app, installedModuleData)).toBe("iam/0001_local_login");
   });
 
   it("applies seed layers idempotently", async () => {
-    await seedModules(owner, installedModuleData, "qa");
-    await seedModules(owner, installedModuleData, "qa");
+    await seedModules(owner, installedModuleData, "qa", seedContext);
+    await seedModules(owner, installedModuleData, "qa", seedContext);
     expect(await listTenants(owner)).toEqual(["001"]);
   });
 
@@ -74,10 +75,11 @@ describe("migrate runner", () => {
       modules: installedModuleData,
       appRole: "cikal_app",
       seed: "qa",
+      seedContext,
       emptyBucket: async () => 3,
     });
 
-    expect(result).toMatchObject({ seed: "qa", migrationsApplied: 3, tenantsSeeded: ["001"], bucketObjectsDeleted: 3 });
+    expect(result).toMatchObject({ seed: "qa", migrationsApplied: 4, tenantsSeeded: ["001"], bucketObjectsDeleted: 3 });
     await expect(app.query("select company_code from tenancy.companies")).resolves.toMatchObject({ rowCount: 1 });
     await new Promise((resolve) => setTimeout(resolve, 500));
     await stop();
@@ -95,6 +97,7 @@ describe("migrate runner", () => {
           modules: installedModuleData,
           appRole: "cikal_app",
           seed: "qa",
+          seedContext,
           emptyBucket: async () => 0,
         }),
       ).rejects.toBeInstanceOf(ResetInProgressError);
@@ -112,6 +115,7 @@ describe("migrate runner", () => {
         modules: installedModuleData,
         appRole: null,
         seed: "qa",
+        seedContext,
         emptyBucket: async () => 0,
       }),
     ).rejects.toThrow("Reset is not allowed in production");

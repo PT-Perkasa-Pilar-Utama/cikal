@@ -60,9 +60,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `POST /auth/login` | 02 §2.2 | POC | TODO |
-| `POST /auth/logout` | 02 §2.3 | POC | TODO |
-| `GET /auth/session` | 02 §2.4 | POC | TODO |
+| `POST /auth/login` | 02 §2.2 | POC | OK |
+| `POST /auth/logout` | 02 §2.3 | POC | OK |
+| `GET /auth/session` | 02 §2.4 | POC | OK |
 | `POST /auth/mfa/verify` | 02 §2.6 | Backlog | TODO |
 | `GET /auth/sso/{companyCode}/start`, `GET /auth/sso/callback` | 02 §2.6 | Backlog | TODO |
 | `POST /auth/password/forgot`, `/reset`, `/change` | 02 §2.6 | Backlog | TODO |

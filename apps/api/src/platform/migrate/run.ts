@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import pg from "pg";
 import { loadConfig } from "../config/config.js";
@@ -13,6 +13,7 @@ import { appRoleFor, migrateModules, resetState, seedModules } from "./runner.js
  *   node dist/platform/migrate/run.js seed --seed=base|dev|qa
  *   node dist/platform/migrate/run.js reset --seed=dev|qa      (ditolak di production)
  * Connection string dari `DATABASE_MIGRATION_URL`; role aplikasi untuk grant dari `DATABASE_URL`.
+ * Password akun seed `dev` dan `qa` dibaca dari file `SEED_USER_PASSWORD_FILE` (DEPLOYMENT_PLAN §6.5).
  */
 if (!process.env.APP_ENV && existsSync(".env")) {
   process.loadEnvFile(".env");
@@ -36,6 +37,8 @@ const migrationUrl = process.env.DATABASE_MIGRATION_URL;
 if (!migrationUrl) fail("DATABASE_MIGRATION_URL is required");
 const appRole = appRoleFor(process.env.DATABASE_URL, migrationUrl);
 const pool = new pg.Pool({ connectionString: migrationUrl, max: 2 });
+const passwordFile = process.env.SEED_USER_PASSWORD_FILE;
+const seedContext = { userPassword: passwordFile ? readFileSync(passwordFile, "utf8").trim() : null };
 
 try {
   switch (command) {
@@ -46,7 +49,7 @@ try {
     }
     case "seed": {
       const seed = seedArg(["base", "dev", "qa"]);
-      await seedModules(pool, installedModuleData, seed);
+      await seedModules(pool, installedModuleData, seed, seedContext);
       console.log(`Seed ${seed} applied`);
       break;
     }
@@ -61,6 +64,7 @@ try {
         modules: installedModuleData,
         appRole,
         seed,
+        seedContext,
         emptyBucket: () => emptyBucket(s3, config.storage.bucket),
       });
       console.log(JSON.stringify(result));

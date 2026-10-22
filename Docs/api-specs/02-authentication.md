@@ -10,7 +10,7 @@ Login, sesi, dan logout kanal web. Mekanisme dan alur ada di [../technical-specs
 | Cookie CSRF | `cikal_csrf`: acak, tidak HttpOnly, `SameSite=Strict; Path=/`. Klien menyalin nilainya ke header `X-CSRF-Token` |
 | Idle | `SESSION_IDLE_MINUTES` (default 30). Setiap request terautentikasi memperbarui `lastActivityAt`. Menit ke-29 masih aktif, menit ke-30 kedaluwarsa (AC-06.03, AC-06.04) |
 | Absolut | 12 jam sejak login |
-| Satu sesi per channel | Login baru di channel `WEB` menghapus sesi WEB lama; request dari sesi lama mendapat `401 SESSION_REPLACED` (AC-06.05) |
+| Satu sesi per channel | Login baru di channel `WEB` menandai sesi WEB lama `ended_reason = 'REPLACED'`; request dari sesi lama mendapat `401 SESSION_REPLACED` (AC-06.05). Tanda lama dan sesi kedaluwarsa user dihapus saat login berikutnya |
 | Pencabutan | Logout, user dinonaktifkan, ganti password, lisensi dicabut |
 | Ganti password awal | Selama `mustChangePassword = true`, semua rute selain ganti password, sesi, dan logout mengembalikan `403 PASSWORD_CHANGE_REQUIRED` (AC-05.04) |
 
@@ -36,7 +36,7 @@ Klien SPA menangani `401` apa pun dengan membuang state lokal dan menampilkan ha
 3. `lockedUntil` di masa depan: `423 ACCOUNT_LOCKED`, walau password benar (AC-01.05).
 4. Verifikasi Argon2id. Salah: `failedLoginCount + 1`; mencapai `LOCK_ATTEMPTS` (5) mengisi `lockedUntil = now + LOCK_MINUTES` (15) dan menjawab `423 ACCOUNT_LOCKED`; di bawahnya `401 INVALID_CREDENTIALS` (AC-01.02, AC-01.05).
 5. Status `INACTIVE`: `403 ACCOUNT_INACTIVE` (AC-01.07). Status `NO_ROLE`: `403 ACCOUNT_NO_ROLE`.
-6. Berhasil: `failedLoginCount = 0` (AC-01.06), hapus sesi WEB lama user, buat sesi baru, isi `lastLoginAt`, catat audit `LOGIN` dengan IP. Input berisi pola injeksi diperlakukan sebagai teks biasa lewat query terparameter (AC-01.08).
+6. Berhasil: `failedLoginCount = 0` (AC-01.06), tandai sesi WEB lama user `REPLACED`, buat sesi baru, isi `lastLoginAt`, catat LoginAttempt dengan IP. Audit `LOGIN`, `LOGIN_FAILED`, dan `LOGOUT` ditulis sejak AuditLog ada (BE-S1-02). Input berisi pola injeksi diperlakukan sebagai teks biasa lewat query terparameter (AC-01.08).
 
 **Output 200** (+ `Set-Cookie: cikal_sid`, `Set-Cookie: cikal_csrf`)
 
@@ -74,9 +74,9 @@ Bila `mustChangePassword = true`, klien membuka halaman ganti password (backlog,
 
 **Behavior**
 
-1. Hapus baris sesi dari `iam.sessions`; catat audit `LOGOUT`.
+1. Hapus baris sesi dari `iam.sessions`; catat audit `LOGOUT` (sejak BE-S1-02).
 2. Kirim `Set-Cookie` yang mengosongkan `cikal_sid` dan `cikal_csrf` (`Max-Age=0`).
-3. Sesi yang sudah tidak ada tetap dijawab `204` (logout idempoten).
+3. Sesi yang sudah tidak ada tetap dijawab `204` (logout idempoten), jadi rute ini `@Public` dan memeriksa CSRF sendiri bila sesi masih ada.
 
 **Output:** `204 No Content`. Request berikutnya dengan cookie lama mendapat `401 UNAUTHENTICATED` sehingga tombol Back dan alamat halaman langsung membawa ke "Login" (AC-06.01, AC-06.02).
 
@@ -95,6 +95,7 @@ Bila `mustChangePassword = true`, klien membuka halaman ganti password (backlog,
 2. Hitung hak efektif hari ini: gabungan RoleAccess dan UserAccess yang berlaku (`../technical-specs/09-authentication-authorization.md` 9.4).
 3. Bangun pohon menu: hanya menu aktif dengan hak View, dari modul berlisensi (AC-09.02, AC-100.01).
 4. Panggilan ini tidak memperbarui `lastActivityAt` bila dipanggil oleh polling latar; klien mengirim header `X-Background: true` untuk polling.
+5. `license.modules` berasal dari manifest paket dan `license.validTo` bernilai `null` sampai lisensi bertanda tangan dipasang (TL-S2-02). `user.branchCode` bernilai `null` sampai tabel Organization ada.
 
 **Output 200**
 
