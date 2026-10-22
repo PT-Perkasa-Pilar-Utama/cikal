@@ -6,7 +6,7 @@ export function PendingList({ title, entityTypes }: { title: string; entityTypes
   const { data, isPending, error } = usePendingChangeRequests(entityTypes);
   return (
     <section>
-      <h1 className="mb-4 text-2xl font-bold text-neutral-8">{title}</h1>
+      <h1 className="mb-4 text-2xl font-bold text-primary">{title}</h1>
       {isPending && <p>Loading...</p>}
       {error && <p className="text-error">{error.message}</p>}
       <ul className="divide-y divide-neutral-2 rounded bg-neutral-0">

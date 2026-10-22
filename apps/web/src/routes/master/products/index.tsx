@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useProducts } from "../../../features/product/api";
+import { MenuGuard } from "../../../features/session/MenuGuard";
 
 /** Kerangka halaman "Product"; form dan tab Pricing dibangun di FE-S1-02. */
 function ProductsPage() {
   const { data, isPending, error } = useProducts();
   return (
     <section>
-      <h1 className="mb-4 text-2xl font-bold text-neutral-8">Product</h1>
+      <h1 className="mb-4 text-2xl font-bold text-primary">Product</h1>
       {isPending && <p>Loading...</p>}
       {error && <p className="text-error">{error.message}</p>}
       <table className="w-full bg-neutral-0">
@@ -31,4 +32,10 @@ function ProductsPage() {
   );
 }
 
-export const Route = createFileRoute("/master/products/")({ component: ProductsPage });
+export const Route = createFileRoute("/master/products/")({
+  component: () => (
+    <MenuGuard menuCode="MST-PRODUCT">
+      <ProductsPage />
+    </MenuGuard>
+  ),
+});
