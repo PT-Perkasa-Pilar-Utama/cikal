@@ -3,7 +3,7 @@ import { type ErrorEnvelope, standardErrors } from "@cikal/contracts";
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, Logger } from "@nestjs/common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { ZodValidationException } from "nestjs-zod";
-import type { ZodError } from "zod";
+import { ZodError } from "zod";
 import { DomainError } from "./domain-error.js";
 
 const statusToCode: Record<number, keyof typeof standardErrors> = {
@@ -46,7 +46,8 @@ export class ErrorEnvelopeFilter implements ExceptionFilter {
       ];
     }
     if (exception instanceof ZodValidationException) {
-      const issues = (exception.getZodError() as ZodError).issues;
+      const zodError = exception.getZodError();
+      const issues = zodError instanceof ZodError ? zodError.issues : [];
       return [
         400,
         {

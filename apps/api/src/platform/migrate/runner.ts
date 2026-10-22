@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
+import { z } from "zod";
 import { type ModuleData, SEED_LAYERS, type SeedName } from "./module-data.js";
 
 /** Ledger per skema modul (MS-04). */
@@ -10,7 +11,13 @@ export const MIGRATIONS_TABLE = "__migrations";
 
 /** Channel LISTEN/NOTIFY operasional; api dan worker berlangganan lewat `listenOpsSignals`. */
 export const OPS_CHANNEL = "cikal_ops";
-export type OpsSignal = "reset_started" | "reset_finished";
+export const OPS_SIGNALS = ["reset_started", "reset_finished"] as const;
+export type OpsSignal = (typeof OPS_SIGNALS)[number];
+
+/** Payload NOTIFY berasal dari luar proses, jadi dipersempit sebelum dipakai. */
+export function isOpsSignal(value: string): value is OpsSignal {
+  return OPS_SIGNALS.some((signal) => signal === value);
+}
 
 /** Skema antrean pg-boss; ikut dihapus saat reset (api-specs 27 §27.4 langkah 3). */
 const QUEUE_SCHEMA = "pgboss";
@@ -39,15 +46,14 @@ type Queryable = pg.Pool | pg.PoolClient;
 const ident = (name: string) => pg.escapeIdentifier(name);
 const ledger = (schema: string) => `${ident(schema)}.${ident(MIGRATIONS_TABLE)}`;
 
-interface JournalEntry {
-  tag: string;
-  when: number;
-}
+/** `meta/_journal.json` dari drizzle-kit; `when` sama dengan `created_at` di ledger. */
+const journalSchema = z.object({ entries: z.array(z.object({ tag: z.string(), when: z.number() })) });
+type JournalEntry = z.infer<typeof journalSchema>["entries"][number];
 
 function readJournal(module: ModuleData): JournalEntry[] | null {
   const path = join(module.migrationsFolder, "meta", "_journal.json");
   if (!existsSync(path)) return null;
-  return (JSON.parse(readFileSync(path, "utf8")) as { entries: JournalEntry[] }).entries;
+  return journalSchema.parse(JSON.parse(readFileSync(path, "utf8"))).entries;
 }
 
 async function countApplied(db: Queryable, schema: string): Promise<number> {

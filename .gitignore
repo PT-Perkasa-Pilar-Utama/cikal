@@ -8,6 +8,8 @@ Docs/*
 !Docs/Flow Process LOS.png
 !Docs/TASK_BREAKDOWN.md
 !Docs/DEPLOYMENT_PLAN.md
+!Docs/CODING_STANDARD.md
+!Docs/CODE_REVIEW_CHECKLIST.md
 !Docs/business/
 !Docs/technical-specs/
 !Docs/api-specs/

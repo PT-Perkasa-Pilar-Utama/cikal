@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from "@nestjs/common";
 import pg from "pg";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
-import { OPS_CHANNEL, type OpsSignal } from "../migrate/runner.js";
+import { isOpsSignal, OPS_CHANNEL, type OpsSignal } from "../migrate/runner.js";
 
 const RETRY_MS = 5_000;
 
@@ -22,7 +22,7 @@ export function listenOpsSignals(
   const connect = async () => {
     const next = new pg.Client({ connectionString });
     next.on("notification", (message) => {
-      if (message.channel === OPS_CHANNEL && message.payload) onSignal(message.payload as OpsSignal);
+      if (message.channel === OPS_CHANNEL && message.payload && isOpsSignal(message.payload)) onSignal(message.payload);
     });
     next.on("error", (error) => {
       logger.warn(`LISTEN ${OPS_CHANNEL} lost: ${error.message}`);
