@@ -1,0 +1,9 @@
+{
+  "name": "@cikal/package-builder",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cikal-generate-modules": "./generate.mjs"
+  }
+}

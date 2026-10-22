@@ -1,0 +1,193 @@
+import * as c from "@cikal/contracts";
+import type { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { z } from "zod";
+import { createApp } from "../src/app.factory.js";
+import { testConfig } from "./support/test-config.js";
+
+const productId = c.productIdMock;
+const changeRequestId = "0192b6a4-0001-7000-8000-000000000001";
+const validProduct = {
+  productCode: "KTA",
+  productName: "Kredit Tanpa Agunan",
+  productCategory: "NON_COLLATERAL",
+  interestType: "EFFECTIVE",
+  minPlafond: "5000000.00",
+  maxPlafond: "300000000.00",
+  minTenor: 6,
+  maxTenor: 60,
+  minAge: 21,
+  maxAge: 55,
+  dbrMax: "40.0000",
+  validFrom: "2026-10-01",
+};
+const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: false, canApprove: true };
+
+type Case = [string, "GET" | "POST" | "PUT", string, unknown, number, z.ZodType];
+
+/** Setiap stub Sprint 1 menjawab status dan body yang lolos skema kontrak (api-specs 03, 07, 08). */
+const cases: Case[] = [
+  ["roles", "GET", "/api/v1/roles", undefined, 200, c.roleListResponseSchema],
+  ["menus", "GET", "/api/v1/menus", undefined, 200, c.menuTreeResponseSchema],
+  ["role access list", "GET", "/api/v1/role-access", undefined, 200, c.roleAccessListResponseSchema],
+  [
+    "role access create",
+    "POST",
+    "/api/v1/role-access",
+    { roleId: changeRequestId, menuId: productId, ...flags },
+    202,
+    c.changeRequestAcceptedSchema,
+  ],
+  ["role access update", "PUT", `/api/v1/role-access/${productId}`, flags, 202, c.changeRequestAcceptedSchema],
+  [
+    "change request list",
+    "GET",
+    "/api/v1/change-requests?entityType=PRODUCT",
+    undefined,
+    200,
+    c.changeRequestListResponseSchema,
+  ],
+  [
+    "change request detail",
+    "GET",
+    `/api/v1/change-requests/${changeRequestId}`,
+    undefined,
+    200,
+    c.changeRequestDetailResponseSchema,
+  ],
+  [
+    "change request approve",
+    "POST",
+    `/api/v1/change-requests/${changeRequestId}/approve`,
+    {},
+    200,
+    c.changeRequestReviewResponseSchema,
+  ],
+  [
+    "change request reject",
+    "POST",
+    `/api/v1/change-requests/${changeRequestId}/reject`,
+    {},
+    200,
+    c.changeRequestReviewResponseSchema,
+  ],
+  ["product list", "GET", "/api/v1/products", undefined, 200, c.productListResponseSchema],
+  ["product detail", "GET", `/api/v1/products/${productId}`, undefined, 200, c.productDetailResponseSchema],
+  ["product create", "POST", "/api/v1/products", validProduct, 202, c.changeRequestAcceptedSchema],
+  [
+    "product update",
+    "PUT",
+    `/api/v1/products/${productId}`,
+    { ...validProduct, isActive: true },
+    202,
+    c.changeRequestAcceptedSchema,
+  ],
+  ["product pricing", "GET", `/api/v1/products/${productId}/pricing`, undefined, 200, c.productPricingResponseSchema],
+  [
+    "product pricing update",
+    "PUT",
+    `/api/v1/products/${productId}/pricing`,
+    {
+      adminFee: "250000.00",
+      provisionFee: "1.0000",
+      subProducts: [{ interestRate: "12.0000", validFrom: "2026-10-01" }],
+    },
+    202,
+    c.changeRequestAcceptedSchema,
+  ],
+];
+
+describe("Sprint 1 stubs", () => {
+  let app: NestFastifyApplication;
+
+  beforeAll(async () => {
+    app = await createApp(testConfig());
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it.each(cases)("%s returns a contract-valid response", async (_name, method, url, payload, status, schema) => {
+    const res = await app.inject({ method, url, ...(payload === undefined ? {} : { payload: payload as object }) });
+    expect(res.statusCode, res.body).toBe(status);
+    const parsed = schema.safeParse(res.json());
+    expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error.issues)).toBe(true);
+  });
+
+  it("maps validation failures to the error envelope with AC messages (AC-20.04)", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/v1/products",
+      payload: { ...validProduct, productCode: "KPRSUB" },
+    });
+    expect(res.statusCode).toBe(400);
+    const body = c.errorEnvelopeSchema.parse(res.json());
+    expect(body.code).toBe("VALIDATION_FAILED");
+    expect(body.details).toContainEqual(
+      expect.objectContaining({ field: "productCode", message: "Product code must be 1 to 5 letters or digits" }),
+    );
+    expect(res.headers["x-correlation-id"]).toBe(body.correlationId);
+  });
+
+  it("rejects unknown fields in a request body", async () => {
+    const res = await app.inject({
+      method: "PUT",
+      url: `/api/v1/role-access/${productId}`,
+      payload: { ...flags, x: 1 },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("returns the envelope for unknown routes", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/unknown" });
+    expect(res.statusCode).toBe(404);
+    expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("NOT_FOUND");
+  });
+
+  it("serves the public liveness probe", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/health/live" });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ status: "ok" });
+  });
+
+  it("does not register reset-state when the configuration does not allow it", async () => {
+    const res = await app.inject({ method: "POST", url: "/api/admin/reset-state", payload: {} });
+    expect(res.statusCode).toBe(404);
+  });
+});
+
+describe("reset-state when enabled (api-specs 27 §27.4)", () => {
+  let app: NestFastifyApplication;
+
+  beforeAll(async () => {
+    app = await createApp(testConfig({ resetApi: { token: "reset-test-token" } }));
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("rejects a missing or wrong reset token", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/admin/reset-state",
+      headers: { "x-reset-token": "wrong" },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("RESET_TOKEN_INVALID");
+  });
+
+  it("is routed with a valid token", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/admin/reset-state",
+      headers: { "x-reset-token": "reset-test-token" },
+    });
+    expect(res.statusCode).toBe(501);
+  });
+});

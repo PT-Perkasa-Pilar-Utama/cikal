@@ -1,0 +1,114 @@
+{
+  "CORE": [
+    {
+      "className": "IdentityModule",
+      "importPath": "./modules/core/identity/index.js"
+    },
+    {
+      "className": "TenancyModule",
+      "importPath": "./modules/core/tenancy/index.js"
+    },
+    {
+      "className": "OrganizationModule",
+      "importPath": "./modules/core/organization/index.js"
+    },
+    {
+      "className": "MasterDataModule",
+      "importPath": "./modules/core/masterdata/index.js"
+    },
+    {
+      "className": "ProductModule",
+      "importPath": "./modules/core/product/index.js"
+    },
+    {
+      "className": "ChangeRequestModule",
+      "importPath": "./modules/core/change-request/index.js"
+    },
+    {
+      "className": "AuditModule",
+      "importPath": "./modules/core/audit/index.js"
+    },
+    {
+      "className": "NotificationModule",
+      "importPath": "./modules/core/notification/index.js"
+    },
+    {
+      "className": "DocumentModule",
+      "importPath": "./modules/core/document/index.js"
+    },
+    {
+      "className": "ApplicationModule",
+      "importPath": "./modules/core/application/index.js"
+    },
+    {
+      "className": "OrchestratorModule",
+      "importPath": "./modules/core/orchestrator/index.js"
+    },
+    {
+      "className": "TaskQueueModule",
+      "importPath": "./modules/core/task-queue/index.js"
+    },
+    {
+      "className": "VerificationModule",
+      "importPath": "./modules/core/verification/index.js"
+    },
+    {
+      "className": "ApprovalModule",
+      "importPath": "./modules/core/approval/index.js"
+    },
+    {
+      "className": "IntegrationModule",
+      "importPath": "./modules/core/integration/index.js"
+    },
+    {
+      "className": "CalculationModule",
+      "importPath": "./modules/core/calculation/index.js"
+    },
+    {
+      "className": "ReportingModule",
+      "importPath": "./modules/core/reporting/index.js"
+    }
+  ],
+  "M06": [
+    {
+      "className": "M06DedupModule",
+      "importPath": "./modules/addons/m06-dedup/index.js"
+    }
+  ],
+  "M07": [
+    {
+      "className": "M07DukcapilModule",
+      "importPath": "./modules/addons/m07-dukcapil/index.js"
+    }
+  ],
+  "M08": [
+    {
+      "className": "M08FraudModule",
+      "importPath": "./modules/addons/m08-fraud/index.js"
+    }
+  ],
+  "M09": [
+    {
+      "className": "M09ScoringModule",
+      "importPath": "./modules/addons/m09-scoring/index.js"
+    }
+  ],
+  "M10": [
+    {
+      "className": "M10CreditBureauModule",
+      "importPath": "./modules/addons/m10-credit-bureau/index.js"
+    }
+  ],
+  "M11": [
+    {
+      "className": "M11DecisionModule",
+      "importPath": "./modules/addons/m11-decision/index.js"
+    }
+  ],
+  "M15": [
+    {
+      "className": "M15DisbursementModule",
+      "importPath": "./modules/addons/m15-disbursement/index.js"
+    }
+  ]
+}

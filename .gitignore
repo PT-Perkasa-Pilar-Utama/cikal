@@ -21,3 +21,22 @@ Docs/ba/*
 
 # Sesi brainstorming visual companion
 .superpowers/
+
+# Node, build, dan hasil generate (RP-05)
+node_modules/
+dist/
+.turbo/
+coverage/
+*.generated.ts
+routeTree.gen.ts
+*.tsbuildinfo
+
+# Environment dan secret lokal
+.env
+.env.*
+!.env.example
+deploy/compose/.secrets/
+
+# Playwright
+playwright-report/
+test-results/

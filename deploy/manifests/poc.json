@@ -1,0 +1,6 @@
+{
+  "client": "poc",
+  "companyCode": "001",
+  "deploymentType": "ON_PREMISE",
+  "modules": ["CORE", "M06", "M07", "M08", "M09", "M10", "M11", "M15"]
+}
