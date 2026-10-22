@@ -1,13 +1,14 @@
-import { changeRequestAcceptedSchema, errorEnvelopeSchema } from "@cikal/contracts";
+import { changeRequestAcceptedSchema, errorEnvelopeSchema, type MenuCode } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
-import { seedRoleIds } from "../src/modules/core/identity/index.js";
+import { seedRoleAccessId, seedRoleIds } from "../src/modules/core/identity/index.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 import { createSession, type TestSession } from "./support/session.js";
 
-const roleAccessId = "0192b6a3-0002-7000-8000-000000000014";
-const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: false, canApprove: true };
+/** Hak seed Checker (View, Approve) pada menu master; setiap uji memakai barisnya sendiri karena perubahan tertahan. */
+const checkerRow = (menuCode: MenuCode) => seedRoleAccessId(seedRoleIds.checker, menuCode);
+const flags = { canView: true, canCreate: false, canUpdate: false, canDelete: false, canApprove: false };
 
 /** `Idempotency-Key` opsional pada PUT terautentikasi (api-specs 01 §1.7). */
 describe("Idempotency-Key", () => {
@@ -28,7 +29,7 @@ describe("Idempotency-Key", () => {
     await db?.stop();
   });
 
-  const update = (key: string, payload: object = flags) =>
+  const update = (key: string, roleAccessId: string, payload: object = flags) =>
     app.inject({
       method: "PUT",
       url: `/api/v1/role-access/${roleAccessId}`,
@@ -38,8 +39,8 @@ describe("Idempotency-Key", () => {
 
   it("replays the first status and body for the same key and body", async () => {
     const key = "0192b6a8-0001-7000-8000-000000000001";
-    const first = await update(key);
-    const second = await update(key);
+    const first = await update(key, checkerRow("MST-PRODUCT"));
+    const second = await update(key, checkerRow("MST-PRODUCT"));
     expect(first.statusCode).toBe(202);
     expect(changeRequestAcceptedSchema.safeParse(first.json()).success).toBe(true);
     expect(first.headers["idempotent-replayed"]).toBeUndefined();
@@ -50,8 +51,8 @@ describe("Idempotency-Key", () => {
 
   it("rejects the same key with a different body with IDEMPOTENCY_KEY_REUSED", async () => {
     const key = "0192b6a8-0002-7000-8000-000000000002";
-    await update(key);
-    const res = await update(key, { ...flags, canApprove: false });
+    await update(key, checkerRow("MST-ROUTE"));
+    const res = await update(key, checkerRow("MST-ROUTE"), { ...flags, canApprove: true });
     expect(res.statusCode).toBe(409);
     expect(errorEnvelopeSchema.parse(res.json())).toMatchObject({
       code: "IDEMPOTENCY_KEY_REUSED",
@@ -62,12 +63,12 @@ describe("Idempotency-Key", () => {
   it("scopes keys per user", async () => {
     const key = "0192b6a8-0003-7000-8000-000000000003";
     const other = await createSession(db.owner, { roleId: seedRoleIds.maker });
-    await update(key);
+    await update(key, checkerRow("MST-CHECKLIST"));
     const res = await app.inject({
       method: "PUT",
-      url: `/api/v1/role-access/${roleAccessId}`,
+      url: `/api/v1/role-access/${checkerRow("MST-APPROVAL")}`,
       headers: { ...other.headers, "idempotency-key": key },
-      payload: { ...flags, canApprove: false },
+      payload: flags,
     });
     expect(res.statusCode).toBe(202);
     expect(res.headers["idempotent-replayed"]).toBeUndefined();
@@ -75,12 +76,15 @@ describe("Idempotency-Key", () => {
 
   it("does not keep a key whose first request failed", async () => {
     const key = "0192b6a8-0004-7000-8000-000000000004";
-    expect((await update(key, { ...flags, canView: "yes" })).statusCode).toBe(400);
-    expect((await update(key)).headers["idempotent-replayed"]).toBeUndefined();
+    const row = checkerRow("MST-FORMULA");
+    expect((await update(key, row, { ...flags, canView: "yes" })).statusCode).toBe(400);
+    const retried = await update(key, row);
+    expect(retried.statusCode).toBe(202);
+    expect(retried.headers["idempotent-replayed"]).toBeUndefined();
   });
 
   it("rejects a key that is not a UUID with VALIDATION_FAILED", async () => {
-    const res = await update("not-a-uuid");
+    const res = await update("not-a-uuid", checkerRow("MST-PRODUCT"));
     expect(res.statusCode).toBe(400);
     expect(errorEnvelopeSchema.parse(res.json())).toMatchObject({
       code: "VALIDATION_FAILED",

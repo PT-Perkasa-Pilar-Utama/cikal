@@ -6,6 +6,7 @@ import { AuditTrail } from "../../audit/index.js";
 import { ChangeRequestsRepository } from "../db/change-requests.repository.js";
 import { CHANGE_REQUEST_MESSAGES } from "../domain/review-policy.js";
 import { ChangeRequestRegistry } from "./change-request-registry.js";
+import { revalidate } from "./revalidate.js";
 import { ReviewGate } from "./review-gate.js";
 
 const DEFAULT_DESCRIPTION = "Approve change request";
@@ -13,7 +14,8 @@ const DEFAULT_DESCRIPTION = "Approve change request";
 /**
  * `POST /change-requests/{id}/approve` (api-specs 07 §7.4). Validasi ulang, `apply` modul pemilik, status, dan
  * audit berjalan dalam satu transaksi, jadi paket impor berlaku utuh atau tidak sama sekali (AC-12.07).
- * Event `MasterDataChanged` untuk membuang cache dipasang bersama cache pertama (hak akses) di kartu BE-S1-04.
+ * Hak akses dan data master dibaca dari database per request, jadi data yang disetujui berlaku pada request
+ * berikutnya tanpa event pembuang cache.
  */
 @Injectable()
 export class ApproveChangeRequestUseCase {
@@ -34,7 +36,7 @@ export class ApproveChangeRequestUseCase {
     return this.db.withTenantTx(ctx, async (tx) => {
       const request = await this.gate.lock(tx, id, ctx.userId);
       const handler = this.registry.get(request.entityType);
-      await handler.validate(tx, request);
+      await revalidate(() => handler.validate(tx, request));
       const result = await handler.apply(tx, request, ctx);
       const entityId = request.entityId ?? result.entityId;
       await this.requests.markReviewed(tx, id, {

@@ -88,8 +88,12 @@ export class ChangeRequestsRepository {
     return rows.flatMap((row) => (row.entityId ? [row.entityId] : []));
   }
 
-  /** Ada permintaan terbuka yang `newData.<field>`-nya sama persis dengan `value`. */
-  async hasOpenWithField(tx: Tx, entityType: ChangeRequestEntityType, field: string, value: string): Promise<boolean> {
+  /** Ada permintaan terbuka yang setiap `newData.<field>`-nya sama persis dengan nilai di `fields`. */
+  async hasOpenWithFields(
+    tx: Tx,
+    entityType: ChangeRequestEntityType,
+    fields: Record<string, string>,
+  ): Promise<boolean> {
     const [row] = await tx
       .select({ id: changeRequests.id })
       .from(changeRequests)
@@ -97,7 +101,7 @@ export class ChangeRequestsRepository {
         and(
           eq(changeRequests.entityType, entityType),
           sql`${changeRequests.status} in (${openStatusList})`,
-          sql`${changeRequests.newData} ->> ${field} = ${value}`,
+          ...Object.entries(fields).map(([field, value]) => sql`${changeRequests.newData} ->> ${field} = ${value}`),
         ),
       )
       .limit(1);

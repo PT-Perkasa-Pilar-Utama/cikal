@@ -37,10 +37,10 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
       recordHandler("DOCUMENT_CHECKLIST", "Document Checklist"),
-      recordHandler("ROLE_ACCESS", "Role Access"),
+      recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
       packageHandler("DECISION_MATRIX", "Decision Matrix"),
     ]);
-    const menus = ["MST-CHECKLIST", "IAM-ROLE-ACCESS", "MST-DECISION"];
+    const menus = ["MST-CHECKLIST", "MST-APPROVAL", "MST-DECISION"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -52,7 +52,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
       menus.map((menuCode) => ({ menuCode, view: true, approve: true })),
     );
     const adminRole = await createRole(db.owner, "Admin Uji", [
-      { menuCode: "IAM-ROLE-ACCESS", view: true, create: true, approve: true },
+      { menuCode: "MST-APPROVAL", view: true, create: true, approve: true },
     ]);
     maker = await createSession(db.owner, { roleId: makerRole });
     checker = await createSession(db.owner, { roleId: checkerRole });
@@ -81,7 +81,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     return changeRequestDetailResponseSchema.parse(res.json()).data;
   };
   const errorOf = (res: { json(): unknown }) => errorEnvelopeSchema.parse(res.json());
-  const submitNew = (session: TestSession, entityType: "DOCUMENT_CHECKLIST" | "ROLE_ACCESS", name: string) =>
+  const submitNew = (session: TestSession, entityType: "DOCUMENT_CHECKLIST" | "APPROVAL_HIERARCHY", name: string) =>
     submitAs(app, session, { entityType, entityId: null, oldData: null, newData: { name } });
   const reject = (id: string) =>
     app.inject({ method: "POST", url: `/api/v1/change-requests/${id}/reject`, headers: checker.headers, payload: {} });
@@ -132,12 +132,12 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("tells the maker they cannot review their own submission (AC-12.04)", async () => {
-    const { changeRequestId } = await submitNew(admin, "ROLE_ACCESS", "Credit Analyst");
+    const { changeRequestId } = await submitNew(admin, "APPROVAL_HIERARCHY", "Credit Analyst");
     expect(await detailOf(admin, changeRequestId)).toMatchObject({
       canReview: false,
       reviewBlockedReason: "You cannot review your own submission",
     });
-    const { data } = await listOf(admin, "entityType=ROLE_ACCESS");
+    const { data } = await listOf(admin, "entityType=APPROVAL_HIERARCHY");
     expect(data.find((row) => row.id === changeRequestId)?.canReview).toBe(false);
   });
 
@@ -218,7 +218,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("rejects entity types from different menus in one list", async () => {
-    const res = await get(checker, "?entityType=DOCUMENT_CHECKLIST,ROLE_ACCESS");
+    const res = await get(checker, "?entityType=DOCUMENT_CHECKLIST,APPROVAL_HIERARCHY");
     expect(res.statusCode).toBe(400);
     expect(errorOf(res)).toMatchObject({
       code: "VALIDATION_FAILED",

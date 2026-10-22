@@ -1,9 +1,10 @@
 import type { ChangeRequestAccepted, ProductPricingData, ProductPricingUpdateRequest } from "@cikal/contracts";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
+import { CHANGE_REQUEST_PORT } from "../../../../platform/http/change-request-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { CHANGE_REQUEST_MESSAGES, SubmitChangeRequest } from "../../change-request/index.js";
+import type { ChangeRequestPort } from "../../change-request/index.js";
 import { ProductsRepository } from "../db/products.repository.js";
 import { SubProductsRepository } from "../db/sub-products.repository.js";
 import { pricingRuleError, toPricingData } from "../domain/pricing-rules.js";
@@ -17,7 +18,7 @@ export class RequestPricingUpdateUseCase {
     private readonly products: ProductsRepository,
     private readonly subProducts: SubProductsRepository,
     private readonly checks: ProductChecks,
-    private readonly submit: SubmitChangeRequest,
+    @Inject(CHANGE_REQUEST_PORT) private readonly changeRequests: ChangeRequestPort,
   ) {}
 
   execute(ctx: RequestContext, id: string, body: ProductPricingUpdateRequest): Promise<ChangeRequestAccepted> {
@@ -37,13 +38,12 @@ export class RequestPricingUpdateUseCase {
         salesFee: product.salesFee,
         subProducts: periods.map(({ id: _periodId, ...period }) => period),
       };
-      const accepted = await this.submit.execute(tx, ctx, {
+      return this.changeRequests.submit(tx, ctx, {
         entityType: "PRODUCT_PRICING",
         entityId: id,
         oldData: current,
         newData: proposed,
       });
-      return { data: accepted, message: CHANGE_REQUEST_MESSAGES.submitted };
     });
   }
 }

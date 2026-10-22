@@ -92,11 +92,11 @@ Di POC, user dan role berasal dari seed; layar yang dibangun adalah Role Access 
 
 **Behavior**
 
-1. Validasi skema; role dan menu harus aktif di tenant (menu: instalasi).
+1. Validasi skema; role dan menu harus aktif di tenant (menu: instalasi). Role nonaktif, menu nonaktif, dan menu modul tak berlisensi dijawab `404 NOT_FOUND` karena tidak bisa dipilih di dropdown.
 2. Bila salah satu `canCreate/canUpdate/canDelete/canApprove` bernilai `true` dan `canView = false`: `422 VIEW_ACCESS_REQUIRED` (AC-09.03).
 3. Kombinasi `roleId + menuId` sudah ada (aktif atau sedang diajukan): `409 ROLE_ACCESS_EXISTS`.
 4. Buat ChangeRequest `entityType = ROLE_ACCESS`, `action = CREATE` (`01-conventions.md` 1.8).
-5. Setelah checker menyetujui, cache hak akses dibuang lewat `NOTIFY`; sesi aktif memakai hak baru pada request berikutnya.
+5. Setelah checker menyetujui, sesi aktif memakai hak baru pada request berikutnya: hak menu dibaca dari database di setiap request, tanpa cache yang perlu dibuang.
 
 **Output 202:** `{"data":{"changeRequestId":"...","entityType":"ROLE_ACCESS","entityId":null,"status":"WAITING_APPROVAL"},"message":"Data submitted for approval"}` (AC-09.01). Baris tampil di "Pending Role Access" lewat `GET /change-requests?entityType=ROLE_ACCESS`.
 
