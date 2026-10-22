@@ -12,7 +12,7 @@ class ResetStateDto extends createZodDto(resetStateRequestSchema) {}
 /**
  * `POST /api/admin/reset-state` (api-specs 27 §27.4). Controller ini hanya didaftarkan `OpsModule.register`
  * bila `APP_ENV` dev/test/sit/uat dan `ENABLE_RESET_API=true`; di production rute tidak ada.
- * Sesi dan CSRF untuk `@Requires` diperiksa guard global (TL-S1-03).
+ * Sesi, CSRF, dan hak `QA-RESET` diperiksa guard global (`AccessGuard`).
  */
 @Controller("admin")
 export class ResetController {

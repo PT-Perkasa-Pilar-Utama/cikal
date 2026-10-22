@@ -29,7 +29,7 @@ Kontrol keamanan per lapisan. Mekanisme login dan matriks role ada di `09-authen
 | RLS | Semua tabel ber-`tenant_id` memakai policy DM-09; role aplikasi tanpa `BYPASSRLS` |
 | Konteks | `SET LOCAL app.tenant_id` di awal setiap transaksi dari token sesi, tidak pernah dari parameter request (API-03) |
 | Worker | Setiap job membawa `tenantId`; worker membuka transaksi dengan konteks tenant yang sama |
-| Uji | Suite `tenant-isolation.spec.ts` di CI: dua company, setiap endpoint daftar dan detail dipanggil silang, harus 404 atau kosong (TN-03) |
+| Uji | Suite `apps/api/test/tenant-isolation.int.spec.ts` di CI: dua company, setiap endpoint daftar dan detail dipanggil silang, harus 404 atau kosong (TN-03) |
 
 ## 7.4 Perlindungan data
 

@@ -3,7 +3,9 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { z } from "zod";
 import { createApp } from "../src/app.factory.js";
-import { testConfig } from "./support/test-config.js";
+import { seedRoleIds } from "../src/modules/core/identity/index.js";
+import { startDatabase, type TestDatabase } from "./support/database.js";
+import { createRole, createSession } from "./support/session.js";
 
 const productId = c.productIdMock;
 const changeRequestId = "0192b6a4-0001-7000-8000-000000000001";
@@ -97,21 +99,37 @@ const cases: Case[] = [
   ],
 ];
 
+const everyRight = { view: true, create: true, update: true, delete: true, approve: true };
+
 describe("Sprint 1 stubs", () => {
+  let db: TestDatabase;
   let app: NestFastifyApplication;
+  let headers: Record<string, string>;
 
   beforeAll(async () => {
-    app = await createApp(testConfig());
+    db = await startDatabase("dev");
+    app = await createApp(db.config);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
+    const roleId = await createRole(db.owner, "Stub Tester", [
+      { menuCode: "MST-PRODUCT", ...everyRight },
+      { menuCode: "IAM-ROLE-ACCESS", ...everyRight },
+    ]);
+    headers = (await createSession(db.owner, { roleId })).headers;
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
+    await db?.stop();
   });
 
   it.each(cases)("%s returns a contract-valid response", async (_name, method, url, payload, status, schema) => {
-    const res = await app.inject({ method, url, ...(payload === undefined ? {} : { payload: payload as object }) });
+    const res = await app.inject({
+      method,
+      url,
+      headers,
+      ...(payload === undefined ? {} : { payload: payload as object }),
+    });
     expect(res.statusCode, res.body).toBe(status);
     const parsed = schema.safeParse(res.json());
     expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error.issues)).toBe(true);
@@ -121,6 +139,7 @@ describe("Sprint 1 stubs", () => {
     const res = await app.inject({
       method: "POST",
       url: "/api/v1/products",
+      headers,
       payload: { ...validProduct, productCode: "KPRSUB" },
     });
     expect(res.statusCode).toBe(400);
@@ -136,13 +155,14 @@ describe("Sprint 1 stubs", () => {
     const res = await app.inject({
       method: "PUT",
       url: `/api/v1/role-access/${productId}`,
+      headers,
       payload: { ...flags, x: 1 },
     });
     expect(res.statusCode).toBe(400);
   });
 
   it("returns the envelope for unknown routes", async () => {
-    const res = await app.inject({ method: "GET", url: "/api/v1/unknown" });
+    const res = await app.inject({ method: "GET", url: "/api/v1/unknown", headers });
     expect(res.statusCode).toBe(404);
     expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("NOT_FOUND");
   });
@@ -175,32 +195,37 @@ describe("Sprint 1 stubs", () => {
 });
 
 describe("reset-state when enabled (api-specs 27 §27.4)", () => {
+  let db: TestDatabase;
   let app: NestFastifyApplication;
+  let headers: Record<string, string>;
 
   beforeAll(async () => {
-    app = await createApp(
-      testConfig({
-        database: {
-          url: "postgres://cikal:cikal@127.0.0.1:1/cikal",
-          migrationUrl: "postgres://owner@127.0.0.1:1/cikal",
-          poolMax: 2,
-        },
-        resetApi: { token: "reset-test-token", defaultSeed: "qa" },
-      }),
-    );
+    db = await startDatabase("dev");
+    app = await createApp({
+      ...db.config,
+      database: { ...db.config.database, migrationUrl: "postgres://owner@127.0.0.1:1/cikal" },
+      resetApi: { token: "reset-test-token", defaultSeed: "qa" },
+    });
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
+    headers = (await createSession(db.owner, { roleId: seedRoleIds.qa })).headers;
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
+    await db?.stop();
+  });
+
+  it("requires a QA session before the reset token is checked", async () => {
+    const res = await app.inject({ method: "POST", url: "/api/admin/reset-state", payload: {} });
+    expect(res.statusCode).toBe(401);
   });
 
   it("rejects a missing or wrong reset token", async () => {
     const res = await app.inject({
       method: "POST",
       url: "/api/admin/reset-state",
-      headers: { "x-reset-token": "wrong" },
+      headers: { ...headers, "x-reset-token": "wrong" },
     });
     expect(res.statusCode).toBe(403);
     expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("RESET_TOKEN_INVALID");
@@ -210,7 +235,7 @@ describe("reset-state when enabled (api-specs 27 §27.4)", () => {
     const res = await app.inject({
       method: "POST",
       url: "/api/admin/reset-state",
-      headers: { "x-reset-token": "reset-test-token" },
+      headers: { ...headers, "x-reset-token": "reset-test-token" },
       payload: { seed: "base" },
     });
     expect(res.statusCode).toBe(400);

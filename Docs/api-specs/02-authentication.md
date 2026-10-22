@@ -132,7 +132,7 @@ Setiap rute terautentikasi menjalankan urutan guard berikut sebelum handler:
 2. CSRF untuk metode selain GET/HEAD.
 3. `mustChangePassword`: `403 PASSWORD_CHANGE_REQUIRED`.
 4. Lisensi modul pemilik rute: `403 MODULE_NOT_LICENSED`. Lisensi kedaluwarsa dan metode mengubah data: `403 LICENSE_EXPIRED`.
-5. Hak menu: tanpa View `403 ACCESS_DENIED`; tanpa aksi `403 ACTION_DENIED` (AC-09.04).
+5. Hak menu: rute View tanpa hak View `403 ACCESS_DENIED` (AC-09.02 TRM_ACC_001); rute aksi lain tanpa hak aksi itu, termasuk bila View juga tidak ada, `403 ACTION_DENIED` (AC-09.04).
 6. Konteks tenant di transaksi dari sesi (`SET LOCAL app.tenant_id`).
 
 ## 2.6 Operasi backlog (TODO)

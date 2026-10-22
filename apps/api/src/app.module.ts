@@ -1,12 +1,14 @@
 import { type DynamicModule, Module } from "@nestjs/common";
-import { APP_FILTER, APP_GUARD, APP_PIPE } from "@nestjs/core";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { ZodValidationPipe } from "nestjs-zod";
 import { licensedModules } from "./licensed-modules.generated.js";
 import type { AppConfig } from "./platform/config/config.js";
 import { ConfigModule } from "./platform/config/config.module.js";
 import { DatabaseModule } from "./platform/db/database.module.js";
+import { IdempotencyKeysRepository } from "./platform/db/idempotency-keys.repository.js";
 import { AccessGuard } from "./platform/http/access.js";
 import { ErrorEnvelopeFilter } from "./platform/http/error.filter.js";
+import { IdempotencyInterceptor } from "./platform/http/idempotency.interceptor.js";
 import { OpsModule } from "./platform/ops/ops.module.js";
 import { StorageModule } from "./platform/storage/storage.module.js";
 
@@ -26,6 +28,8 @@ export class AppModule {
       providers: [
         { provide: APP_PIPE, useClass: ZodValidationPipe },
         { provide: APP_GUARD, useClass: AccessGuard },
+        IdempotencyKeysRepository,
+        { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
         { provide: APP_FILTER, useClass: ErrorEnvelopeFilter },
       ],
     };

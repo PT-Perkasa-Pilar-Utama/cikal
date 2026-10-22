@@ -165,7 +165,7 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan | TL-S6-01 | Belum ada |
 | `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
 | Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
-| `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02 | Ada; sesi dan CSRF menunggu TL-S1-03 |
+| `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
 
 ### 2.6 Perbedaan untuk on-premise client
 

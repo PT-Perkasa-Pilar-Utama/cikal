@@ -186,7 +186,7 @@ Do not report a task as done while either command fails. Never bypass hooks with
   - Repositories and use cases run against real PostgreSQL. Replace only third-party adapters.
   - There is no coverage percentage target.
 - **Database:**
-  - Business data access runs in `withTenantTx` (installed by TL-S1-03).
+  - Business data access runs in `TenantTx.withTenantTx` (`platform/db/tenant-tx.ts`). Pre-tenant reads use `withLookupTx` and a DM-12 policy.
   - Multi-step writes, outbox, enqueue, and audit share one transaction.
   - Migrations are forward-only (expand/contract) and generated with `pnpm --filter @cikal/api db:generate <module> <name>`.
   - Seeds are idempotent (`onConflictDoNothing`) and layered: `base` (production reference data), `dev` (base plus company 001 and users), `qa` (dev plus wiring and MRTM test data).
@@ -259,7 +259,7 @@ cp apps/api/.env.example apps/api/.env
 pnpm --filter @cikal/api db:migrate                       # build + migrate licensed modules
 pnpm --filter @cikal/api db:seed --seed=dev               # base + dev (qa for wiring)
 pnpm --filter @cikal/api db:reset --seed=qa               # drop, migrate, seed, empty bucket
-pnpm --filter @cikal/api db:generate <module> <name>      # migration from db/schema.ts
+pnpm --filter @cikal/api db:generate <module> <name>      # migration from db/schema.ts (`platform` for platform/db)
 pnpm dev                                                  # api :3000 + web :5173
 pnpm check                                                # gate: biome, typecheck, test, build
 pnpm test:unit                                            # unit tests only (pre-push)
