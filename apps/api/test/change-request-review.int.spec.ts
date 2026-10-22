@@ -38,10 +38,10 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
       recordHandler("DOCUMENT_CHECKLIST", "Document Checklist"),
-      recordHandler("ROLE_ACCESS", "Role Access"),
+      recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
       packageHandler("DECISION_MATRIX", "Decision Matrix"),
     ]);
-    const menus = ["MST-CHECKLIST", "IAM-ROLE-ACCESS", "MST-DECISION"];
+    const menus = ["MST-CHECKLIST", "MST-APPROVAL", "MST-DECISION"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -53,7 +53,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
       menus.map((menuCode) => ({ menuCode, view: true, approve: true })),
     );
     const adminRole = await createRole(db.owner, "Admin Uji", [
-      { menuCode: "IAM-ROLE-ACCESS", view: true, create: true, approve: true },
+      { menuCode: "MST-APPROVAL", view: true, create: true, approve: true },
     ]);
     const viewerRole = await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-CHECKLIST", view: true }]);
     maker = await createSession(db.owner, { roleId: makerRole });
@@ -124,7 +124,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
 
   it("refuses approve and reject by the maker of the request (AC-12.04)", async () => {
     const { changeRequestId } = await submitAs(app, admin, {
-      entityType: "ROLE_ACCESS",
+      entityType: "APPROVAL_HIERARCHY",
       entityId: null,
       oldData: null,
       newData: { name: "Credit Analyst" },

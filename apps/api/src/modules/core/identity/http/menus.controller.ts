@@ -1,13 +1,21 @@
-import { type MenuTreeResponse, menuTreeResponseMock } from "@cikal/contracts";
-import { Controller, Get } from "@nestjs/common";
+import { type MenuTreeResponse, menuTreeQuerySchema } from "@cikal/contracts";
+import { Controller, Get, Query } from "@nestjs/common";
+import { createZodDto } from "nestjs-zod";
 import { Requires } from "../../../../platform/http/access.js";
+import type { RequestContext } from "../../../../platform/http/access-port.js";
+import { CurrentContext } from "../../../../platform/http/current-context.js";
+import { ListMenusUseCase } from "../application/list-menus.use-case.js";
 
-/** Stub `GET /api/v1/menus` (api-specs 03 §3.2); mengembalikan mock kontrak sampai BE-S1-04. */
+class MenuTreeQueryDto extends createZodDto(menuTreeQuerySchema) {}
+
+/** `GET /api/v1/menus` (api-specs 03 §3.2). */
 @Controller("v1/menus")
 export class MenusController {
+  constructor(private readonly menus: ListMenusUseCase) {}
+
   @Get()
   @Requires("IAM-ROLE-ACCESS", "VIEW")
-  tree(): MenuTreeResponse {
-    return menuTreeResponseMock;
+  tree(@CurrentContext() ctx: RequestContext, @Query() query: MenuTreeQueryDto): Promise<MenuTreeResponse> {
+    return this.menus.execute(ctx, query);
   }
 }

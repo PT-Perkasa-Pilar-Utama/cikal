@@ -1,8 +1,9 @@
 import type { ChangeRequestAccepted, ProductCreateRequest } from "@cikal/contracts";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
-import { CHANGE_REQUEST_MESSAGES, SubmitChangeRequest } from "../../change-request/index.js";
+import { CHANGE_REQUEST_PORT } from "../../../../platform/http/change-request-port.js";
+import type { ChangeRequestPort } from "../../change-request/index.js";
 import { toProductData } from "../domain/product-rules.js";
 import { ProductChecks } from "./product-checks.js";
 
@@ -12,7 +13,7 @@ export class RequestProductCreateUseCase {
   constructor(
     private readonly db: TenantTx,
     private readonly checks: ProductChecks,
-    private readonly submit: SubmitChangeRequest,
+    @Inject(CHANGE_REQUEST_PORT) private readonly changeRequests: ChangeRequestPort,
   ) {}
 
   execute(ctx: RequestContext, body: ProductCreateRequest): Promise<ChangeRequestAccepted> {
@@ -20,13 +21,12 @@ export class RequestProductCreateUseCase {
     return this.db.withTenantTx(ctx, async (tx) => {
       await this.checks.assertRules(tx, data);
       await this.checks.assertCodeUnused(tx, data.productCode, { includePending: true });
-      const accepted = await this.submit.execute(tx, ctx, {
+      return this.changeRequests.submit(tx, ctx, {
         entityType: "PRODUCT",
         entityId: null,
         oldData: null,
         newData: data,
       });
-      return { data: accepted, message: CHANGE_REQUEST_MESSAGES.submitted };
     });
   }
 }

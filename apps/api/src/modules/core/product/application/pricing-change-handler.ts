@@ -8,7 +8,6 @@ import { type ProductRow, ProductsRepository } from "../db/products.repository.j
 import { SubProductsRepository } from "../db/sub-products.repository.js";
 import { pricingRuleError } from "../domain/pricing-rules.js";
 import { PRODUCT_AUDIT_MODULE } from "./product-change-handler.js";
-import { revalidate } from "./revalidate.js";
 
 /** Handler ChangeRequest `PRODUCT_PRICING` (api-specs 07 §7.1): biaya dan suku bunga per periode (api-specs 08 §8.6). */
 @Injectable()
@@ -28,10 +27,8 @@ export class PricingChangeHandler implements EntityHandler {
   async validate(tx: Tx, request: ChangeRequestSnapshot): Promise<void> {
     const data = productPricingDataSchema.parse(request.newData);
     const product = await this.productOf(tx, request);
-    await revalidate(async () => {
-      const error = pricingRuleError(data, product);
-      if (error) throw error;
-    });
+    const error = pricingRuleError(data, product);
+    if (error) throw error;
   }
 
   async apply(tx: Tx, request: ChangeRequestSnapshot, reviewer: Actor): Promise<ApplyResult> {

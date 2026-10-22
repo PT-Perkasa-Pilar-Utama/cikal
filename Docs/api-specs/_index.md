@@ -72,11 +72,11 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /roles` | 03 §3.1 | POC | TODO |
-| `GET /menus` | 03 §3.2 | POC | TODO |
-| `GET /role-access` | 03 §3.3 | POC | TODO |
-| `POST /role-access` | 03 §3.4 | POC | TODO |
-| `PUT /role-access/{id}` | 03 §3.5 | POC | TODO |
+| `GET /roles` | 03 §3.1 | POC | OK |
+| `GET /menus` | 03 §3.2 | POC | OK |
+| `GET /role-access` | 03 §3.3 | POC | OK |
+| `POST /role-access` | 03 §3.4 | POC | OK |
+| `PUT /role-access/{id}` | 03 §3.5 | POC | OK |
 | `GET /users` | 03 §3.6 | POC | TODO |
 | Users, roles, user access, menus (tulis), devices | 03 §3.7 | Backlog | TODO |
 

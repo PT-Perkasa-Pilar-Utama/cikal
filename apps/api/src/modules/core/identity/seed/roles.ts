@@ -34,6 +34,11 @@ function roleIdOf(key: string): string {
   return id;
 }
 
+/** ID tetap baris RoleAccess seed: segmen kedua ID role dan segmen terakhir ID menu. */
+export function seedRoleAccessId(roleId: string, menuCode: MenuCode): string {
+  return `0192b6a3-${roleId.slice(9, 13)}-7000-8000-${seedMenuId(menuCode).slice(-12)}`;
+}
+
 /** Hak dengan huruf V, C, U, D, A seperti matriks technical-specs 09 §9.5. */
 type Rights = "V" | "VA" | "VU" | "VCU" | "VCUD" | "VCUDA";
 
@@ -137,13 +142,11 @@ export async function seedRoles(db: NodePgDatabase): Promise<void> {
 }
 
 function roleAccessRow(roleId: string, code: MenuCode, rights: Rights) {
-  const menuId = seedMenuId(code);
   return {
-    // Segmen kedua ID role dan segmen terakhir ID menu membuat ID baris tetap.
-    id: `0192b6a3-${roleId.slice(9, 13)}-7000-8000-${menuId.slice(-12)}`,
+    id: seedRoleAccessId(roleId, code),
     tenantId: seedCompanyIds.company001,
     roleId,
-    menuId,
+    menuId: seedMenuId(code),
     canView: rights.includes("V"),
     canCreate: rights.includes("C"),
     canUpdate: rights.includes("U"),

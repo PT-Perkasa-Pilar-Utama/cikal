@@ -1,9 +1,10 @@
 import { type ChangeRequestAccepted, type ProductUpdateRequest, productDataSchema } from "@cikal/contracts";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
+import { CHANGE_REQUEST_PORT } from "../../../../platform/http/change-request-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { CHANGE_REQUEST_MESSAGES, SubmitChangeRequest } from "../../change-request/index.js";
+import type { ChangeRequestPort } from "../../change-request/index.js";
 import { ProductsRepository } from "../db/products.repository.js";
 import { productCodeChangedError, productError, sameProductData, toProductData } from "../domain/product-rules.js";
 import { ProductChecks } from "./product-checks.js";
@@ -18,7 +19,7 @@ export class RequestProductUpdateUseCase {
     private readonly db: TenantTx,
     private readonly products: ProductsRepository,
     private readonly checks: ProductChecks,
-    private readonly submit: SubmitChangeRequest,
+    @Inject(CHANGE_REQUEST_PORT) private readonly changeRequests: ChangeRequestPort,
   ) {}
 
   execute(ctx: RequestContext, id: string, body: ProductUpdateRequest): Promise<ChangeRequestAccepted> {
@@ -31,13 +32,12 @@ export class RequestProductUpdateUseCase {
       if (proposed.productCode !== current.productCode) throw productCodeChangedError();
       await this.checks.assertRules(tx, proposed);
       if (sameProductData(current, proposed)) throw productError("NO_CHANGES");
-      const accepted = await this.submit.execute(tx, ctx, {
+      return this.changeRequests.submit(tx, ctx, {
         entityType: "PRODUCT",
         entityId: id,
         oldData: current,
         newData: proposed,
       });
-      return { data: accepted, message: CHANGE_REQUEST_MESSAGES.submitted };
     });
   }
 }
