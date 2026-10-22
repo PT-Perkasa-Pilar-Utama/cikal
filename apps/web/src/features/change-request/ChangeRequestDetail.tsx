@@ -49,7 +49,6 @@ export function ChangeRequestDetail({ id, presentation, onClose, onReviewed }: C
     <Popup title="Detail" onClose={onClose}>
       {detail.isPending && <p>Loading...</p>}
       {detail.error && <FeedbackMessage type="error">{detail.error.message}</FeedbackMessage>}
-      {reviewError && <FeedbackMessage type="error">{reviewError.message}</FeedbackMessage>}
       {request && (
         <>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-1 md:grid-cols-4">
@@ -69,6 +68,8 @@ export function ChangeRequestDetail({ id, presentation, onClose, onReviewed }: C
             showCurrent={request.currentData !== null}
             presentation={presentation}
           />
+          {/* Di samping tombol, bukan di atas tabel yang panjang, agar terlihat tanpa menggulir (AC-12.05). */}
+          {reviewError && <FeedbackMessage type="error">{reviewError.message}</FeedbackMessage>}
           {request.canReview ? (
             <div className="flex justify-end gap-3">
               <Button variant="secondary" disabled={reviewing} onClick={() => setConfirming("reject")}>
