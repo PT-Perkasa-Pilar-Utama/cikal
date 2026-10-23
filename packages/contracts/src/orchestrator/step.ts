@@ -48,6 +48,28 @@ export const stepModules = {
   WAIT_CORE: "M15",
 } as const satisfies Record<StepCode, ModuleCode>;
 
+/** Nama langkah di editor rute dan pesan langkah wajib (tech ref 6.3; AC-31.02). */
+export const stepNames = {
+  DATA_ENTRY: "Data Entry",
+  SURVEY: "Survey",
+  DEDUP: "Dedup",
+  DUKCAPIL: "Dukcapil",
+  NAME_SCREENING: "Name Screening",
+  VERIFICATION: "Verification",
+  FRAUD: "Fraud",
+  RAC: "RAC",
+  SCORING: "Scoring",
+  CREDIT_BUREAU: "Credit Bureau",
+  DECISION: "Decision",
+  SIKP: "SIKP",
+  APPROVAL: "Approval",
+  EPOLIS: "Epolis",
+  VALIDITY_CHECK: "Validity Check",
+  PRINT_AKAD: "Print Akad",
+  DISBURSEMENT: "Disbursement",
+  WAIT_CORE: "Wait Core",
+} as const satisfies Record<StepCode, string>;
+
 /** Status StepExecution (technical-specs 06 §6.13). */
 export const stepStatusSchema = z.enum([
   "PENDING",

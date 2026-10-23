@@ -3,7 +3,7 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 
 /**
  * Langkah yang boleh tampil di editor rute: urutan baku tanpa langkah modul tak berlisensi (AC-31.08, AC-100.03,
- * RT-04). Dipasang di `GET /products/{id}/route` pada kartu BE-S2-01.
+ * RT-04).
  */
 export function licensedRouteSteps(licensedModules: ReadonlySet<string>): StepCode[] {
   return stepCodes.filter((code) => licensedModules.has(stepModules[code]));
@@ -11,7 +11,7 @@ export function licensedRouteSteps(licensedModules: ReadonlySet<string>): StepCo
 
 /**
  * Langkah modul tak berlisensi yang tetap dikirim ditolak `422 MODULE_NOT_LICENSED_STEP` (api-specs 08 §8.9
- * langkah 2; teks usulan engineering). Dipasang di `PUT /products/{id}/route` pada kartu BE-S2-01.
+ * langkah 2; teks usulan engineering).
  */
 export function assertRouteStepsLicensed(
   steps: readonly { stepCode: StepCode }[],

@@ -1,6 +1,6 @@
 import type { ProductPricingData } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { subProducts } from "./schema.js";
@@ -27,6 +27,22 @@ export class SubProductsRepository {
       .from(subProducts)
       .where(eq(subProducts.productId, productId))
       .orderBy(asc(subProducts.validFrom));
+  }
+
+  /** Suku bunga SubProduct yang berlaku pada tanggal bisnis `date` per produk; periode tidak tumpang tindih (AC-97.02). */
+  async interestRatesOn(tx: Tx, productIds: readonly string[], date: string): Promise<Map<string, string>> {
+    if (productIds.length === 0) return new Map();
+    const rows = await tx
+      .select({ productId: subProducts.productId, interestRate: subProducts.interestRate })
+      .from(subProducts)
+      .where(
+        and(
+          inArray(subProducts.productId, [...productIds]),
+          lte(subProducts.validFrom, date),
+          or(isNull(subProducts.validTo), gte(subProducts.validTo, date)),
+        ),
+      );
+    return new Map(rows.map((row) => [row.productId, row.interestRate]));
   }
 
   /**

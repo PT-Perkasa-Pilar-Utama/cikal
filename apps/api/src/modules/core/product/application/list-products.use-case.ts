@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { type ProductPage, ProductsRepository } from "../db/products.repository.js";
+import { RouteVersionsRepository } from "../db/route-versions.repository.js";
 import { ProductChecks } from "./product-checks.js";
 
 const SORTS = {
@@ -19,6 +20,7 @@ export class ListProductsUseCase {
     private readonly db: TenantTx,
     private readonly products: ProductsRepository,
     private readonly checks: ProductChecks,
+    private readonly versions: RouteVersionsRepository,
   ) {}
 
   execute(ctx: RequestContext, query: ProductListQuery): Promise<ProductListResponse> {
@@ -29,13 +31,15 @@ export class ListProductsUseCase {
     return this.db.withTenantTx(ctx, async (tx) => {
       const rows = await this.products.list(tx, filter, page);
       const totalItems = await this.products.count(tx, filter);
-      const pending = await this.checks.pendingProductIds(
-        tx,
-        rows.map((row) => row.id),
-      );
+      const ids = rows.map((row) => row.id);
+      const pending = await this.checks.pendingProductIds(tx, ids);
+      const routed = await this.versions.productIdsWithActiveRoute(tx, ids);
       return {
-        // Rute ACTIVE dibaca setelah versi rute dibangun di kartu BE-S2-01 (AC-20.06).
-        data: rows.map((row) => ({ ...row, hasActiveRoute: false, hasPendingChange: pending.has(row.id) })),
+        data: rows.map((row) => ({
+          ...row,
+          hasActiveRoute: routed.has(row.id),
+          hasPendingChange: pending.has(row.id),
+        })),
         meta: {
           page: query.page,
           pageSize: query.pageSize,

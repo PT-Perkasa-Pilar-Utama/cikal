@@ -128,9 +128,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `PUT /products/{id}` | 08 §8.4 | POC | OK |
 | `GET /products/{id}/pricing` | 08 §8.5 | POC | OK |
 | `PUT /products/{id}/pricing` | 08 §8.6 | POC | OK |
-| `GET /products/available` | 08 §8.7 | POC | TODO |
-| `PUT /products/{id}/route` | 08 §8.9 | POC | TODO |
-| `GET /products/{id}/route` | 08 §8.10 | POC | TODO |
+| `GET /products/available` | 08 §8.7 | POC | OK |
+| `PUT /products/{id}/route` | 08 §8.9 | POC | WIP (langkah 3 IN-09 di BE-S2-03) |
+| `GET /products/{id}/route` | 08 §8.10 | POC | OK |
 | `POST /document-checklists` | 08 §8.11 | POC | TODO |
 | `GET /document-checklists`, `PUT /document-checklists/{id}` | 08 §8.12 | POC | TODO |
 | `GET /products/{id}/route/versions` | 08 §8.13 | Backlog | TODO |

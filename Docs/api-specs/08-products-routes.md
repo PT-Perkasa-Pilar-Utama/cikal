@@ -201,12 +201,13 @@ Katalog langkah dan modulnya mengikuti urutan baku tech ref 6.3 dan `StepCode` d
 
 **Behavior**
 
-1. Langkah wajib dikirim `isEnabled = false`: `422 MANDATORY_STEP` (AC-31.02).
+1. Langkah wajib dikirim `isEnabled = false` atau tidak dikirim: `422 MANDATORY_STEP` (AC-31.02).
 2. Langkah modul tak berlisensi dikirim: `422 MODULE_NOT_LICENSED_STEP`; editor tidak menampilkannya (AC-31.08, AC-100.03, RT-04).
-3. Langkah modul integrasi dinyalakan tanpa IntegrationConfig `ACTIVE` dan tanpa mode `MANUAL`: `422 INTEGRATION_NOT_CONFIGURED` (IN-09).
+3. Langkah modul integrasi dinyalakan tanpa IntegrationConfig `ACTIVE` dan tanpa mode `MANUAL`: `422 INTEGRATION_NOT_CONFIGURED` (IN-09). Dipasang di kartu BE-S2-03 bersama IntegrationConfig.
 4. Sama dengan versi ACTIVE: `422 NO_CHANGES` (AC-31.05).
 5. Versi rute produk ini masih `WAITING_APPROVAL`: `409 PENDING_CHANGE_REQUEST`.
 6. Buat versi `DRAFT` dengan nomor berikutnya, lalu ChangeRequest `ROUTE` (status versi `WAITING_APPROVAL`). Langkah bersyarat (contoh SIKP) tetap mengikuti kondisinya saat berjalan (AC-31.04, RT-08).
+7. `entityId` ChangeRequest adalah id produk. Disetujui: versi `ACTIVE` dan versi lama `SUPERSEDED`; bila `effectiveFrom` masih nanti, versi tetap `WAITING_APPROVAL` sampai job `product.route-activate` mengaktifkannya pada waktu itu. Ditolak: versi kembali `DRAFT` (api-specs 07 §7.5) dan pengajuan berikutnya memakai nomor sesudahnya.
 
 **Output 202**
 
@@ -232,7 +233,7 @@ Katalog langkah dan modulnya mengikuti urutan baku tech ref 6.3 dan `StepCode` d
 **Purpose:** Diagram rute produk dan isi editor rute.  
 **Access:** `MST-ROUTE` VIEW. Tanpa UPDATE, klien tidak menampilkan "Edit Route" (AC-31.06).
 
-**Input (query):** `version` (int, opsional; default versi ACTIVE).
+**Input (query):** `version` (int, opsional; default versi ACTIVE, atau versi terakhir bila rute pertama produk belum disetujui).
 
 **Output 200**
 
@@ -252,7 +253,7 @@ Katalog langkah dan modulnya mengikuti urutan baku tech ref 6.3 dan `StepCode` d
 
 Langkah modul tak berlisensi tidak ada di `steps` (AC-31.08). `SIKP` bertanda `isConditional: true`.
 
-**Errors:** `NOT_FOUND` 404 "Route not found" bila produk belum punya rute.
+**Errors:** `NOT_FOUND` 404 "Route not found" bila produk belum punya versi rute atau `version` tidak ada.
 
 **Traceability:** US-31 (AC-31.06, AC-31.08); US-32 (backlog).
 
