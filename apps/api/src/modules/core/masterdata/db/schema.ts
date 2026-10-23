@@ -90,6 +90,33 @@ export const systemParameterValues = masterdata.table(
   ],
 );
 
+/** GENERAL_PARAMETERS, technical-specs 06 §6.6: pilihan dropdown per `param_type` per company. */
+export const generalParameters = masterdata.table(
+  "general_parameters",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    paramType: text("param_type").notNull(),
+    paramId: text("param_id").notNull(),
+    paramValue: text("param_value").notNull(),
+    biCode: text("bi_code"),
+    isActive: boolean("is_active").notNull().default(true),
+    ...auditColumns(),
+  },
+  (table) => [
+    uniqueIndex("general_parameters_param_id_unique").on(table.tenantId, table.paramType, table.paramId),
+    uniqueIndex("general_parameters_param_value_unique").on(
+      table.tenantId,
+      table.paramType,
+      sql`lower(${table.paramValue})`,
+    ),
+    check("general_parameters_param_value_check", sql`char_length(${table.paramValue}) <= 100`),
+    tenantIsolation(),
+  ],
+);
+
 /** Indeks `pg_trgm` untuk pencarian `ILIKE '%q%'` tanpa membedakan huruf besar dan kecil (AC-23.03). */
 const trigram = (name: string, column: ExtraConfigColumn) => index(name).using("gin", column.op("gin_trgm_ops"));
 
