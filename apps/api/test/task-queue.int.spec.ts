@@ -225,4 +225,20 @@ describe("task queue", () => {
     );
     expect(byLoan.data.map((item) => item.loanId)).toEqual([other.loanId]);
   });
+
+  it("treats % and _ in the Loan ID search as literal characters", async () => {
+    await verificationTask(app, db.owner, verification);
+    const wildcard = await verificationTask(app, db.owner, verification);
+    // Loan ID asli tidak pernah memuat % atau _, jadi hanya tugas ini yang boleh cocok.
+    await db.owner.query("update taskqueue.human_tasks set loan_id = $1 where id = $2", [
+      `${wildcard.loanId}%_`,
+      wildcard.id,
+    ]);
+
+    for (const q of ["%", "_"]) {
+      const res = await send(veri02, "GET", `/tasks?queueCode=VERIFICATION&q=${encodeURIComponent(q)}&pageSize=100`);
+      expect(res.statusCode, res.body).toBe(200);
+      expect(taskListResponseSchema.parse(res.json()).data.map((item) => item.id)).toEqual([wildcard.id]);
+    }
+  });
 });

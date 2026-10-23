@@ -144,5 +144,5 @@ function inBranches(branches: "ALL" | string[]): SQL {
 }
 
 function escapeLike(value: string): string {
-  return value.replace(/[%_]/g, (char) => `\${char}`);
+  return value.replace(/[%_]/g, (char) => `\\${char}`);
 }
