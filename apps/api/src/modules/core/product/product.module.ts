@@ -2,6 +2,7 @@ import { Inject, Module, type OnModuleInit } from "@nestjs/common";
 import { CHANGE_REQUEST_PORT } from "../../../platform/http/change-request-port.js";
 import type { ChangeRequestPort } from "../change-request/index.js";
 import { TenancyModule } from "../tenancy/index.js";
+import { ApplicationChecklists } from "./application/application-checklists.js";
 import { ChecklistChangeHandler } from "./application/checklist-change-handler.js";
 import { ChecklistChecks } from "./application/checklist-checks.js";
 import { GetProductUseCase } from "./application/get-product.use-case.js";
@@ -42,6 +43,7 @@ import { RouteActivationJob } from "./jobs/route-activation.job.js";
   providers: [
     ProductsRepository,
     ProductAvailability,
+    ApplicationChecklists,
     SubProductsRepository,
     RouteVersionsRepository,
     ProductChecks,
@@ -70,7 +72,7 @@ import { RouteActivationJob } from "./jobs/route-activation.job.js";
     RequestChecklistCreateUseCase,
     RequestChecklistUpdateUseCase,
   ],
-  exports: [ProductAvailability, ProductCodes, ProductRoutes, ProductTerms],
+  exports: [ApplicationChecklists, ProductAvailability, ProductCodes, ProductRoutes, ProductTerms],
 })
 export class ProductModule implements OnModuleInit {
   constructor(

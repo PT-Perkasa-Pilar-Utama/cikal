@@ -15,8 +15,8 @@ type ApplicationChecked = Pick<ApplicationSectionInput, "requestedLimit" | "teno
   Partial<ApplicationMinimum>;
 
 /**
- * Aturan section Application yang butuh database, dipakai `POST /applications` dan simpan section (api-specs 12
- * §12.2 langkah 2 dan 3, §12.3): produk tersedia (RT-07), batas produk saat `strict`, lalu asuransi aktif.
+ * Aturan section Application yang butuh database, dipakai `POST /applications`, simpan section, dan submit
+ * (api-specs 12 §12.2 langkah 2 dan 3, §12.3, §12.8): produk tersedia (RT-07), batas produk, lalu asuransi aktif.
  */
 @Injectable()
 export class ApplicationSectionChecks {
@@ -25,19 +25,38 @@ export class ApplicationSectionChecks {
     private readonly insurances: Insurances,
   ) {}
 
+  /** Produk tersedia lalu, bila `strict`, aturan section; aturan pertama yang gagal dilempar. */
   async check(tx: Tx, input: ApplicationChecked, strict: boolean, today: string): Promise<AvailableProduct> {
+    const product = await this.product(tx, input, today);
+    const error = await this.ruleError(tx, input, product, strict);
+    if (error) throw error;
+    return product;
+  }
+
+  /** Produk tersedia untuk pengajuan dan sesuai kategori; selain itu `422 PRODUCT_NOT_AVAILABLE`. */
+  async product(tx: Tx, input: Partial<ApplicationMinimum>, today: string): Promise<AvailableProduct> {
     const minimum = applicationMinimum(input);
     const product = await this.products.find(tx, minimum.productId, today);
     if (!product || product.productCategory !== minimum.productCategory) {
       throw new DomainError("PRODUCT_NOT_AVAILABLE", APPLICATION_DRAFT_MESSAGES.productNotAvailable, 422);
     }
+    return product;
+  }
+
+  /** Batas plafon dan tenor saat `strict`, lalu asuransi aktif; `null` bila lolos. */
+  async ruleError(
+    tx: Tx,
+    input: ApplicationChecked,
+    product: AvailableProduct,
+    strict: boolean,
+  ): Promise<DomainError | null> {
     const limit = strict ? applicationLimitError(input, product) : null;
-    if (limit) throw limit;
+    if (limit) return limit;
     if (input.insuranceId !== undefined && !(await this.insurances.isSelectable(tx, input.insuranceId))) {
-      throw DomainError.standard("VALIDATION_FAILED", undefined, [
+      return DomainError.standard("VALIDATION_FAILED", undefined, [
         { field: "insuranceId", code: "INVALID", message: APPLICATION_SECTION_MESSAGES.insuranceNotAvailable },
       ]);
     }
-    return product;
+    return null;
   }
 }

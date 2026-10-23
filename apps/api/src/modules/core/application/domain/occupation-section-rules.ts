@@ -1,7 +1,7 @@
 import { APPLICATION_SECTION_MESSAGES, type OccupationSectionInput, type ProductCategory } from "@cikal/contracts";
 import { Decimal } from "decimal.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { requiredFieldsError } from "./required-fields.js";
+import { fieldRuleError, requiredFieldsError } from "./section-errors.js";
 
 /**
  * Kategori produk dan parameter sistem untuk aturan section Occupation: `EMPLOYED_INCOME_SOURCES`,
@@ -51,10 +51,10 @@ export function occupationSectionError(
   if (required) return required;
   const income = input.monthlyIncomeAllowance;
   if (context.productCategory !== "PENSION" && income !== undefined && new Decimal(income).lte(0)) {
-    return new DomainError("INVALID_INCOME", APPLICATION_SECTION_MESSAGES.invalidIncome, 422);
+    return fieldRuleError("INVALID_INCOME", APPLICATION_SECTION_MESSAGES.invalidIncome, "monthlyIncomeAllowance");
   }
   if (context.selfEmployedOnly && !context.selfEmployedOccupations.includes(input.occupation ?? "")) {
-    return new DomainError("OCCUPATION_NOT_ELIGIBLE", APPLICATION_SECTION_MESSAGES.occupationNotEligible, 422);
+    return fieldRuleError("OCCUPATION_NOT_ELIGIBLE", APPLICATION_SECTION_MESSAGES.occupationNotEligible, "occupation");
   }
   return null;
 }

@@ -5,6 +5,7 @@ import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationsRepository } from "../db/applications.repository.js";
 import { formSteps } from "../domain/form-steps.js";
+import { DraftDocuments } from "./draft-documents.js";
 import { DraftFormSections } from "./draft-form-sections.js";
 
 /**
@@ -17,6 +18,7 @@ export class GetDraftFormUseCase {
     private readonly db: TenantTx,
     private readonly applications: ApplicationsRepository,
     private readonly sections: DraftFormSections,
+    private readonly documents: DraftDocuments,
   ) {}
 
   execute(ctx: RequestContext, id: string): Promise<ApplicationFormResponse> {
@@ -32,7 +34,7 @@ export class GetDraftFormUseCase {
           currentSection: draft.currentSection,
           steps: formSteps(),
           sections,
-          documentCompleteness: null,
+          documentCompleteness: await this.documents.completenessOrNull(tx, draft),
           returnNote: draft.returnNote,
         },
       };

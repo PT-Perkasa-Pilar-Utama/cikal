@@ -77,6 +77,17 @@ export class DocumentChecklistsRepository {
     return row ?? null;
   }
 
+  /** Checklist aktif untuk kombinasi pengajuan (AC-25.04); `null` bila tidak ada (AC-25.05). */
+  async findActive(tx: Tx, combination: ChecklistCombination): Promise<ChecklistRow | null> {
+    const rows = await tx
+      .select(checklistColumns)
+      .from(documentChecklists)
+      .innerJoin(products, eq(products.id, documentChecklists.productId))
+      .where(and(matching(combination), eq(documentChecklists.isActive, true)));
+    const [row] = await this.withItems(tx, rows);
+    return row ?? null;
+  }
+
   /** Kombinasi sudah dipakai checklist lain, aktif atau tidak, karena UQ berlaku untuk keduanya (AC-25.03). */
   async combinationExists(tx: Tx, combination: ChecklistCombination): Promise<boolean> {
     const [row] = await tx

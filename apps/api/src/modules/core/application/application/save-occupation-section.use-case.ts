@@ -1,12 +1,10 @@
 import type { OccupationSectionInput, SectionSaveResponse } from "@cikal/contracts";
-import { Inject, Injectable } from "@nestjs/common";
-import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
+import { Injectable } from "@nestjs/common";
+import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
-import { SYSTEM_PARAMETER_PORT, type SystemParameterPort } from "../../../../platform/http/system-parameter-port.js";
 import { ApplicationOccupationsRepository } from "../db/application-occupations.repository.js";
-import type { DraftRow } from "../db/applications.repository.js";
-import { occupationSectionError } from "../domain/occupation-section-rules.js";
 import { DraftSections } from "./draft-sections.js";
+import { StrictSections } from "./strict-sections.js";
 
 /** Simpan section Occupation (api-specs 12 §12.3; AC-44.01 s.d. AC-44.05). */
 @Injectable()
@@ -15,7 +13,7 @@ export class SaveOccupationSectionUseCase {
     private readonly db: TenantTx,
     private readonly sections: DraftSections,
     private readonly occupations: ApplicationOccupationsRepository,
-    @Inject(SYSTEM_PARAMETER_PORT) private readonly parameters: SystemParameterPort,
+    private readonly rules: StrictSections,
   ) {}
 
   execute(
@@ -26,7 +24,8 @@ export class SaveOccupationSectionUseCase {
   ): Promise<SectionSaveResponse> {
     return this.db.withTenantTx(ctx, async (tx) => {
       const draft = await this.sections.lock(tx, ctx, id);
-      if (strict) await this.checkStrict(tx, draft, input);
+      const error = strict ? await this.rules.occupationError(tx, draft, input) : null;
+      if (error) throw error;
       const { company } = input;
       await this.occupations.upsert(
         tx,
@@ -54,15 +53,5 @@ export class SaveOccupationSectionUseCase {
       );
       return this.sections.saved(tx, ctx, draft, "occupation", strict);
     });
-  }
-
-  private async checkStrict(tx: Tx, draft: DraftRow, input: OccupationSectionInput): Promise<void> {
-    const error = occupationSectionError(input, {
-      productCategory: draft.productCategory,
-      employedIncomeSources: await this.parameters.choices(tx, "EMPLOYED_INCOME_SOURCES"),
-      selfEmployedOnly: await this.parameters.flag(tx, "SELF_EMPLOYED_ONLY", draft.productId),
-      selfEmployedOccupations: await this.parameters.choices(tx, "SELF_EMPLOYED_OCCUPATIONS"),
-    });
-    if (error) throw error;
   }
 }

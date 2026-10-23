@@ -62,7 +62,13 @@ describe("personal section rules", () => {
       code: "AGE_OUT_OF_RANGE",
       status: 422,
       message: "Applicant age must be between 21 and 55 years for this product",
-      details: [],
+      details: [
+        {
+          field: "dateOfBirth",
+          code: "AGE_OUT_OF_RANGE",
+          message: "Applicant age must be between 21 and 55 years for this product",
+        },
+      ],
     });
   });
 
@@ -75,7 +81,13 @@ describe("personal section rules", () => {
       code: "NPWP_REQUIRED",
       status: 422,
       message: "NPWP is required for requested limit above 50,000,000",
-      details: [],
+      details: [
+        {
+          field: "npwpNumber",
+          code: "NPWP_REQUIRED",
+          message: "NPWP is required for requested limit above 50,000,000",
+        },
+      ],
     });
   });
 
@@ -100,7 +112,13 @@ describe("personal section rules", () => {
       code: "AGE_AT_MATURITY_EXCEEDED",
       status: 422,
       message: "Applicant age at maturity must not exceed 55 years",
-      details: [],
+      details: [
+        {
+          field: "dateOfBirth",
+          code: "AGE_AT_MATURITY_EXCEEDED",
+          message: "Applicant age at maturity must not exceed 55 years",
+        },
+      ],
     });
     expect(personalSectionError(complete({ dateOfBirth: "1980-10-20" }), ruleContext)).toBeNull();
   });

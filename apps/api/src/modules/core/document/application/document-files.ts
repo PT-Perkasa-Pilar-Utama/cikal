@@ -48,6 +48,17 @@ export class DocumentFiles {
     return { fileId: row.id, fileName: row.fileName, sizeBytes: row.sizeBytes, uploadedAt: row.createdAt };
   }
 
+  /** Data file untuk slot dokumen pemiliknya; id yang tidak ada di tenant transaksi dilewati. */
+  async describe(tx: Tx, ids: readonly string[]): Promise<StoredFile[]> {
+    const rows = await this.files.findMany(tx, ids);
+    return rows.map((row) => ({
+      fileId: row.id,
+      fileName: row.fileName,
+      sizeBytes: row.sizeBytes,
+      uploadedAt: row.createdAt,
+    }));
+  }
+
   private async uploadMaxMb(tx: Tx): Promise<number> {
     const value = Number(await this.parameters.value(tx, "UPLOAD_MAX_MB"));
     if (!Number.isInteger(value) || value < 1) throw new Error(`UPLOAD_MAX_MB has an invalid value: ${value}`);

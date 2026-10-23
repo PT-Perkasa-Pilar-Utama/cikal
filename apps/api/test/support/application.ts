@@ -123,3 +123,80 @@ export const personalBody = (overrides: object = {}, age = 36) => ({
   consentGiven: true,
   ...overrides,
 });
+
+/** Tujuh dokumen wajib contoh AC-47.01; BPJS opsional seperti AC-47.06. */
+export const SEVEN_MANDATORY_DOCUMENTS = [
+  "KTP",
+  "KK",
+  "NPWP",
+  "SLIP_GAJI",
+  "REKENING_KORAN",
+  "SURAT_KETERANGAN_KERJA",
+  "PBB",
+];
+
+/**
+ * Checklist aktif untuk produk, Occupation "001" Karyawan Swasta, dan Marital "001" Belum Kawin, seperti sudah
+ * disetujui Checker (TL-S3-04).
+ */
+export async function insertChecklist(
+  owner: pg.Pool,
+  productId: string,
+  items: ReadonlyArray<{ documentType: string; isMandatory: boolean }>,
+  combination: { occupation: string; marital: string } = { occupation: "001", marital: "001" },
+): Promise<string> {
+  const checklistId = uuidv7();
+  await owner.query(
+    `insert into product.document_checklists (id, tenant_id, product_id, occupation, marital)
+     values ($1, $2, $3, $4, $5)`,
+    [checklistId, seedCompanyIds.company001, productId, combination.occupation, combination.marital],
+  );
+  for (const item of items) {
+    await owner.query(
+      `insert into product.document_checklist_items (id, tenant_id, checklist_id, document_type, is_mandatory)
+       values ($1, $2, $3, $4, $5)`,
+      [uuidv7(), seedCompanyIds.company001, checklistId, item.documentType, item.isMandatory],
+    );
+  }
+  return checklistId;
+}
+
+/** Dokumen terunggah yang ditulis langsung lewat role pemilik skema, tanpa storage. */
+export async function attachDocument(owner: pg.Pool, applicationId: string, documentType: string): Promise<void> {
+  const fileId = uuidv7();
+  await owner.query(
+    `insert into document.document_files (id, tenant_id, file_name, original_extension, stored_format, size_bytes, storage_key)
+     values ($1, $2, $3, 'pdf', 'PDF', 1024, $4)`,
+    [fileId, seedCompanyIds.company001, `${documentType.toLowerCase()}.pdf`, `tenants/test/${fileId}`],
+  );
+  await owner.query(
+    `insert into application.application_documents (id, tenant_id, application_id, document_type, file_id)
+     values ($1, $2, $3, $4, $5)`,
+    [uuidv7(), seedCompanyIds.company001, applicationId, documentType, fileId],
+  );
+}
+
+/** Occupation karyawan swasta (AC-44.01) dan kontak darurat (AC-48.01) lengkap. */
+export const occupationBody = {
+  sourceOfIncome: "001",
+  occupation: "001",
+  industryOfProfession: "001",
+  tenureAtCurrentJob: "4",
+  monthlyIncomeAllowance: "8000000.00",
+  company: {
+    name: "PT Maju Jaya",
+    address: "Jl. Asia Afrika 1",
+    provinceCode: "32",
+    cityCode: "32.73",
+    districtCode: "32.73.01",
+    subDistrictCode: "32.73.01.1001",
+    zipCode: "40111",
+    phoneNumber: "0221234567",
+  },
+};
+export const emergencyContactBody = {
+  contactName: "Dewi",
+  mobileNumber: "081298765432",
+  relationToApplicant: "002",
+  address: { address: "Jl. Braga 5" },
+};

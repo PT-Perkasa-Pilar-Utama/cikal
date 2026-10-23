@@ -1,11 +1,13 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, date, index, integer, numeric, text, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
+import { documentFiles } from "../../document/index.js";
 import { companies } from "../../tenancy/index.js";
 import { application } from "./pg-schema.js";
 import { applications } from "./schema.js";
 
 export type AddressType = "ID" | "RESIDENCE" | "CORRESPONDENCE";
+export type DocumentVerificationStatus = "PENDING" | "MATCH" | "NOT_MATCH";
 
 const applicationId = () =>
   uuid("application_id")
@@ -134,4 +136,31 @@ export const applicationEmergencyContacts = application.table(
     ...auditColumns(),
   },
   (table) => [tenantIsolation()],
+);
+
+/**
+ * APPLICATION_DOCUMENTS, technical-specs 06 §6.9: file terunggah per slot checklist. Unggah ulang mengganti
+ * `file_id` dan mengembalikan status verifikasi ke `PENDING` (AC-47.05).
+ */
+export const applicationDocuments = application.table(
+  "application_documents",
+  {
+    id: uuid("id").primaryKey(),
+    applicationId: applicationId(),
+    tenantId: tenantId(),
+    documentType: text("document_type").notNull(),
+    fileId: uuid("file_id").references(() => documentFiles.id),
+    verificationStatus: text("verification_status").$type<DocumentVerificationStatus>().notNull().default("PENDING"),
+    verificationRemarks: text("verification_remarks"),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("application_documents_application_type_unique").on(table.applicationId, table.documentType),
+    check(
+      "application_documents_verification_status_check",
+      sql`${table.verificationStatus} in ('PENDING', 'MATCH', 'NOT_MATCH')`,
+    ),
+    index("application_documents_file_id_idx").on(table.fileId),
+    tenantIsolation(),
+  ],
 );

@@ -29,6 +29,13 @@
       "when": 1792779778249,
       "tag": "0003_application_sections",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792785113219,
+      "tag": "0004_application_documents",
+      "breakpoints": true
     }
   ]
 }
