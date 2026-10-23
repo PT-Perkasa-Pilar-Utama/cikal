@@ -39,6 +39,14 @@ export const sessionResponseMock = {
             actions: ["VIEW", "CREATE", "UPDATE", "DELETE"],
             children: [],
           },
+          {
+            menuCode: "MST-ROUTE",
+            menuName: "Product Route",
+            link: "/master/routes",
+            iconName: "route",
+            actions: ["VIEW", "CREATE", "UPDATE", "DELETE"],
+            children: [],
+          },
         ],
       },
       {

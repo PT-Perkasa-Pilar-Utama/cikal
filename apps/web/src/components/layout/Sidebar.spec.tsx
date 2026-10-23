@@ -14,5 +14,6 @@ describe("Sidebar", () => {
     expect(nav).toHaveTextContent("Product");
     expect(nav).toHaveTextContent("Role Access");
     expect(screen.getByRole("link", { name: "Product" })).toHaveAttribute("href", "/master/products");
+    expect(screen.getByRole("link", { name: "Product Route" })).toHaveAttribute("href", "/master/routes");
   });
 });
