@@ -260,7 +260,7 @@ Klien menampilkan `completeness` sebagai "0 of 7 documents"; dokumen opsional ti
 **Behavior**
 
 1. `documentType` tidak ada di checklist pengajuan: `422 BUSINESS_RULE_VIOLATION` "Document type is not in the checklist".
-2. Ekstensi bukan png, jpg, jpeg, pdf, docx, atau magic bytes tidak cocok: `415 UNSUPPORTED_FILE_TYPE` (AC-47.02).
+2. Ekstensi bukan png, jpg, jpeg, pdf, docx, magic bytes tidak cocok, atau isinya tidak terbaca konverter PDF: `415 UNSUPPORTED_FILE_TYPE` (AC-47.02).
 3. Ukuran > `UPLOAD_MAX_MB`: `413 FILE_TOO_LARGE`; tepat 2 MB (2.097.152 byte) diterima (AC-47.03, AC-47.04).
 4. Simpan ke storage, konversi ke PDF lewat Gotenberg bila bukan PDF (DC-02), buat `document_files`.
 5. Slot yang sudah berisi: file baru menggantikan; file lama tidak lagi dirujuk (AC-47.05).

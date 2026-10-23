@@ -147,7 +147,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /files/{fileId}/download-url` | 10 §10.1 | POC | TODO |
+| `GET /files/{fileId}/download-url` | 10 §10.1 | POC | OK |
 | `GET /document-number-formats` | 10 §10.3 | POC | TODO |
 | `POST /document-number-formats/preview` | 10 §10.4 | POC | TODO |
 | `PUT /document-number-formats/{documentType}` | 10 §10.5 | POC | TODO |

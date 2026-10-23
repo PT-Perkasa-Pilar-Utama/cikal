@@ -360,7 +360,7 @@ Indeks unik parsial `(tenant_id, entity_type, entity_id) WHERE status IN ('WAITI
 | user_id | uuid | yes | null untuk aksi sistem |
 | role | text | yes | |
 | module | text | no | |
-| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `LOGOUT` (api-specs 17 §17.2), `VIEW_APPLICATION` (grooming v2 R-18), `LICENSE_INSTALLED` (api-specs 04 §4.2) |
+| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `LOGOUT` (api-specs 17 §17.2), `VIEW_APPLICATION` (grooming v2 R-18), `LICENSE_INSTALLED` (api-specs 04 §4.2), `STEP_RETRIED`, `PROCESS_FINISHED` (api-specs 13 §13.4, §13.5), `VIEW_DOCUMENT` (api-specs 10 §10.1) |
 | record_id | text | yes | |
 | description | text | yes | |
 | old_data, new_data | jsonb | yes | tanpa nilai SECRET |
@@ -382,10 +382,10 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 ### DOCUMENT_FILES, DOCUMENT_TEMPLATES, GENERATED_DOCUMENTS
 | table.column | type | nullable | notes |
 |---|---|---|---|
-| document_files.file_name, original_extension | text | no | |
+| document_files.file_name, original_extension | text | no | nama dari user; ekstensi `png`, `jpg`, `jpeg`, `pdf`, `docx` (DC-02) |
 | document_files.stored_format | text | no | `PDF` |
-| document_files.size_bytes | bigint | no | |
-| document_files.storage_key | text | no | kunci objek S3 |
+| document_files.size_bytes | bigint | no | ukuran berkas yang diunggah, dasar batas `UPLOAD_MAX_MB` |
+| document_files.storage_key | text | no | UQ; kunci objek S3 `tenants/<tenantId>/document/<fileId>` (07 §7.7) |
 | document_templates.document_code | text | no | `AKAD-KPR`; UQ(tenant_id, document_code, product_id) |
 | document_templates.product_id | uuid | yes | kosong = semua produk |
 | document_templates.file_id | uuid | no | FK document_files; maks 5 MB |
