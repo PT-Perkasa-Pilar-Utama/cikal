@@ -9,6 +9,7 @@ export type ProcessRow = Pick<
   | "id"
   | "tenantId"
   | "applicationId"
+  | "loanId"
   | "recontestNumber"
   | "routeVersionId"
   | "formulaVersions"
@@ -21,6 +22,7 @@ const processColumns = {
   id: processInstances.id,
   tenantId: processInstances.tenantId,
   applicationId: processInstances.applicationId,
+  loanId: processInstances.loanId,
   recontestNumber: processInstances.recontestNumber,
   routeVersionId: processInstances.routeVersionId,
   formulaVersions: processInstances.formulaVersions,
@@ -63,6 +65,15 @@ export class ProcessInstancesRepository {
       .from(processInstances)
       .where(eq(processInstances.applicationId, applicationId))
       .orderBy(asc(processInstances.startedAt), asc(processInstances.id));
+  }
+
+  /** Proses dihentikan dari Process Monitoring dengan alasan (api-specs 13 §13.5). */
+  async finish(tx: Tx, id: string, reason: string, userId: string): Promise<void> {
+    const now = new Date();
+    await tx
+      .update(processInstances)
+      .set({ status: "CANCELLED", finishReason: reason, endedAt: now, updatedAt: now, updatedBy: userId })
+      .where(eq(processInstances.id, id));
   }
 
   async updateStatus(tx: Tx, id: string, status: ProcessStatus, endedAt: Date | null): Promise<void> {

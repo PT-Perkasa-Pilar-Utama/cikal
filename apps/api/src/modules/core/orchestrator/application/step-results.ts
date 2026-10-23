@@ -25,7 +25,7 @@ export interface StepRun {
 /** Antrean Risk Manager untuk hasil RECONTEST (technical-specs 12 §12.3, data dictionary HumanTask). */
 const RECONTEST_QUEUE = "RECONTEST";
 /** Antrean Process Monitoring untuk ERROR tanpa retry otomatis lagi (technical-specs 12 §12.3). */
-const PROCESS_ERROR_QUEUE = "PROCESS_ERROR";
+export const PROCESS_ERROR_QUEUE = "PROCESS_ERROR";
 
 /**
  * Pencatatan tujuh hasil langkah (technical-specs 12 §12.3) di transaksi langkah: StepExecution, ProcessInstance,
@@ -41,15 +41,26 @@ export class StepResults {
     @Inject(TASK_QUEUE_PORT) private readonly tasks: TaskQueuePort,
   ) {}
 
-  /** `actorUserId`: penutup tugas manusia; `null` untuk langkah otomatis. */
-  async apply(tx: Tx, run: StepRun, result: StepResult, actorUserId: string | null): Promise<void> {
+  /**
+   * `actorUserId`: penutup tugas manusia; `null` untuk langkah otomatis. `manualRetry`: ERROR dari retry Process
+   * Monitoring tidak dijadwalkan ulang dan tidak membuat tugas PROCESS_ERROR baru (api-specs 13 §13.4 langkah 4).
+   */
+  async apply(
+    tx: Tx,
+    run: StepRun,
+    result: StepResult,
+    actorUserId: string | null,
+    { manualRetry }: { manualRetry: boolean } = { manualRetry: false },
+  ): Promise<void> {
     const status = stepStatusFor(result);
     if (!canStepTransition(run.step.status, status)) {
       throw new Error(`Step ${run.step.stepCode} cannot move from ${run.step.status} to ${status}`);
     }
-    const retryDelay = result.type === "ERROR" ? automaticRetryDelaySeconds(result, run.step.attempt) : null;
+    const retryDelay =
+      result.type === "ERROR" && !manualRetry ? automaticRetryDelaySeconds(result, run.step.attempt) : null;
     await this.steps.update(tx, run.step.id, { status, ...stepChanges(run.step, result, actorUserId, new Date()) });
     await this.moveProcess(tx, run.process, processStatusAfter(result, retryDelay !== null));
+    if (result.type === "ERROR" && manualRetry) return;
     await this.followUp(tx, run, result, actorUserId, retryDelay);
     // Event StepCompleted, StepFailed, StepSkipped (technical-specs 12 §12.3) ditulis ke outbox platform yang
     // dibangun kartu BE-S3-03 bersama event pertama, ApplicationSubmitted (api-specs 12 §12.8 langkah 6).

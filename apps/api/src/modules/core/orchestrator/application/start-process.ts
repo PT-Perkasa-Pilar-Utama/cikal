@@ -44,6 +44,7 @@ export class StartProcess {
       id: uuidv7(),
       tenantId: application.tenantId,
       applicationId,
+      loanId: application.loanId,
       recontestNumber: 0,
       routeVersionId: route.id,
       // Belum ada versi rumus tenant: POC memakai rumus default bawaan (TL-S4-01, FM-12).

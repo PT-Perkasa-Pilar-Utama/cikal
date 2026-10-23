@@ -483,12 +483,14 @@ Tabel `application_spouses`, `application_businesses`, `application_collaterals`
 | column | type | nullable | notes |
 |---|---|---|---|
 | application_id | uuid | no | FK application.applications |
+| loan_id | text | no | salinan Loan ID saat proses dibuat, untuk pencarian dan urutan Process Monitoring tanpa membaca skema `application` (XM-02) |
 | recontest_number | int | no | 0 untuk proses awal |
 | route_version_id | uuid | no | FK product.product_route_versions |
 | formula_versions | jsonb | no | kode rumus ke id versi yang dikunci (FM-05) |
 | parameter_snapshot | jsonb | no | PR-06 |
 | status | text | no | `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED`; paling banyak satu `RUNNING`/`WAITING` per pengajuan (indeks unik parsial) |
 | recontest_reason | text | yes | |
+| finish_reason | text | yes | alasan Finish dari Process Monitoring (AC-86.02) |
 | started_at, ended_at | timestamptz | no / yes | |
 
 ### STEP_EXECUTIONS

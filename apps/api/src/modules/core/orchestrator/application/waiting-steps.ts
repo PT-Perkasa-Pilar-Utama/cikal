@@ -1,4 +1,4 @@
-import type { StepResult } from "@cikal/contracts";
+import type { ProcessStatus, StepResult } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import { v7 as uuidv7 } from "uuid";
 import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
@@ -13,6 +13,7 @@ import { StepResults, type StepRun } from "./step-results.js";
 export type ExternalMatch = "MATCHED" | "IGNORED_NOT_WAITING" | "DUPLICATE";
 
 const DEADLINE_EXCEEDED = "No response from the provider before the wait deadline";
+const ACTIVE: ReadonlySet<ProcessStatus> = new Set(["RUNNING", "WAITING"]);
 
 /**
  * Keluar dari WAITING_HUMAN dan WAITING_EXTERNAL (technical-specs 06 §6.13): tugas ditutup, data pihak ketiga
@@ -78,7 +79,8 @@ export class WaitingSteps {
     const latest = (await this.steps.listLatest(tx, found.processInstanceId)).find(
       (step) => step.stepCode === found.stepCode,
     );
-    if (!process || latest?.id !== found.id) return null;
+    // Proses yang dihentikan dari Process Monitoring tidak menerima hasil langkah lagi (AC-86.02).
+    if (!process || !ACTIVE.has(process.status) || latest?.id !== found.id) return null;
     const application = await this.applications.find(tx, process.applicationId);
     if (!application) throw new Error(`Application ${process.applicationId} not found`);
     const ctx = stepContext({

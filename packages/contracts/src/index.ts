@@ -8,6 +8,7 @@ export * from "./common/menu.js";
 export * from "./common/modules.js";
 export * from "./common/scalars.js";
 export * from "./health/index.js";
+export * from "./integration/index.js";
 export * from "./orchestrator/index.js";
 export * from "./product/index.js";
 export * from "./system/index.js";

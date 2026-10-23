@@ -44,7 +44,27 @@ export class StepRunner {
     const step = currentStep(await this.steps.listLatest(tx, process.id));
     if (!step) throw new Error(`Process ${process.id} is ${process.status} but has no step left`);
     if (step.status !== "PENDING" && step.status !== "ERROR") return;
+    await this.run(tx, process, step, { manualRetry: false });
+  }
 
+  /**
+   * Retry manual langkah ERROR dari Process Monitoring, sinkron di transaksi request (api-specs 13 §13.4). Hasilnya
+   * attempt baru; ERROR lagi tidak menjadwalkan retry otomatis.
+   */
+  async retry(tx: Tx, process: ProcessRow, step: StepRow): Promise<StepRow> {
+    const id = await this.run(tx, process, step, { manualRetry: true });
+    const retried = id ? await this.steps.findById(tx, id) : null;
+    if (!retried) throw new Error(`Retried step ${step.stepCode} of process ${process.id} not found`);
+    return retried;
+  }
+
+  /** Id attempt yang dijalankan, atau `null` bila langkah PENDING dilewati. */
+  private async run(
+    tx: Tx,
+    process: ProcessRow,
+    step: StepRow,
+    options: { manualRetry: boolean },
+  ): Promise<string | null> {
     const application = await this.applications.find(tx, process.applicationId);
     if (!application) throw new Error(`Application ${process.applicationId} not found`);
     const handler = this.handlers.get(step.stepCode);
@@ -61,14 +81,16 @@ export class StepRunner {
       const reason = await this.skipReason(tx, process, step, handler, ctx);
       if (reason) {
         await this.steps.update(tx, step.id, { status: "SKIPPED", skipReason: reason });
-        return this.jobs.advance(tx, process);
+        await this.jobs.advance(tx, process);
+        return null;
       }
     }
 
     const running = await this.markRunning(tx, process, step, attempt);
     await this.applications.setCurrentStep(tx, process.applicationId, step.stepCode);
     const result = handler ? await handler.execute(tx, ctx) : missingHandler(step);
-    await this.results.apply(tx, { process, step: running, ctx }, result, null);
+    await this.results.apply(tx, { process, step: running, ctx }, result, null, options);
+    return running.id;
   }
 
   private async skipReason(

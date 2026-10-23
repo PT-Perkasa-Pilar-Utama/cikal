@@ -88,7 +88,7 @@ Server mengirim kode; klien menampilkan label berikut.
   "meta": { "page": 1, "pageSize": 20, "totalItems": 1, "totalPages": 1 } }
 ```
 
-Filter `status=ERROR` hanya mengembalikan pengajuan yang langkah saat ininya `ERROR` beserta pesan error (AC-86.04).
+Filter `status=ERROR` hanya mengembalikan pengajuan yang langkah saat ininya `ERROR` beserta pesan error (AC-86.04). Tanpa `status`, keempat status dikembalikan. `sort` bawaan `stepStartedAt,asc`. Di POC `q` mencari Loan ID; pencarian nama dan `fullName` ikut data debitur (BE-S3-01), filter `branchId` dan `branchCode` ikut tabel cabang (TL-S5-04).
 
 **Traceability:** US-86; AC-86.04.
 
