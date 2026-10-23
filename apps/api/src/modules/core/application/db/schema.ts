@@ -1,6 +1,6 @@
 import type { ApplicationStatus, ProductCategory, StepCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { check, pgSchema, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { bigint, check, pgSchema, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { users } from "../../identity/index.js";
 import { products } from "../../product/index.js";
@@ -74,6 +74,28 @@ export const applications = application.table(
     check("applications_channel_check", sql`${table.channel} in (${textList(CHANNELS)})`),
     check("applications_product_category_check", sql`${table.productCategory} in (${textList(CATEGORIES)})`),
     check("applications_current_step_check", sql`${table.currentStep} in (${textList(STEP_CODES)})`),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * LOAN_ID_COUNTERS, technical-specs 06 §6.9: nomor terakhir per produk per company, tidak direset harian
+ * (TRM_LID_002 s.d. TRM_LID_004). Batas atas sama dengan `LOAN_ID_MAX_SEQUENCE` (TRM_LID_005).
+ */
+export const loanIdCounters = application.table(
+  "loan_id_counters",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    productCode: text("product_code").notNull(),
+    lastNumber: bigint("last_number", { mode: "number" }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("loan_id_counters_tenant_product_code_unique").on(table.tenantId, table.productCode),
+    check("loan_id_counters_last_number_check", sql`${table.lastNumber} between 1 and 9999999`),
     tenantIsolation(),
   ],
 );
