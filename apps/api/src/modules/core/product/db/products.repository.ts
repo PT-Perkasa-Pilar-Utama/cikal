@@ -45,6 +45,34 @@ export type AvailableProductRow = Pick<
   | "maxAge"
 >;
 
+/** Syarat produk yang diperiksa form pengajuan (api-specs 12 §12.3). */
+export type ProductEligibilityRow = Pick<
+  ProductRow,
+  | "id"
+  | "productCode"
+  | "productCategory"
+  | "minPlafond"
+  | "maxPlafond"
+  | "minTenor"
+  | "maxTenor"
+  | "minAge"
+  | "maxAge"
+  | "maxAgeAtMaturityMonth"
+>;
+
+const eligibilityColumns = {
+  id: products.id,
+  productCode: products.productCode,
+  productCategory: products.productCategory,
+  minPlafond: products.minPlafond,
+  maxPlafond: products.maxPlafond,
+  minTenor: products.minTenor,
+  maxTenor: products.maxTenor,
+  minAge: products.minAge,
+  maxAge: products.maxAge,
+  maxAgeAtMaturityMonth: products.maxAgeAtMaturityMonth,
+};
+
 /** Kolom `ProductData` dalam urutan kontrak, ditambah id dan waktu ubah. */
 const productColumns = {
   id: products.id,
@@ -131,15 +159,16 @@ export class ProductsRepository {
   }
 
   /** Produk yang tersedia untuk pengajuan baru pada `today` dengan aturan yang sama dengan dropdown (RT-07). */
-  async findAvailable(
-    tx: Tx,
-    id: string,
-    today: string,
-  ): Promise<{ id: string; productCode: string; productCategory: ProductCategory } | null> {
+  async findAvailable(tx: Tx, id: string, today: string): Promise<ProductEligibilityRow | null> {
     const [row] = await tx
-      .select({ id: products.id, productCode: products.productCode, productCategory: products.productCategory })
+      .select(eligibilityColumns)
       .from(products)
       .where(and(eq(products.id, id), this.availableOn(tx, today)));
+    return row ?? null;
+  }
+
+  async findEligibility(tx: Tx, id: string): Promise<ProductEligibilityRow | null> {
+    const [row] = await tx.select(eligibilityColumns).from(products).where(eq(products.id, id));
     return row ?? null;
   }
 

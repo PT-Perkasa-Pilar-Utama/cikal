@@ -1,5 +1,6 @@
 import type { ModuleSeed } from "../../../../platform/migrate/module-data.js";
 import { seedGeneralParameters } from "./general-parameters.js";
+import { seedInsurances } from "./insurances.js";
 import { seedRegions } from "./regions.js";
 import { seedSystemParameterDefinitions, seedSystemParameterValues } from "./system-parameters.js";
 
@@ -9,4 +10,5 @@ export const dev: ModuleSeed = async (db) => {
   await seedSystemParameterValues(db);
   await seedRegions(db);
   await seedGeneralParameters(db);
+  await seedInsurances(db);
 };

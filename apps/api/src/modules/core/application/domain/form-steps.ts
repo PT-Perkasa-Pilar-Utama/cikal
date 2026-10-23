@@ -9,3 +9,9 @@ const POC_STEPS: readonly FormSection[] = ["application", "personal", "occupatio
 export function formSteps(): FormSection[] {
   return [...POC_STEPS];
 }
+
+/** Step setelah `section` di urutan POC; `null` untuk step terakhir. */
+export function stepAfter(section: FormSection): FormSection | null {
+  const index = POC_STEPS.indexOf(section);
+  return POC_STEPS[index + 1] ?? null;
+}

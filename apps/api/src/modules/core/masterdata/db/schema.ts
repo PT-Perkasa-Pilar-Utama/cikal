@@ -117,6 +117,29 @@ export const generalParameters = masterdata.table(
   ],
 );
 
+/**
+ * INSURANCES, technical-specs 06 §6.6: perusahaan asuransi per company untuk dropdown "Insurance" (api-specs 06
+ * §6.2). `insurance_rates` dibuat bersama kartu yang menghitung premi.
+ */
+export const insurances = masterdata.table(
+  "insurances",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    insuranceCode: text("insurance_code").notNull(),
+    insuranceName: text("insurance_name").notNull(),
+    providerCode: text("provider_code"),
+    isActive: boolean("is_active").notNull().default(true),
+    ...auditColumns(),
+  },
+  (table) => [
+    uniqueIndex("insurances_tenant_insurance_code_unique").on(table.tenantId, table.insuranceCode),
+    tenantIsolation(),
+  ],
+);
+
 /** Indeks `pg_trgm` untuk pencarian `ILIKE '%q%'` tanpa membedakan huruf besar dan kecil (AC-23.03). */
 const trigram = (name: string, column: ExtraConfigColumn) => index(name).using("gin", column.op("gin_trgm_ops"));
 

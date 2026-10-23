@@ -101,7 +101,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `GET /parameters/{paramType}/options` | 06 §6.1 | POC | OK |
-| `GET /insurances` | 06 §6.2 | POC | TODO |
+| `GET /insurances` | 06 §6.2 | POC | OK |
 | `GET /regions/provinces`, `/cities`, `/districts`, `/sub-districts` | 06 §6.3.1 | POC | OK |
 | `GET /regions/search` | 06 §6.3.2 | POC | OK |
 | `POST /regions/sync` | 06 §6.3.3 | POC | OK |
@@ -170,7 +170,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `POST /applications` | 12 §12.2 | POC | OK |
-| `PUT /applications/{id}/sections/{section}` | 12 §12.3 | POC | TODO |
+| `PUT /applications/{id}/sections/{section}` | 12 §12.3 | POC | OK |
 | `GET /applications/drafts` | 12 §12.4 | POC | OK |
 | `GET /applications/{id}/form` | 12 §12.5 | POC | OK |
 | `GET /applications/{id}/documents` | 12 §12.6 | POC | TODO |

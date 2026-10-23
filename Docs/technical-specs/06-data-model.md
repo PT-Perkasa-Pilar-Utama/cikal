@@ -249,6 +249,7 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 | insurances.insurance_code | text | no | `ASR01`; UQ(tenant_id, insurance_code) |
 | insurances.insurance_name | text | no | |
 | insurances.provider_code | text | yes | adapter E-Polis; kosong = polis di luar Cikal |
+| insurances.is_active | boolean | no | DM-05; hanya asuransi aktif yang bisa dipilih di step Application (api-specs 06 §6.2) |
 | insurance_rates.insurance_id | uuid | no | FK insurances |
 | insurance_rates.product_id | uuid | yes | FK product.products |
 | insurance_rates.age | int | no | |
@@ -270,7 +271,7 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 | definitions.lock_on_submit | boolean | no | PR-06 |
 | values.definition_id | uuid | no | FK definitions |
 | values.product_id | uuid | yes | FK product.products |
-| values.value | text | yes | null bila SECRET |
+| values.value | text | yes | null bila SECRET; `BOOLEAN` berisi `true` atau `false`, `MULTI_CHOICE` berisi larik JSON teks, contoh `["005"]` |
 | values.secret_ref | uuid | yes | FK platform.secrets |
 | values.version_number | int | no | |
 | values.status | text | no | `WAITING_APPROVAL`, `ACTIVE`, `SUPERSEDED`; UQ parsial ACTIVE per (tenant_id, definition_id, product_id) |
@@ -446,13 +447,15 @@ Indeks `pg_trgm` pada `loan_id` dan nama (lewat `application_personals.full_name
 | date_of_birth | date | yes (draft) | |
 | gender, religion, nationality, education, marital | text | yes (draft) | `param_id` |
 | mother_maiden_name_enc | bytea | yes | terenkripsi |
+| mother_maiden_name_key_version | int | yes | versi data key `ENCRYPTION` untuk `mother_maiden_name_enc`; terisi bila kolom terenkripsinya terisi |
 | id_type | text | no | `KTP` |
 | id_card_number_enc | bytea | no | terenkripsi |
 | id_card_number_key_version | int | no | versi data key `ENCRYPTION` untuk `id_card_number_enc` (technical-specs 07 §7.4.1) |
 | id_card_number_bidx | bytea | no | blind index; indeks untuk Dedup dan pencarian |
 | id_issued_date | date | yes | |
 | id_expired_date | text | yes | `SEUMUR HIDUP` atau tanggal |
-| npwp_number_enc, kk_number_enc | bytea | yes | |
+| npwp_number_enc, kk_number_enc | bytea | yes | terenkripsi |
+| npwp_number_key_version, kk_number_key_version | int | yes | versi data key `ENCRYPTION` kolom terenkripsi pasangannya |
 | mobile_number, phone_number, email | text | yes | |
 | bpjs_number, jkn_number | text | yes | |
 | residence_status, residence_duration, correspondence_duration | text | yes | |

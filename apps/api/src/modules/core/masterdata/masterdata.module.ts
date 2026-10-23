@@ -6,6 +6,8 @@ import { OksaraRegionAdapter } from "./adapters/oksara-region.adapter.js";
 import { SimulationRegionAdapter } from "./adapters/simulation-region.adapter.js";
 import { GeneralParameters } from "./application/general-parameters.js";
 import { GetRegionSyncUseCase } from "./application/get-region-sync.use-case.js";
+import { Insurances } from "./application/insurances.js";
+import { ListInsurancesUseCase } from "./application/list-insurances.use-case.js";
 import { ListParameterOptionsUseCase } from "./application/list-parameter-options.use-case.js";
 import { ListRegionOptionsUseCase } from "./application/list-region-options.use-case.js";
 import { RegionSync } from "./application/region-sync.js";
@@ -13,10 +15,12 @@ import { SearchRegionsUseCase } from "./application/search-regions.use-case.js";
 import { StartRegionSyncUseCase } from "./application/start-region-sync.use-case.js";
 import { SystemParameters } from "./application/system-parameters.js";
 import { GeneralParametersRepository } from "./db/general-parameters.repository.js";
+import { InsurancesRepository } from "./db/insurances.repository.js";
 import { RegionSnapshotsRepository } from "./db/region-snapshots.repository.js";
 import { RegionSyncsRepository } from "./db/region-syncs.repository.js";
 import { RegionsRepository } from "./db/regions.repository.js";
 import { SystemParametersRepository } from "./db/system-parameters.repository.js";
+import { InsurancesController } from "./http/insurances.controller.js";
 import { ParametersController } from "./http/parameters.controller.js";
 import { RegionsController } from "./http/regions.controller.js";
 import { RegionSyncJob } from "./jobs/region-sync.job.js";
@@ -35,7 +39,7 @@ function regionDataAdapter(config: AppConfig): RegionDataPort {
  */
 @Global()
 @Module({
-  controllers: [ParametersController, RegionsController],
+  controllers: [ParametersController, RegionsController, InsurancesController],
   providers: [
     SystemParameters,
     SystemParametersRepository,
@@ -44,6 +48,9 @@ function regionDataAdapter(config: AppConfig): RegionDataPort {
     GeneralParameters,
     { provide: GENERAL_PARAMETER_PORT, useExisting: GeneralParameters },
     ListParameterOptionsUseCase,
+    InsurancesRepository,
+    Insurances,
+    ListInsurancesUseCase,
     { provide: REGION_DATA_PORT, inject: [APP_CONFIG], useFactory: regionDataAdapter },
     RegionsRepository,
     RegionSnapshotsRepository,
@@ -55,6 +62,6 @@ function regionDataAdapter(config: AppConfig): RegionDataPort {
     StartRegionSyncUseCase,
     GetRegionSyncUseCase,
   ],
-  exports: [SYSTEM_PARAMETER_PORT, GENERAL_PARAMETER_PORT],
+  exports: [SYSTEM_PARAMETER_PORT, GENERAL_PARAMETER_PORT, Insurances],
 })
 export class MasterDataModule {}

@@ -1,13 +1,9 @@
-import type { ProductCategory } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
-import { ProductsRepository } from "../db/products.repository.js";
+import { type ProductEligibilityRow, ProductsRepository } from "../db/products.repository.js";
 
-export interface AvailableProduct {
-  id: string;
-  productCode: string;
-  productCategory: ProductCategory;
-}
+/** Produk dengan syarat plafon, tenor, dan usia yang diperiksa form pengajuan (api-specs 12 §12.3). */
+export type AvailableProduct = ProductEligibilityRow;
 
 /** Produk yang boleh dipakai pengajuan baru (technical-specs 05 §5.5 `availableProducts`, RT-07). */
 @Injectable()
@@ -17,5 +13,10 @@ export class ProductAvailability {
   /** `null` bila produk tidak aktif, di luar masa berlaku pada `today`, atau tanpa rute ACTIVE. */
   find(tx: Tx, productId: string, today: string): Promise<AvailableProduct | null> {
     return this.products.findAvailable(tx, productId, today);
+  }
+
+  /** Syarat produk draft tanpa memeriksa ketersediaan, untuk section setelah Application. */
+  eligibility(tx: Tx, productId: string): Promise<AvailableProduct | null> {
+    return this.products.findEligibility(tx, productId);
   }
 }
