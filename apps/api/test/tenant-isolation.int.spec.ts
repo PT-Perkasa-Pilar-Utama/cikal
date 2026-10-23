@@ -4,10 +4,11 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
-import { seedCompanyIds } from "../src/modules/core/tenancy/index.js";
+import { Licensing, seedCompanyIds } from "../src/modules/core/tenancy/index.js";
 import { TenantTx } from "../src/platform/db/tenant-tx.js";
 import { hashToken } from "../src/platform/http/session-token.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
+import { installTestLicense, issueTestLicense } from "./support/license.js";
 import { createRole, createSession } from "./support/session.js";
 
 const company002 = "0192b6a0-0002-7000-8000-000000000002";
@@ -69,7 +70,22 @@ describe("tenant isolation", () => {
     expect((await lookup("another-token")).rows).toEqual([]);
   });
 
+  it("checks the licence of the session tenant, not of another company (LC-04)", async () => {
+    const roleId = await createRole(
+      db.owner,
+      "Viewer Tanpa Lisensi",
+      [{ menuCode: "MST-PRODUCT", view: true }],
+      company002,
+    );
+    const other = await createSession(db.owner, { roleId, tenantId: company002 });
+    const res = await app.inject({ method: "GET", url: "/api/v1/products", headers: other.headers });
+    expect(res.statusCode).toBe(403);
+    expect(res.json()).toMatchObject({ code: "MODULE_NOT_LICENSED" });
+  });
+
   it("authorizes with the session tenant's roles and ignores a tenant in the request", async () => {
+    await installTestLicense(db.owner, issueTestLicense({ companyCode: "002" }), company002);
+    app.get(Licensing).invalidate();
     const roleId = await createRole(
       db.owner,
       "Viewer Bank Lain",

@@ -17,7 +17,9 @@ const queue = app.get(JobQueue);
 
 // Reset state (api-specs 27 §27.4): konsumen berhenti saat reset_started dan menyala lagi saat reset_finished.
 // Konsumen yang gagal menyala lagi menghentikan proses agar Docker memulainya ulang (restart policy).
+// Sinyal lain (contoh license_installed) ditangani penerimanya sendiri.
 app.get(OpsSignals).on((signal) => {
+  if (signal !== "reset_started" && signal !== "reset_finished") return;
   logger.log(`Ops signal ${signal}`);
   const action = signal === "reset_started" ? queue.stopConsumers() : queue.startConsumers();
   action.catch((error: unknown) => {

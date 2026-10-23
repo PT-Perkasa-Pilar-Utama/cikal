@@ -3,6 +3,7 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
+import { Licensing } from "../src/modules/core/tenancy/index.js";
 import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
 import { createRole, createSession } from "./support/session.js";
 
@@ -134,6 +135,20 @@ describe("reset-state when enabled (api-specs 27 §27.4)", () => {
       payload: { seed: "base" },
     });
     expect(res.statusCode).toBe(400);
+    expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("VALIDATION_FAILED");
+  });
+
+  it("stays available when the company has no valid licence, since reset restores the seeded licence", async () => {
+    await db.owner.query("update tenancy.licenses set status = 'REVOKED' where status = 'ACTIVE'");
+    app.get(Licensing).invalidate();
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/admin/reset-state",
+      headers: { ...headers, "x-reset-token": "reset-test-token" },
+      payload: { seed: "base" },
+    });
+
     expect(c.errorEnvelopeSchema.parse(res.json()).code).toBe("VALIDATION_FAILED");
   });
 });

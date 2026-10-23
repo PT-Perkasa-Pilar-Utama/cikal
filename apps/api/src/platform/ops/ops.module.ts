@@ -11,10 +11,14 @@ import { ResetService } from "./reset.service.js";
 
 @Module({})
 export class OpsModule {
-  /** Rute reset hanya ada bila konfigurasi mengizinkannya; penolakan terjadi saat registrasi, bukan otorisasi. */
+  /**
+   * Rute reset hanya ada bila konfigurasi mengizinkannya; penolakan terjadi saat registrasi, bukan otorisasi.
+   * Global agar modul bisnis bisa berlangganan `OpsSignals`, contoh cache lisensi.
+   */
   static register(config: AppConfig): DynamicModule {
     const reset = config.resetApi !== null;
     return {
+      global: true,
       module: OpsModule,
       controllers: [HealthController, MetricsController, ...(reset ? [ResetController] : [])],
       providers: [HealthService, MetricsService, MonitoringGuard, OpsSignals, ...(reset ? [ResetService] : [])],

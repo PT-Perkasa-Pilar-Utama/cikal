@@ -1,11 +1,10 @@
 import type { SessionResponse } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { licensedModuleCodes } from "../../../../licensed-module-codes.generated.js";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { CompanyDirectory } from "../../tenancy/index.js";
+import { CompanyDirectory, Licensing } from "../../tenancy/index.js";
 import { MenusRepository } from "../db/menus.repository.js";
 import { SessionsRepository } from "../db/sessions.repository.js";
 import { UsersRepository } from "../db/users.repository.js";
@@ -13,8 +12,8 @@ import { buildMenuTree } from "../domain/menu-tree.js";
 import { SESSION_IDLE_MINUTES } from "../domain/session-policy.js";
 
 /**
- * `GET /auth/session` (api-specs 02 §2.4). Lisensi berasal dari manifest paket; `validTo` diisi dari lisensi
- * bertanda tangan di kartu TL-S2-02. Unit kerja (`branchCode`) menunggu tabel Organization.
+ * `GET /auth/session` (api-specs 02 §2.4). Menu dan `license.modules` hanya modul lisensi aktif yang ada di paket
+ * (AC-100.01). Unit kerja (`branchCode`) menunggu tabel Organization.
  */
 @Injectable()
 export class GetSessionUseCase {
@@ -24,6 +23,7 @@ export class GetSessionUseCase {
     private readonly sessions: SessionsRepository,
     private readonly menus: MenusRepository,
     private readonly companies: CompanyDirectory,
+    private readonly licensing: Licensing,
   ) {}
 
   execute(ctx: RequestContext): Promise<SessionResponse> {
@@ -33,17 +33,22 @@ export class GetSessionUseCase {
       const expiresAt = await this.sessions.findExpiry(tx, ctx.sessionId);
       if (!profile || !expiresAt) throw DomainError.standard("UNAUTHENTICATED");
       const company = await this.companies.summary(tx, ctx.tenantId);
+      const license = await this.licensing.state(tx);
       const menus = buildMenuTree(
         await this.menus.listActive(tx),
         await this.menus.listGrants(tx, ctx.userId, today),
-        licensedModuleCodes,
+        license.modules,
       );
       return {
         data: {
           user: { ...profile, branchCode: null },
           company,
           mustChangePassword: ctx.mustChangePassword,
-          license: { status: "ACTIVE", validTo: null, modules: [...licensedModuleCodes] },
+          license: {
+            status: license.status,
+            validTo: license.status === "NONE" ? null : license.license.validTo,
+            modules: [...license.modules],
+          },
           menus,
           sessionExpiresAt: expiresAt.toISOString(),
           idleTimeoutMinutes: SESSION_IDLE_MINUTES,

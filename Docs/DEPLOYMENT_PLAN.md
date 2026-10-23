@@ -166,6 +166,9 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
 | Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
 | `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
+| `tools/license-cli` | `keygen`, `issue`, `verify` file lisensi Ed25519 (3.11) | TL-S2-02 | Ada |
+| `deploy/license/ppu-license-public-key.pem` dan build image dengan `--license-key` kunci itu | Kunci publik PPU tertanam di image rilis | TL-S6-01 | Belum ada (8, F-09) |
+| Pemasangan `license.json` saat instalasi (`LICENSE_FILE`, `create-admin`) | Lisensi pertama company tanpa lewat halaman License | TL-S6-01 | Belum ada (8, F-09) |
 
 ### 2.6 Perbedaan untuk on-premise client
 
@@ -685,6 +688,41 @@ Monitor per lingkungan:
 
 Notifikasi ke grup chat tim (Telegram atau Slack). `ready` gagal dengan `live` tetap hidup berarti aplikasi berjalan tetapi database atau storage tidak terjangkau; mulai dari 7.9.
 
+### 3.11 Lisensi
+
+Kontrol lisensi: [technical-specs/07-security.md](technical-specs/07-security.md) 7.6. Perintah dijalankan TL di laptop, dari root repo, setelah CLI di-build:
+
+```bash
+pnpm --filter @cikal/license-cli build
+```
+
+Pasangan kunci PPU dibuat sekali. Kunci privat disimpan di password manager tim dan salinan lokal dihapus; kunci publik di-commit sebagai `deploy/license/ppu-license-public-key.pem` dan dipakai build image rilis (TL-S6-01):
+
+```bash
+node tools/license-cli/dist/cli.js keygen --out ~/cikal-license-keys
+```
+
+Menerbitkan file lisensi satu company, lalu memeriksanya dengan kunci publik:
+
+```bash
+node tools/license-cli/dist/cli.js issue --key ~/cikal-license-keys/license-signing-key.pem --number PPU-LIC-2026-0001 \
+  --company 001 --deployment ON_PREMISE --modules CORE,M06,M07,M08,M09,M10,M11,M15 \
+  --valid-from 2026-10-21 --valid-to 2027-12-31 --out license.json
+```
+
+```bash
+node tools/license-cli/dist/cli.js verify --public-key deploy/license/ppu-license-public-key.pem --file license.json
+```
+
+Super User memasang file itu lewat halaman "License" (`POST /api/v1/license`, [api-specs/04-tenancy-license.md](api-specs/04-tenancy-license.md) 4.2). Setiap file baru butuh nomor lisensi baru: nomor yang pernah dipasang ditolak.
+
+Kunci dev (`deploy/license/dev-license-public-key.pem`) hanya dipercaya build dev dan CI. Kunci privatnya tidak disimpan. Lisensi company 001 di seed `dev` dan `qa` (`apps/api/src/modules/core/tenancy/seed/dev-license.ts`) ditandatangani kunci itu. Menerbitkan ulang lisensi dev:
+
+1. `keygen --out <folder sementara>`, lalu salin `license-public-key.pem` ke `deploy/license/dev-license-public-key.pem`.
+2. `issue` dengan kunci privat baru, lalu salin isi file ke `dev-license.ts`.
+3. Hapus folder sementara berisi kunci privat.
+4. `pnpm check`: uji `license-verification.spec.ts` gagal bila kunci dan lisensi dev tidak cocok.
+
 ---
 
 ## 4. Memperbarui ke Rilis Baru
@@ -1151,3 +1189,5 @@ docker image prune -a --filter "until=720h"
 | F-06 | SIT dan UAT publik; `POST /api/admin/reset-state` terjangkau internet walau dilindungi sesi, role `QA-RESET`, dan token | Rekomendasi: template nginx membatasi `location /api/admin/` ke CIDR kantor PPU |
 | F-07 | Tech 02 2.6 menyebut sertifikat dari bank; hosting PPU memakai Let's Encrypt | Perbarui tabel container 2.6 agar mencakup kedua model (lihat 2.6 dokumen ini) |
 | F-08 | Admin dari `create-admin` wajib ganti password saat login pertama; belum ada AC-nya | Bawa ke `/grooming` sebagai AC baru US-01 |
+| F-09 | Image rilis dipromosikan SIT, UAT, lalu production, jadi image SIT dan UAT mempercayai kunci PPU, bukan kunci dev. Lisensi dev di seed `qa` tidak berlaku di sana, dan reset menghapus lisensi yang dipasang | TL-S6-01: build rilis dengan `--license-key deploy/license/ppu-license-public-key.pem`, lalu pasang `license.json` (`LICENSE_FILE`) saat instalasi dan setelah setiap reset |
+| F-10 | AC-100.01 dan AC-100.02 menyebut halaman "License" (daftar modul, masa berlaku, pesan "License file is invalid"); belum ada kartu frontend untuk layar itu | Tambah kartu layar License (FE) lewat `/task-breakdown`; API-nya selesai di TL-S2-02 |

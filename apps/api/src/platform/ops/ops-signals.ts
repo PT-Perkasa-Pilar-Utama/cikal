@@ -1,9 +1,16 @@
 import { Inject, Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from "@nestjs/common";
+import { sql } from "drizzle-orm";
 import pg from "pg";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
+import type { Tx } from "../db/tenant-tx.js";
 import { isOpsSignal, OPS_CHANNEL, type OpsSignal } from "../migrate/runner.js";
 
 const RETRY_MS = 5_000;
+
+/** NOTIFY di transaksi pemanggil: proses lain menerimanya hanya bila transaksi commit. */
+export async function publishOpsSignal(tx: Tx, signal: OpsSignal): Promise<void> {
+  await tx.execute(sql`select pg_notify(${OPS_CHANNEL}, ${signal})`);
+}
 
 /**
  * Berlangganan channel `cikal_ops` dengan koneksi khusus (LISTEN tidak bisa lewat pool).

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { actionSchema } from "../common/menu.js";
+import { moduleCodeSchema } from "../common/modules.js";
 import { id } from "../common/scalars.js";
 
 /** `POST /auth/login` (api-specs 02 §2.2). */
@@ -50,6 +51,10 @@ export const sessionMenuSchema: z.ZodType<SessionMenu> = z.lazy(() =>
   }),
 );
 
+/** Status lisensi sesi: `NONE` bila company belum punya lisensi terverifikasi (api-specs 02 §2.4 langkah 5). */
+export const sessionLicenseStatusSchema = z.enum(["ACTIVE", "EXPIRED", "NONE"]);
+export type SessionLicenseStatus = z.infer<typeof sessionLicenseStatusSchema>;
+
 /** `GET /auth/session` (api-specs 02 §2.4). */
 export const sessionResponseSchema = z.object({
   data: z.object({
@@ -57,10 +62,11 @@ export const sessionResponseSchema = z.object({
     company: companySummarySchema.extend({ platformCode: z.string() }),
     mustChangePassword: z.boolean(),
     license: z.object({
-      status: z.enum(["ACTIVE", "EXPIRED"]),
-      /** `null` sampai lisensi bertanda tangan dipasang (TL-S2-02); modul dari manifest paket. */
+      status: sessionLicenseStatusSchema,
+      /** `null` bila status `NONE`. */
       validTo: z.iso.date().nullable(),
-      modules: z.array(z.string()),
+      /** Modul lisensi aktif yang juga ada di paket (PK-04); kosong bila status `NONE`. */
+      modules: z.array(moduleCodeSchema),
     }),
     menus: z.array(sessionMenuSchema),
     sessionExpiresAt: z.iso.datetime(),

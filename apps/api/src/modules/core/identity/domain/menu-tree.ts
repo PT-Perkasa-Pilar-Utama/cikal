@@ -34,7 +34,7 @@ const GROUP_ACTIONS: Action[] = ["VIEW"];
 export function buildMenuTree(
   menus: MenuRow[],
   grants: MenuGrant[],
-  licensedModules: readonly string[],
+  licensedModules: ReadonlySet<string>,
 ): SessionMenu[] {
   const actionsOf = (menuId: string): Action[] => {
     const mine = grants.filter((grant) => grant.menuId === menuId);
@@ -51,7 +51,7 @@ export function buildMenuTree(
     children,
   });
 
-  const visible = (menu: MenuRow) => licensedModules.includes(menu.moduleCode);
+  const visible = (menu: MenuRow) => licensedModules.has(menu.moduleCode);
   return menus
     .filter((menu) => menu.parentMenuId === null && visible(menu))
     .sort(byIndex)

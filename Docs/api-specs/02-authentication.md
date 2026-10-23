@@ -95,7 +95,7 @@ Bila `mustChangePassword = true`, klien membuka halaman ganti password (backlog,
 2. Hitung hak efektif hari ini: gabungan RoleAccess dan UserAccess yang berlaku (`../technical-specs/09-authentication-authorization.md` 9.4).
 3. Bangun pohon menu: hanya menu aktif dengan hak View, dari modul berlisensi (AC-09.02, AC-100.01).
 4. Panggilan ini tidak memperbarui `lastActivityAt` bila dipanggil oleh polling latar; klien mengirim header `X-Background: true` untuk polling.
-5. `license.modules` berasal dari manifest paket dan `license.validTo` bernilai `null` sampai lisensi bertanda tangan dipasang (TL-S2-02). `user.branchCode` bernilai `null` sampai tabel Organization ada.
+5. `license` berasal dari lisensi bertanda tangan company sesi (04 §4.1): `modules` hanya modul lisensi yang juga ada di paket (PK-04), dan menu modul lain tidak tampil. Tanpa lisensi terverifikasi, `status` bernilai `NONE`, `validTo` `null`, dan `modules` kosong. `user.branchCode` bernilai `null` sampai tabel Organization ada.
 
 **Output 200**
 
@@ -132,7 +132,7 @@ Setiap rute terautentikasi menjalankan urutan guard berikut sebelum handler:
 1. Sesi: cookie ada, hash cocok, tidak idle, tidak lewat absolut. Gagal: `401` (2.1).
 2. CSRF untuk metode selain GET/HEAD.
 3. `mustChangePassword`: `403 PASSWORD_CHANGE_REQUIRED`.
-4. Lisensi modul pemilik rute: `403 MODULE_NOT_LICENSED`. Lisensi kedaluwarsa dan metode mengubah data: `403 LICENSE_EXPIRED`.
+4. Lisensi modul pemilik rute: `403 MODULE_NOT_LICENSED`. Metode mengubah data saat lisensi kedaluwarsa: `403 LICENSE_EXPIRED`; saat company belum punya lisensi terverifikasi: `403 MODULE_NOT_LICENSED`. Rute halaman License (04) dikecualikan.
 5. Hak menu: rute View tanpa hak View `403 ACCESS_DENIED` (AC-09.02 TRM_ACC_001); rute aksi lain tanpa hak aksi itu, termasuk bila View juga tidak ada, `403 ACTION_DENIED` (AC-09.04).
 6. Konteks tenant di transaksi dari sesi (`SET LOCAL app.tenant_id`).
 

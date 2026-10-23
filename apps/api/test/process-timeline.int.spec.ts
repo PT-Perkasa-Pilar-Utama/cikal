@@ -2,7 +2,9 @@ import { errorEnvelopeSchema, processTimelineResponseSchema, type StepCode, skip
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
+import { Licensing } from "../src/modules/core/tenancy/index.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
+import { installTestLicense, issueTestLicense, POC_LICENSE_MODULES } from "./support/license.js";
 import {
   drainProcessJobs,
   insertApplication,
@@ -103,6 +105,24 @@ describe("/applications/{id}/process", () => {
 
     expect(survey).toMatchObject({ status: "SKIPPED", skipReason: "NOT_IN_ROUTE", actor: null, aging: null });
     expect(survey?.skipReason && skipReasonLabels[survey.skipReason]).toBe("Skipped - not in route");
+  });
+
+  it("shows SLIK as Skipped - not licensed when the company has no M10 licence (AC-85.06)", async () => {
+    const withoutM10 = POC_LICENSE_MODULES.filter((code) => code !== "M10");
+    await installTestLicense(db.owner, issueTestLicense({ modules: withoutM10 }));
+    app.get(Licensing).invalidate();
+    try {
+      const { applicationId } = await submittedKta();
+
+      const slik = (await timelineOf(`${applicationId}/process`)).steps.find((s) => s.stepCode === "CREDIT_BUREAU");
+
+      expect(slik).toMatchObject({ status: "SKIPPED", skipReason: "NOT_LICENSED" });
+      expect(slik?.skipReason && skipReasonLabels[slik.skipReason]).toBe("Skipped - not licensed");
+      expect(handlers.get("CREDIT_BUREAU")?.contexts.some((ctx) => ctx.applicationId === applicationId)).toBe(false);
+    } finally {
+      await installTestLicense(db.owner, issueTestLicense());
+      app.get(Licensing).invalidate();
+    }
   });
 
   it("shows a conditional step as Skipped - condition not met (AC-31.04)", async () => {

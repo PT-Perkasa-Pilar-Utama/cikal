@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
 import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
+import { businessDateIn } from "./support/license.js";
 import { createLoginUser, login } from "./support/login.js";
 
 /** Sesi dan logout web (api-specs 02 §2.1, §2.3, §2.4). */
@@ -35,7 +36,11 @@ describe("web sessions", () => {
     expect(data).toMatchObject({
       user: { username: "maker.01", fullName: "Andi Pratama", roleName: "Maker", branchCode: null },
       company: { companyCode: "001", companyName: "Bank Contoh", platformCode: "01" },
-      license: { status: "ACTIVE", validTo: null, modules: ["CORE", "M06", "M07", "M08", "M09", "M10", "M11", "M15"] },
+      license: {
+        status: "ACTIVE",
+        validTo: businessDateIn(365),
+        modules: ["CORE", "M06", "M07", "M08", "M09", "M10", "M11", "M15"],
+      },
       idleTimeoutMinutes: 30,
     });
     const master = data.menus.find((m) => m.menuCode === "MST");

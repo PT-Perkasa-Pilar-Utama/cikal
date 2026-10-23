@@ -33,7 +33,7 @@ Language policy: identifiers, file names, error codes, and commit subjects in En
 |---|---|
 | Runtime | Node.js 22 (`.nvmrc`), TypeScript 5.9.3 strict, ESM |
 | Workspace | pnpm 10.34.7 (corepack), Turborepo 2.11.10, Biome 2.6.2, Husky 9 |
-| API | NestJS 11.2.7 + Fastify 5.11.3, Zod 4.6.7 + nestjs-zod, Drizzle ORM 0.45.4 + drizzle-kit 0.31.11, pg 8.23.1, pg-boss 10.4.2, argon2, decimal.js, prom-client |
+| API | NestJS 11.2.7 + Fastify 5.11.3, @fastify/multipart 10.1.3, Zod 4.6.7 + nestjs-zod, Drizzle ORM 0.45.4 + drizzle-kit 0.31.11, pg 8.23.1, pg-boss 10.4.2, argon2, decimal.js, prom-client |
 | Web | React 19.3.1 SPA, Vite 7.3.7, TanStack Router 1.170.45 and Query 5.104.5, Tailwind 4.3.3 |
 | Data | PostgreSQL 17.6 (one schema per module, RLS), S3-compatible storage (SeaweedFS in dev), Gotenberg 8.20.1 |
 | Tests | Vitest 3.2.7, Testcontainers 11.14.0 (PostgreSQL 17), Playwright 1.64.1 |
@@ -50,8 +50,10 @@ cikal/
 ├── apps/web/src/            routes/, features/<f>/, components/, lib/api/client.ts
 ├── packages/contracts/      Zod request/response schemas and mocks (single source of API types)
 ├── packages/formula/        pure formula engine; no NestJS, no DB, no I/O
-├── tools/package-builder/   manifest -> licensed-modules.generated.ts, licensed-module-codes.generated.ts
+├── tools/package-builder/   manifest -> licensed-modules.generated.ts, licensed-module-codes.generated.ts; --license-key -> license-public-key.generated.ts
+├── tools/license-cli/       Ed25519 license keygen, issue, verify (DEPLOYMENT_PLAN §3.11)
 ├── deploy/compose/          dev compose, initdb role script
+├── deploy/license/          public license keys per build (dev key for dev and CI); never a private key
 ├── deploy/manifests/        poc.json (CORE, M06, M07, M08, M09, M10, M11, M15)
 └── Docs/                    all project docs (§1)
 ```
@@ -239,6 +241,7 @@ Do not report a task as done while either command fails. Never bypass hooks with
   - `/api/admin/reset-state` is registered only in dev, test, sit, and uat.
 - [ ] Reset signals go over the `cikal_ops` channel (`reset_started`, `reset_finished`). The advisory lock returns `409 RESET_IN_PROGRESS`.
 - [ ] The licensed POC modules are CORE, M06, M07, M08, M09, M10, M11, and M15. M14 E-Polis is not licensed.
+- [ ] Licensed modules come from the tenant's verified license through `Licensing.state(tx)`, intersected with the package manifest. Never read `licensedModuleCodes` for a license check. No license or an expired license blocks data changes (`MODULE_NOT_LICENSED`, `LICENSE_EXPIRED`); `@LicenseExempt()` keeps the License page open.
 - [ ] Local ports:
 
 | Port | Service |

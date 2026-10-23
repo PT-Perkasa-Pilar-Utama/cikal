@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ApplicationStatus } from "../application/application.schema.js";
+import type { ModuleCode } from "../common/modules.js";
 
 /** Urutan langkah baku (tech ref 6.3). Data dan API menyimpan kode langkah, bukan nomor urut (RT-02). */
 export const stepCodes = [
@@ -45,7 +46,7 @@ export const stepModules = {
   PRINT_AKAD: "M15",
   DISBURSEMENT: "M15",
   WAIT_CORE: "M15",
-} as const satisfies Record<StepCode, string>;
+} as const satisfies Record<StepCode, ModuleCode>;
 
 /** Status StepExecution (technical-specs 06 §6.13). */
 export const stepStatusSchema = z.enum([

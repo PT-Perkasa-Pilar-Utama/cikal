@@ -1,4 +1,4 @@
-import type { Action, MenuCode } from "@cikal/contracts";
+import type { Action, MenuCode, SessionLicenseStatus } from "@cikal/contracts";
 import { type CanActivate, type ExecutionContext, Inject, Injectable, SetMetadata } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { FastifyRequest } from "fastify";
@@ -13,6 +13,7 @@ export type AccessRule =
 
 export const ACCESS_RULE = "cikal:access-rule";
 export const ALLOW_DURING_PASSWORD_CHANGE = "cikal:allow-during-password-change";
+export const LICENSE_EXEMPT = "cikal:license-exempt";
 
 /** Metode tanpa efek samping; selain ini wajib membawa `X-CSRF-Token` (api-specs 02 §2.5 langkah 2). */
 const SAFE_METHODS: ReadonlySet<string> = new Set(["GET", "HEAD"]);
@@ -29,6 +30,22 @@ export const Requires = (menuCode: MenuCode, action: Action) =>
 
 /** Rute yang tetap terbuka selama `mustChangePassword` (ganti password, sesi, logout; api-specs 02 §2.1). */
 export const AllowDuringPasswordChange = () => SetMetadata(ALLOW_DURING_PASSWORD_CHANGE, true);
+
+/**
+ * Rute yang tetap terbuka tanpa lisensi terverifikasi atau saat lisensi kedaluwarsa: halaman License agar Super User
+ * bisa memasang lisensi baru (api-specs 04 §4.2), dan reset state (api-specs 27 §27.4). Sesi, CSRF, dan hak menu
+ * tetap diperiksa.
+ */
+export const LicenseExempt = () => SetMetadata(LICENSE_EXEMPT, true);
+
+/**
+ * Mode baca saja (LC-06): lisensi kedaluwarsa menolak perubahan data dengan `LICENSE_EXPIRED`; tanpa lisensi
+ * terverifikasi CORE pun tidak berlisensi, jadi `MODULE_NOT_LICENSED`.
+ */
+function assertWritable(status: SessionLicenseStatus): void {
+  if (status === "EXPIRED") throw DomainError.standard("LICENSE_EXPIRED");
+  if (status === "NONE") throw DomainError.standard("MODULE_NOT_LICENSED");
+}
 
 /**
  * Guard global dengan urutan api-specs 02 §2.5: sesi, CSRF, ganti password awal, lisensi dan hak menu.
@@ -57,7 +74,9 @@ export class AccessGuard implements CanActivate {
     }
     const allowed = this.reflector.getAllAndOverride<boolean | undefined>(ALLOW_DURING_PASSWORD_CHANGE, targets);
     if (session.mustChangePassword && !allowed) throw DomainError.standard("PASSWORD_CHANGE_REQUIRED");
-    if (rule.kind === "menu") await this.access.authorize(session, rule.menuCode, rule.action);
+    const licenseExempt = this.reflector.getAllAndOverride<boolean | undefined>(LICENSE_EXEMPT, targets) === true;
+    if (!licenseExempt && !SAFE_METHODS.has(request.method)) assertWritable(session.licenseStatus);
+    if (rule.kind === "menu") await this.access.authorize(session, rule.menuCode, rule.action, { licenseExempt });
 
     request.auth = {
       sessionId: session.sessionId,

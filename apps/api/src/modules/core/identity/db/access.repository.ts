@@ -20,7 +20,7 @@ export class AccessRepository {
     userId: string,
     menuCode: string,
     today: string,
-  ): Promise<Omit<MenuAccessFacts, "licensedModules">> {
+  ): Promise<Pick<MenuAccessFacts, "menu" | "grants">> {
     const [menu] = await tx
       .select({ id: menus.id, moduleCode: menus.moduleCode, isActive: menus.isActive })
       .from(menus)

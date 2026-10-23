@@ -35,7 +35,7 @@ describe("buildMenuTree (api-specs 02 §2.4)", () => {
     const tree = buildMenuTree(
       menus,
       [grant("p", { canView: true, canCreate: true }), grant("o", { canView: true }), grant("v", { canUpdate: true })],
-      ["CORE", "M15"],
+      new Set(["CORE", "M15"]),
     );
     expect(tree).toEqual([
       {
@@ -67,12 +67,16 @@ describe("buildMenuTree (api-specs 02 §2.4)", () => {
   });
 
   it("hides menus of unlicensed modules even with View (AC-100.01)", () => {
-    const tree = buildMenuTree(menus, [grant("d", { canView: true })], ["CORE"]);
+    const tree = buildMenuTree(menus, [grant("d", { canView: true })], new Set(["CORE"]));
     expect(tree).toEqual([]);
   });
 
   it("merges role access with user access", () => {
-    const tree = buildMenuTree(menus, [grant("p", { canView: true }), grant("p", { canUpdate: true })], ["CORE"]);
+    const tree = buildMenuTree(
+      menus,
+      [grant("p", { canView: true }), grant("p", { canUpdate: true })],
+      new Set(["CORE"]),
+    );
     expect(tree[0]?.children[0]?.actions).toEqual(["VIEW", "UPDATE"]);
   });
 });

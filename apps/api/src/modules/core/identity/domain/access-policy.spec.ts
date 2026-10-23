@@ -5,7 +5,8 @@ const none: AccessFlags = { canView: false, canCreate: false, canUpdate: false, 
 const facts = (grants: Partial<AccessFlags>[], moduleCode = "CORE", isActive = true): MenuAccessFacts => ({
   menu: { moduleCode, isActive },
   grants: grants.map((grant) => ({ ...none, ...grant })),
-  licensedModules: ["CORE", "M06"],
+  licensedModules: new Set(["CORE", "M06"]),
+  licenseExempt: false,
 });
 
 describe("decideAccess (technical-specs 09 §9.4)", () => {
@@ -34,8 +35,13 @@ describe("decideAccess (technical-specs 09 §9.4)", () => {
     expect(decideAccess(facts([{ canCreate: true }]), "CREATE")).toBe("ACTION_DENIED");
   });
 
-  it("rejects a menu of an unlicensed module with MODULE_NOT_LICENSED", () => {
+  it("rejects a menu of an unlicensed module with MODULE_NOT_LICENSED (AC-100.03)", () => {
     expect(decideAccess(facts([{ canView: true }], "M14"), "VIEW")).toBe("MODULE_NOT_LICENSED");
+  });
+
+  it("skips the module licence check on a licence-exempt route but keeps the menu rights", () => {
+    const unlicensed = { ...facts([{ canView: true }]), licensedModules: new Set<string>(), licenseExempt: true };
+    expect([decideAccess(unlicensed, "VIEW"), decideAccess(unlicensed, "UPDATE")]).toEqual(["ALLOW", "ACTION_DENIED"]);
   });
 
   it("treats an inactive or unknown menu as no access", () => {

@@ -1,4 +1,4 @@
-import type { Action, MenuCode } from "@cikal/contracts";
+import type { Action, MenuCode, SessionLicenseStatus } from "@cikal/contracts";
 import type { TenantContext } from "../db/tenant-tx.js";
 
 /** Pelaku sebuah aksi untuk audit: tenant, user, dan IP asal request (technical-specs 06 §6.8 AUDIT_LOGS). */
@@ -18,6 +18,13 @@ export interface ResolvedSession extends TenantContext {
   mustChangePassword: boolean;
   /** Hash token CSRF sesi WEB; `null` untuk kanal tanpa CSRF. */
   csrfTokenHash: Buffer | null;
+  /** Lisensi company sesi; selain `ACTIVE`, metode yang mengubah data ditolak (api-specs 02 §2.5 langkah 4). */
+  licenseStatus: SessionLicenseStatus;
+}
+
+export interface AuthorizeOptions {
+  /** Rute halaman License: modul menu tidak diperiksa lisensinya (api-specs 04 §4.2). */
+  licenseExempt: boolean;
 }
 
 declare module "fastify" {
@@ -34,7 +41,7 @@ export interface AccessPort {
   /** Sesi dari nilai cookie: gagal dengan `401` sesuai api-specs 02 §2.1; `touch` memperbarui `lastActivityAt`. */
   resolveSession(token: string, options: { touch: boolean }): Promise<ResolvedSession>;
   /** Lisensi modul menu dan hak menu efektif hari ini; gagal dengan `403` (api-specs 02 §2.5 langkah 4 dan 5). */
-  authorize(ctx: TenantContext, menuCode: MenuCode, action: Action): Promise<void>;
+  authorize(ctx: TenantContext, menuCode: MenuCode, action: Action, options?: AuthorizeOptions): Promise<void>;
   /** Aturan yang sama dengan `authorize` tanpa melempar, untuk menampilkan atau menyembunyikan aksi. */
   allows(ctx: TenantContext, menuCode: MenuCode, action: Action): Promise<boolean>;
 }

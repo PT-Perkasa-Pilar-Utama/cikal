@@ -1,6 +1,10 @@
 import type { AppConfig } from "../../src/platform/config/config.js";
+import { testLicenseKeys } from "./license.js";
 
-/** Konfigurasi uji tanpa file secret. Database dan storage menunjuk ke alamat yang tidak menjawab kecuali di-override. */
+/**
+ * Konfigurasi uji tanpa file secret. Database dan storage menunjuk ke alamat yang tidak menjawab kecuali di-override.
+ * Lisensi diverifikasi dengan kunci uji (`support/license.ts`).
+ */
 export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
   return {
     appEnv: "test",
@@ -22,6 +26,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     monitoringToken: "monitoring-test-token",
     resetApi: null,
     worker: { concurrency: 1 },
+    licensePublicKey: testLicenseKeys.publicKey,
     ...overrides,
   };
 }
