@@ -80,8 +80,8 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 
 | Operasi | Kontrak |
 |---|---|
-| `isLicensed(tenantId, moduleCode)` | Dari lisensi aktif terverifikasi di cache memori; lisensi kedaluwarsa membuat aplikasi masuk mode baca saja (LC-06) |
-| `installLicense(file)` | Verifikasi tanda tangan Ed25519 dengan kunci publik PPU yang tertanam di image; menolak file yang diubah (AC-100.02); lisensi lama tetap berlaku bila gagal |
+| `Licensing.state(tx)` (`isLicensed`) | Status (`ACTIVE`, `EXPIRED`, `NONE`) dan modul aktif company yang terpasang di transaksi `tx`, dari lisensi terverifikasi di cache memori; modul aktif = modul lisensi yang ada di paket (PK-04). Lisensi kedaluwarsa membuat aplikasi masuk mode baca saja (LC-06) |
+| `installLicense(file)` | `POST /license`: verifikasi tanda tangan Ed25519 dengan kunci publik PPU yang tertanam di image; menolak file yang diubah (AC-100.02); lisensi lama tetap berlaku bila gagal |
 | `createCompany(cmd)` | Super User; membuat dua akun awal (Admin dan Checker) (grooming v1 E-04) |
 | `copyConfiguration(source, target, type)` | Menyalin tanpa menimpa data yang sudah ada; laporan jumlah ditambah dan dilewati (AC-16.01, AC-16.02) |
 

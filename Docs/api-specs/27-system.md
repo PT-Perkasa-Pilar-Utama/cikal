@@ -73,7 +73,7 @@ Body ini tidak memakai envelope `data` karena dibaca alat monitoring.
 
 **Ketersediaan:** Rute **hanya didaftarkan** bila `APP_ENV` salah satu `dev`, `test`, `sit`, `uat` **dan** `ENABLE_RESET_API=true`. `OpsModule` memasang controller ini secara kondisional saat bootstrap; di production controller tidak dimuat sehingga rute tidak ada dan permintaan mendapat `404` dari router, bukan penolakan otorisasi. Konfigurasi production menolak start bila `ENABLE_RESET_API=true`.
 
-**Access (di lingkungan yang memasangnya):** sesi web dengan `QA-RESET` UPDATE, header `X-CSRF-Token`, dan header `X-Reset-Token` yang cocok dengan isi `RESET_API_TOKEN_FILE`.
+**Access (di lingkungan yang memasangnya):** sesi web dengan `QA-RESET` UPDATE, header `X-CSRF-Token`, dan header `X-Reset-Token` yang cocok dengan isi `RESET_API_TOKEN_FILE`. Lisensi tidak diperiksa (`@LicenseExempt`), karena reset memasang ulang lisensi seed walau lisensi tersimpan hilang atau kedaluwarsa.
 
 **Input (body)**
 

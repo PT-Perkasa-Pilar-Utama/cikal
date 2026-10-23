@@ -1,9 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { licensedModuleCodes } from "../../../../licensed-module-codes.generated.js";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { CHANGE_REQUEST_PORT } from "../../../../platform/http/change-request-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import type { ChangeRequestPort } from "../../change-request/index.js";
+import { Licensing } from "../../tenancy/index.js";
 import { MenusRepository } from "../db/menus.repository.js";
 import { RoleAccessRepository } from "../db/role-access.repository.js";
 import { type RoleRow, RolesRepository } from "../db/roles.repository.js";
@@ -24,6 +24,7 @@ export class RoleAccessChecks {
     private readonly menus: MenusRepository,
     private readonly roleAccess: RoleAccessRepository,
     @Inject(CHANGE_REQUEST_PORT) private readonly changeRequests: ChangeRequestPort,
+    private readonly licensing: Licensing,
   ) {}
 
   /**
@@ -33,7 +34,8 @@ export class RoleAccessChecks {
   async target(tx: Tx, roleId: string, menuId: string): Promise<RoleAccessTarget> {
     const role = await this.roles.findById(tx, roleId);
     const menu = await this.menus.findById(tx, menuId);
-    const selectable = menu?.isActive === true && licensedModuleCodes.some((code) => code === menu.moduleCode);
+    const licensed: ReadonlySet<string> = (await this.licensing.state(tx)).modules;
+    const selectable = menu?.isActive === true && licensed.has(menu.moduleCode);
     if (!role?.isActive || !menu || !selectable) throw DomainError.standard("NOT_FOUND");
     return { role, menu };
   }

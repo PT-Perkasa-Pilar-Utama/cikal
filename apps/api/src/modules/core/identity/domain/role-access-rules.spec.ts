@@ -47,7 +47,7 @@ describe("buildMenuCatalog", () => {
   it("nests sub menus under their menu in index order and hides unlicensed modules", () => {
     const catalog = buildMenuCatalog(
       [row("mst", 1, null), row("product", 2, "mst"), row("org", 1, "mst"), row("epolis", 3, "mst", "M14")],
-      ["CORE"],
+      new Set(["CORE"]),
     );
     expect(catalog.map((menu) => menu.menuCode)).toEqual(["MST"]);
     expect(catalog[0]?.children.map((menu) => menu.menuCode)).toEqual(["ORG", "PRODUCT"]);

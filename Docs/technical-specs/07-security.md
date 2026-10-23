@@ -61,11 +61,12 @@ Kontrol keamanan per lapisan. Mekanisme login dan matriks role ada di `09-authen
 
 | Kontrol | Implementasi |
 |---|---|
-| Format | JSON kanonik (company, nomor lisensi, deploymentType, modul, validFrom, validTo) + tanda tangan Ed25519 |
-| Kunci | Kunci privat hanya di tim PPU (`tools/license-cli`); kunci publik tertanam di image |
-| Pemeriksaan | Saat start, saat file dipasang, dan dari cache di empat titik LC-04 |
-| Kedaluwarsa | Mode baca saja: pengajuan baru dan perubahan data ditolak dengan `LICENSE_EXPIRED`; data tetap bisa dilihat dan diekspor (LC-06) |
-| Pemasangan modul | Modul di luar manifest tidak ada di image (PK-02) |
+| Format | File `{ "license": {...}, "signature": "<base64>" }`. `license` berisi company, nomor lisensi, deploymentType, modul (wajib CORE), validFrom, validTo, maxUsers; field asing ditolak. Tanda tangan Ed25519 atas isi kanonik: JSON tanpa spasi dengan kunci urut alfabet (`canonicalLicensePayload`, `packages/contracts`) |
+| Kunci | Kunci privat hanya di tim PPU (`tools/license-cli keygen`, disimpan di password manager). Kunci publik tertanam di image saat build: `tools/package-builder --license-key <pem>` membangkitkan `license-public-key.generated.ts`; tidak ada env untuk menggantinya. Build dev dan CI memakai kunci dev `deploy/license/dev-license-public-key.pem`; image rilis memakai kunci PPU (TL-S6-01) |
+| Pemeriksaan | Saat file dipasang, dan dari cache per proses di empat titik LC-04. Cache kosong saat proses start, jadi lisensi setiap company diverifikasi ulang dari `raw_document` sebelum dipakai pertama kali; baris yang gagal verifikasi atau milik company lain dianggap tidak ada. `NOTIFY license_installed` di `cikal_ops` dan reset membuang cache semua proses |
+| Tanpa lisensi | Tidak ada modul berlisensi, termasuk CORE: rute menu dan metode yang mengubah data ditolak `MODULE_NOT_LICENSED`; halaman License tetap terbuka agar lisensi bisa dipasang |
+| Kedaluwarsa | Mode baca saja mulai hari setelah `validTo`: metode yang mengubah data ditolak dengan `LICENSE_EXPIRED`; data tetap bisa dilihat dan diekspor (LC-06). Orchestrator tetap menjalankan proses yang sudah diajukan |
+| Pemasangan modul | Modul di luar manifest tidak ada di image (PK-02); modul aktif = modul lisensi yang ada di paket (PK-04) |
 
 ## 7.7 Object storage
 

@@ -13,6 +13,7 @@ cikal/
 │   │   │   ├── worker.ts                 Entrypoint konsumen pg-boss (worker)
 │   │   │   ├── app.module.ts             Root module; meng-import licensed-modules.generated.ts
 │   │   │   ├── licensed-modules.generated.ts   Dibangkitkan dari manifest client saat build (2.4)
+│   │   │   ├── license-public-key.generated.ts Kunci publik lisensi yang dipercaya image, dipilih saat build (07 7.6)
 │   │   │   ├── platform/                 Infrastruktur bersama, bukan modul bisnis
 │   │   │   │   ├── db/                   Drizzle client, transaksi, SET LOCAL tenant, RLS helper
 │   │   │   │   ├── migrate/              Runner migrasi dan seed (6.12)
@@ -65,6 +66,7 @@ cikal/
 ├── deploy/
 │   ├── compose/                          docker-compose.yml dan .env.example per lingkungan
 │   ├── nginx/                            Konfigurasi reverse proxy dan TLS
+│   ├── license/                          Kunci publik lisensi per build (dev-license-public-key.pem); kunci privat tidak pernah di sini
 │   └── manifests/                        Manifest modul per client (contoh poc.json)
 ├── Docs/                                 Dokumen BA, business, technical-specs, TASK_BREAKDOWN
 ├── biome.json

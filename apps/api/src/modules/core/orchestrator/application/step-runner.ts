@@ -1,10 +1,10 @@
 import type { SkipReason, StepContext, StepResult } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import { v7 as uuidv7 } from "uuid";
-import { licensedModuleCodes } from "../../../../licensed-module-codes.generated.js";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { ApplicationProcess } from "../../application/index.js";
 import { ProductRoutes } from "../../product/index.js";
+import { Licensing } from "../../tenancy/index.js";
 import type { ProcessRow } from "../db/process-instances.repository.js";
 import { StepExecutionsRepository, type StepRow } from "../db/step-executions.repository.js";
 import { currentStep, routeSkipReason } from "../domain/route-plan.js";
@@ -12,9 +12,6 @@ import { stepContext } from "../domain/step-context.js";
 import { ProcessJobs } from "./process-jobs.js";
 import { type StepHandler, StepHandlerRegistry } from "./step-handler.js";
 import { StepResults } from "./step-results.js";
-
-// Lisensi bertanda tangan per tenant menggantikan daftar modul manifest di kartu TL-S2-02.
-const LICENSED_MODULES: ReadonlySet<string> = new Set(licensedModuleCodes);
 
 /** Langkah berlisensi di rute tanpa StepHandler terpasang: konfigurasi paket salah, bukan error sementara. */
 function missingHandler(step: StepRow): StepResult {
@@ -39,6 +36,7 @@ export class StepRunner {
     private readonly handlers: StepHandlerRegistry,
     private readonly results: StepResults,
     private readonly jobs: ProcessJobs,
+    private readonly licensing: Licensing,
   ) {}
 
   /** Proses harus RUNNING dan terkunci. ERROR pada langkah saat ini berarti retry otomatis yang sudah jatuh tempo. */
@@ -81,7 +79,9 @@ export class StepRunner {
     ctx: StepContext,
   ): Promise<SkipReason | null> {
     const route = await this.routes.version(tx, process.routeVersionId);
-    const reason = routeSkipReason(step.stepCode, route.steps, LICENSED_MODULES);
+    // Lisensi dibaca saat langkah PENDING akan dijalankan; langkah yang sudah berjalan tetap selesai (AC-85.06, LC-07).
+    const licensed = (await this.licensing.state(tx)).modules;
+    const reason = routeSkipReason(step.stepCode, route.steps, licensed);
     if (reason) return reason;
     if (handler?.isApplicable && !(await handler.isApplicable(tx, ctx))) return "CONDITION_NOT_MET";
     return null;

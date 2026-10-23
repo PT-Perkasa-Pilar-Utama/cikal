@@ -11,9 +11,12 @@ import { type ModuleData, SEED_LAYERS, type SeedContext, type SeedName } from ".
 /** Ledger per skema modul (MS-04). */
 export const MIGRATIONS_TABLE = "__migrations";
 
-/** Channel LISTEN/NOTIFY operasional; api dan worker berlangganan lewat `listenOpsSignals`. */
+/**
+ * Channel LISTEN/NOTIFY operasional; api dan worker berlangganan lewat `listenOpsSignals`. `license_installed`
+ * membuang cache lisensi di semua proses (api-specs 04 §4.2 langkah 5).
+ */
 export const OPS_CHANNEL = "cikal_ops";
-export const OPS_SIGNALS = ["reset_started", "reset_finished"] as const;
+export const OPS_SIGNALS = ["reset_started", "reset_finished", "license_installed"] as const;
 export type OpsSignal = (typeof OPS_SIGNALS)[number];
 
 /** Payload NOTIFY berasal dari luar proses, jadi dipersempit sebelum dipakai. */

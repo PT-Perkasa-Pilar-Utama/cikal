@@ -5,6 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
 import { AppModule } from "./app.module.js";
 import type { AppConfig } from "./platform/config/config.js";
+import { registerMultipart } from "./platform/http/multipart.js";
 import { MetricsService } from "./platform/ops/metrics.service.js";
 
 const loggerLevels = (config: AppConfig): LogLevel[] | false =>
@@ -19,6 +20,7 @@ export async function createApp(config: AppConfig): Promise<NestFastifyApplicati
   );
   // Cookie sesi dan CSRF web dibaca guard (api-specs 02 §2.1).
   await app.register(fastifyCookie);
+  await registerMultipart(app);
   app.setGlobalPrefix("api");
   app.get(MetricsService).instrument(app.getHttpAdapter().getInstance());
   app.enableShutdownHooks();

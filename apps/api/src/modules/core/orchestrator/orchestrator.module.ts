@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ApplicationModule } from "../application/index.js";
 import { ProductModule } from "../product/index.js";
+import { TenancyModule } from "../tenancy/index.js";
 import { AdvanceProcess } from "./application/advance-process.js";
 import { GetProcessTimelineUseCase } from "./application/get-process-timeline.use-case.js";
 import { OrchestratorApi } from "./application/orchestrator-api.js";
@@ -18,7 +19,7 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
 
 /** Orchestrator: rute langkah, retry, recontest (technical-specs 05 §5.11, 12). */
 @Module({
-  imports: [ApplicationModule, ProductModule],
+  imports: [ApplicationModule, ProductModule, TenancyModule],
   controllers: [ProcessesController],
   providers: [
     ProcessInstancesRepository,

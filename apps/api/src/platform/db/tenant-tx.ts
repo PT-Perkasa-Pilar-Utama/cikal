@@ -23,6 +23,14 @@ export async function bindTenant(tx: Tx, ctx: TenantContext): Promise<void> {
   );
 }
 
+/** Tenant yang terpasang di transaksi (`app.tenant_id`), atau `null` bila belum ada. */
+export async function boundTenantId(tx: Tx): Promise<string | null> {
+  const { rows } = await tx.execute<{ tenant_id: string | null }>(
+    sql`select nullif(current_setting('app.tenant_id', true), '') as tenant_id`,
+  );
+  return rows[0]?.tenant_id ?? null;
+}
+
 /** Transaksi data bisnis (technical-specs 05 §5.0.1). */
 @Injectable()
 export class TenantTx {

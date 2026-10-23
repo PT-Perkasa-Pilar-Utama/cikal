@@ -84,8 +84,8 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /license` | 04 §4.1 | POC | TODO |
-| `POST /license` | 04 §4.2 | POC | TODO |
+| `GET /license` | 04 §4.1 | POC | OK |
+| `POST /license` | 04 §4.2 | POC | OK |
 | Companies, copy configuration, licenses SaaS | 04 §4.3 | Backlog | TODO |
 
 ### Organization

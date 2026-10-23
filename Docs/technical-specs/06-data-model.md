@@ -187,15 +187,15 @@ Tabel tenant itu sendiri: `id` adalah `tenant_id` bagi tabel lain; RLS memakai `
 ### LICENSES, MODULE_ENTITLEMENTS
 | table.column | type | nullable | notes |
 |---|---|---|---|
-| licenses.license_number | text | no | UQ |
+| licenses.license_number | text | no | UQ; nomor yang pernah dipasang tidak bisa dipasang ulang |
 | licenses.deployment_type | text | no | `SAAS`, `ON_PREMISE` |
-| licenses.valid_from, valid_to | date | no | |
+| licenses.valid_from, valid_to | date | no | `valid_from <= valid_to` |
 | licenses.max_users | int | yes | disimpan, tidak ditegakkan (TO-04) |
 | licenses.signature | bytea | no | Ed25519 atas isi kanonik lisensi |
-| licenses.raw_document | jsonb | no | isi file lisensi asli |
-| licenses.status | text | no | `ACTIVE`, `EXPIRED`, `REVOKED` |
+| licenses.raw_document | jsonb | no | isi file lisensi asli; diverifikasi ulang setiap kali dimuat |
+| licenses.status | text | no | `ACTIVE`, `REVOKED`; satu `ACTIVE` per tenant (indeks unik parsial). `EXPIRED` tidak disimpan: dihitung dari `valid_to` saat dibaca |
 | module_entitlements.license_id | uuid | no | FK licenses |
-| module_entitlements.module_code | text | no | `CORE`, `M01` s.d. `M16`; UQ(license_id, module_code) |
+| module_entitlements.module_code | text | no | `CORE`, `M01` s.d. `M16`; UQ(license_id, module_code). Untuk laporan; hak pakai dibaca dari `raw_document` yang terverifikasi |
 
 ### REGIONALS, BRANCHES, SUB_BRANCHES
 | table.column | type | nullable | notes |
@@ -352,7 +352,7 @@ Indeks unik parsial `(tenant_id, entity_type, entity_id) WHERE status IN ('WAITI
 | user_id | uuid | yes | null untuk aksi sistem |
 | role | text | yes | |
 | module | text | no | |
-| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `LOGOUT` (api-specs 17 §17.2), `VIEW_APPLICATION` (grooming v2 R-18) |
+| action | text | no | `CREATE` s.d. `LOGIN_FAILED`, `LOGOUT` (api-specs 17 §17.2), `VIEW_APPLICATION` (grooming v2 R-18), `LICENSE_INSTALLED` (api-specs 04 §4.2) |
 | record_id | text | yes | |
 | description | text | yes | |
 | old_data, new_data | jsonb | yes | tanpa nilai SECRET |

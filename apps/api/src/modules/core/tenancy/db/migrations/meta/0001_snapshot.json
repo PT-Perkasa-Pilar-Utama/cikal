@@ -1,0 +1,408 @@
+{
+  "id": "062a67c0-c9fc-4bca-adca-9ad20d1f4056",
+  "prevId": "47ba9b02-d718-4763-9cb6-5a51452df395",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "tenancy.companies": {
+      "name": "companies",
+      "schema": "tenancy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "company_code": {
+          "name": "company_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "platform_code": {
+          "name": "platform_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'01'"
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sso_config": {
+          "name": "sso_config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_signing_key_ref": {
+          "name": "api_signing_key_ref",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "companies_company_code_unique": {
+          "name": "companies_company_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "company_code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "companies_company_code_check": {
+          "name": "companies_company_code_check",
+          "value": "\"tenancy\".\"companies\".\"company_code\" ~ '^[0-9]{3}$'"
+        },
+        "companies_company_name_check": {
+          "name": "companies_company_name_check",
+          "value": "char_length(\"tenancy\".\"companies\".\"company_name\") <= 100"
+        },
+        "companies_platform_code_check": {
+          "name": "companies_platform_code_check",
+          "value": "\"tenancy\".\"companies\".\"platform_code\" in ('01', '02')"
+        },
+        "companies_address_check": {
+          "name": "companies_address_check",
+          "value": "char_length(\"tenancy\".\"companies\".\"address\") <= 500"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "tenancy.licenses": {
+      "name": "licenses",
+      "schema": "tenancy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "license_number": {
+          "name": "license_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deployment_type": {
+          "name": "deployment_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valid_from": {
+          "name": "valid_from",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valid_to": {
+          "name": "valid_to",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_users": {
+          "name": "max_users",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "signature": {
+          "name": "signature",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_document": {
+          "name": "raw_document",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "licenses_active_unique": {
+          "name": "licenses_active_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"tenancy\".\"licenses\".\"status\" = 'ACTIVE'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "licenses_tenant_id_companies_id_fk": {
+          "name": "licenses_tenant_id_companies_id_fk",
+          "tableFrom": "licenses",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "licenses_license_number_unique": {
+          "name": "licenses_license_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "license_number"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "licenses_deployment_type_check": {
+          "name": "licenses_deployment_type_check",
+          "value": "\"tenancy\".\"licenses\".\"deployment_type\" in ('SAAS', 'ON_PREMISE')"
+        },
+        "licenses_status_check": {
+          "name": "licenses_status_check",
+          "value": "\"tenancy\".\"licenses\".\"status\" in ('ACTIVE', 'REVOKED')"
+        },
+        "licenses_valid_range_check": {
+          "name": "licenses_valid_range_check",
+          "value": "\"tenancy\".\"licenses\".\"valid_from\" <= \"tenancy\".\"licenses\".\"valid_to\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "tenancy.module_entitlements": {
+      "name": "module_entitlements",
+      "schema": "tenancy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "license_id": {
+          "name": "license_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "module_code": {
+          "name": "module_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "module_entitlements_tenant_id_companies_id_fk": {
+          "name": "module_entitlements_tenant_id_companies_id_fk",
+          "tableFrom": "module_entitlements",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "module_entitlements_license_id_licenses_id_fk": {
+          "name": "module_entitlements_license_id_licenses_id_fk",
+          "tableFrom": "module_entitlements",
+          "tableTo": "licenses",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "license_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "module_entitlements_license_module_unique": {
+          "name": "module_entitlements_license_module_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "license_id",
+            "module_code"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "module_entitlements_module_code_check": {
+          "name": "module_entitlements_module_code_check",
+          "value": "\"tenancy\".\"module_entitlements\".\"module_code\" in ('CORE', 'M01', 'M02', 'M03', 'M04', 'M05', 'M06', 'M07', 'M08', 'M09', 'M10', 'M11', 'M12', 'M13', 'M14', 'M15', 'M16')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "tenancy": "tenancy"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

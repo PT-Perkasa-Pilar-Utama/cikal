@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
+import { licensePublicKeyPem } from "../../license-public-key.generated.js";
 
 const appEnvSchema = z.enum(["dev", "test", "sit", "uat", "production"]);
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -95,6 +96,11 @@ export interface AppConfig {
   resetApi: { token: string; defaultSeed: "dev" | "qa"; seedUserPassword: string } | null;
   /** Konsumen pg-boss per antrean di proses worker. */
   worker: { concurrency: number };
+  /**
+   * Kunci publik Ed25519 PEM untuk memverifikasi lisensi (technical-specs 07 §7.6). Tertanam di image saat build
+   * oleh `tools/package-builder`, tidak pernah dibaca dari env; uji menggantinya dengan kunci uji.
+   */
+  licensePublicKey: string;
 }
 
 const RESET_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["dev", "test", "sit", "uat"]);
@@ -141,6 +147,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
           }
         : null,
     worker: { concurrency: env.WORKER_CONCURRENCY },
+    licensePublicKey: licensePublicKeyPem,
   };
 }
 
