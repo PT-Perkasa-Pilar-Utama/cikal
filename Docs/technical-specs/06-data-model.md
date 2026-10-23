@@ -429,6 +429,7 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | consent_at | timestamptz | yes | | | IN-12 |
 | consent_channel | text | yes | | | `WEB`, `MOBILE`, `API` |
 | status | text | no | 'DRAFT' | | lihat 6.13 |
+| current_section | text | no | 'application' | | section form terakhir untuk melanjutkan draft (api-specs 12 §12.5): step yang sedang diisi saat "Save as Draft", step berikutnya saat "Next" |
 | current_step | text | yes | | | |
 | return_note | text | yes | | | |
 | submitted_by | uuid | yes | | FK iam.users | |
@@ -447,6 +448,7 @@ Indeks `pg_trgm` pada `loan_id` dan nama (lewat `application_personals.full_name
 | mother_maiden_name_enc | bytea | yes | terenkripsi |
 | id_type | text | no | `KTP` |
 | id_card_number_enc | bytea | no | terenkripsi |
+| id_card_number_key_version | int | no | versi data key `ENCRYPTION` untuk `id_card_number_enc` (technical-specs 07 §7.4.1) |
 | id_card_number_bidx | bytea | no | blind index; indeks untuk Dedup dan pencarian |
 | id_issued_date | date | yes | |
 | id_expired_date | text | yes | `SEUMUR HIDUP` atau tanggal |

@@ -11,6 +11,7 @@ import { ListAvailableProductsUseCase } from "./application/list-available-produ
 import { ListChecklistsUseCase } from "./application/list-checklists.use-case.js";
 import { ListProductsUseCase } from "./application/list-products.use-case.js";
 import { PricingChangeHandler } from "./application/pricing-change-handler.js";
+import { ProductAvailability } from "./application/product-availability.js";
 import { ProductChangeHandler } from "./application/product-change-handler.js";
 import { ProductChecks } from "./application/product-checks.js";
 import { ProductCodes } from "./application/product-codes.js";
@@ -40,6 +41,7 @@ import { RouteActivationJob } from "./jobs/route-activation.job.js";
   controllers: [ProductsController, ProductRoutesController, DocumentChecklistsController],
   providers: [
     ProductsRepository,
+    ProductAvailability,
     SubProductsRepository,
     RouteVersionsRepository,
     ProductChecks,
@@ -68,7 +70,7 @@ import { RouteActivationJob } from "./jobs/route-activation.job.js";
     RequestChecklistCreateUseCase,
     RequestChecklistUpdateUseCase,
   ],
-  exports: [ProductCodes, ProductRoutes, ProductTerms],
+  exports: [ProductAvailability, ProductCodes, ProductRoutes, ProductTerms],
 })
 export class ProductModule implements OnModuleInit {
   constructor(

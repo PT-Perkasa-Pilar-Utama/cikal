@@ -169,10 +169,10 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `POST /applications` | 12 §12.2 | POC | TODO |
+| `POST /applications` | 12 §12.2 | POC | OK |
 | `PUT /applications/{id}/sections/{section}` | 12 §12.3 | POC | TODO |
-| `GET /applications/drafts` | 12 §12.4 | POC | TODO |
-| `GET /applications/{id}/form` | 12 §12.5 | POC | TODO |
+| `GET /applications/drafts` | 12 §12.4 | POC | OK |
+| `GET /applications/{id}/form` | 12 §12.5 | POC | OK |
 | `GET /applications/{id}/documents` | 12 §12.6 | POC | TODO |
 | `PUT /applications/{id}/documents/{documentType}` | 12 §12.7 | POC | TODO |
 | `POST /applications/{id}/submit` | 12 §12.8 | POC | TODO |

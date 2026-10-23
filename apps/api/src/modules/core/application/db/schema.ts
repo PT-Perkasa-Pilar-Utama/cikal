@@ -1,7 +1,7 @@
-import type { ApplicationStatus, ProductCategory, StepCode } from "@cikal/contracts";
+import type { ApplicationStatus, FormSection, ProductCategory, StepCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { bigint, check, pgSchema, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
+import { bigint, check, index, integer, numeric, pgSchema, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
 import { users } from "../../identity/index.js";
 import { products } from "../../product/index.js";
 import { companies } from "../../tenancy/index.js";
@@ -42,11 +42,25 @@ const STEP_CODES = [
   "DISBURSEMENT",
   "WAIT_CORE",
 ] as const satisfies StepCode[];
+const SECTIONS = [
+  "application",
+  "personal",
+  "spouse",
+  "occupation",
+  "business",
+  "collateral",
+  "documents",
+  "emergency-contact",
+] as const satisfies FormSection[];
 const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'${value}'`).join(", "));
 
+/** Uang `numeric(18,2)` (DM-06). */
+const money = (name: string) => numeric(name, { precision: 18, scale: 2 });
+
 /**
- * APPLICATIONS, technical-specs 06 §6.9: kolom yang dipakai orchestrator (TL-S2-01). Kolom draft dan section
- * lain ditambahkan migrasi kartu BE-S3-01 dan BE-S3-02; `branch_id` menunggu tabel `org.branches`.
+ * APPLICATIONS, technical-specs 06 §6.9: kolom orchestrator dan field draft pertama. Kolom section lain
+ * ditambahkan kartu BE-S3-02; `branch_id` menunggu tabel `org.branches`. `insurance_id` mendapat foreign key
+ * bersama tabel `masterdata.insurances` di kartu BE-S3-02.
  */
 export const applications = application.table(
   "applications",
@@ -61,6 +75,13 @@ export const applications = application.table(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id),
+    applicationType: text("application_type"),
+    segment: text("segment"),
+    purposeOfLoan: text("purpose_of_loan"),
+    tenorProposed: integer("tenor_proposed"),
+    requestedLimit: money("requested_limit"),
+    insuranceId: uuid("insurance_id"),
+    currentSection: text("current_section").$type<FormSection>().notNull().default("application"),
     status: text("status").$type<ApplicationStatus>().notNull().default("DRAFT"),
     currentStep: text("current_step").$type<StepCode>(),
     returnNote: text("return_note"),
@@ -74,6 +95,36 @@ export const applications = application.table(
     check("applications_channel_check", sql`${table.channel} in (${textList(CHANNELS)})`),
     check("applications_product_category_check", sql`${table.productCategory} in (${textList(CATEGORIES)})`),
     check("applications_current_step_check", sql`${table.currentStep} in (${textList(STEP_CODES)})`),
+    check("applications_current_section_check", sql`${table.currentSection} in (${textList(SECTIONS)})`),
+    index("applications_created_by_status_idx").on(table.tenantId, table.createdBy, table.status),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * APPLICATION_PERSONALS, technical-specs 06 §6.9: field draft pertama. NIK terenkripsi bersama versi kuncinya
+ * dan blind index untuk Dedup (DM-08, technical-specs 07 §7.4.1). Field Personal lain ditambahkan kartu BE-S3-02.
+ */
+export const applicationPersonals = application.table(
+  "application_personals",
+  {
+    applicationId: uuid("application_id")
+      .primaryKey()
+      .references(() => applications.id),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    fullName: text("full_name").notNull(),
+    fullNameId: text("full_name_id").notNull(),
+    idType: text("id_type").$type<"KTP">().notNull(),
+    idCardNumberEnc: bytea("id_card_number_enc").notNull(),
+    idCardNumberKeyVersion: integer("id_card_number_key_version").notNull(),
+    idCardNumberBidx: bytea("id_card_number_bidx").notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    check("application_personals_id_type_check", sql`${table.idType} in ('KTP')`),
+    index("application_personals_id_card_number_bidx_idx").on(table.tenantId, table.idCardNumberBidx),
     tenantIsolation(),
   ],
 );

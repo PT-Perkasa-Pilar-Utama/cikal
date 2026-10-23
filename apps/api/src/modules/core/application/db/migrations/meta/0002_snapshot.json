@@ -1,0 +1,539 @@
+{
+  "id": "10025d8c-101d-4b59-a377-2c848d78d959",
+  "prevId": "dc5a1b2a-d4e3-44a2-984b-fdb6a890be72",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "application.application_personals": {
+      "name": "application_personals",
+      "schema": "application",
+      "columns": {
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name_id": {
+          "name": "full_name_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_type": {
+          "name": "id_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_card_number_enc": {
+          "name": "id_card_number_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_card_number_key_version": {
+          "name": "id_card_number_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_card_number_bidx": {
+          "name": "id_card_number_bidx",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "application_personals_id_card_number_bidx_idx": {
+          "name": "application_personals_id_card_number_bidx_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id_card_number_bidx",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "application_personals_application_id_applications_id_fk": {
+          "name": "application_personals_application_id_applications_id_fk",
+          "tableFrom": "application_personals",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "application_personals_tenant_id_companies_id_fk": {
+          "name": "application_personals_tenant_id_companies_id_fk",
+          "tableFrom": "application_personals",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "application_personals_id_type_check": {
+          "name": "application_personals_id_type_check",
+          "value": "\"application\".\"application_personals\".\"id_type\" in ('KTP')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "application.applications": {
+      "name": "applications",
+      "schema": "application",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "loan_id": {
+          "name": "loan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_category": {
+          "name": "product_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_type": {
+          "name": "application_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "segment": {
+          "name": "segment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose_of_loan": {
+          "name": "purpose_of_loan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenor_proposed": {
+          "name": "tenor_proposed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_limit": {
+          "name": "requested_limit",
+          "type": "numeric(18, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "insurance_id": {
+          "name": "insurance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_section": {
+          "name": "current_section",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'application'"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'DRAFT'"
+        },
+        "current_step": {
+          "name": "current_step",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "return_note": {
+          "name": "return_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_by": {
+          "name": "submitted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "applications_created_by_status_idx": {
+          "name": "applications_created_by_status_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "applications_tenant_id_companies_id_fk": {
+          "name": "applications_tenant_id_companies_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "applications_product_id_products_id_fk": {
+          "name": "applications_product_id_products_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "products",
+          "schemaTo": "product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "applications_submitted_by_users_id_fk": {
+          "name": "applications_submitted_by_users_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "submitted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "applications_tenant_loan_id_unique": {
+          "name": "applications_tenant_loan_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "loan_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "applications_status_check": {
+          "name": "applications_status_check",
+          "value": "\"application\".\"applications\".\"status\" in ('DRAFT', 'ON_PROGRESS', 'RECONTEST', 'APPROVED', 'DISBURSED', 'FINISHED_REJECTED', 'FINISHED_CANCELLED')"
+        },
+        "applications_channel_check": {
+          "name": "applications_channel_check",
+          "value": "\"application\".\"applications\".\"channel\" in ('WEB', 'MOBILE', 'API', 'UPLOAD')"
+        },
+        "applications_product_category_check": {
+          "name": "applications_product_category_check",
+          "value": "\"application\".\"applications\".\"product_category\" in ('COLLATERAL', 'NON_COLLATERAL', 'PENSION', 'SYARIAH')"
+        },
+        "applications_current_step_check": {
+          "name": "applications_current_step_check",
+          "value": "\"application\".\"applications\".\"current_step\" in ('DATA_ENTRY', 'SURVEY', 'DEDUP', 'DUKCAPIL', 'NAME_SCREENING', 'VERIFICATION', 'FRAUD', 'RAC', 'SCORING', 'CREDIT_BUREAU', 'DECISION', 'SIKP', 'APPROVAL', 'EPOLIS', 'VALIDITY_CHECK', 'PRINT_AKAD', 'DISBURSEMENT', 'WAIT_CORE')"
+        },
+        "applications_current_section_check": {
+          "name": "applications_current_section_check",
+          "value": "\"application\".\"applications\".\"current_section\" in ('application', 'personal', 'spouse', 'occupation', 'business', 'collateral', 'documents', 'emergency-contact')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "application.loan_id_counters": {
+      "name": "loan_id_counters",
+      "schema": "application",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_code": {
+          "name": "product_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_number": {
+          "name": "last_number",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "loan_id_counters_tenant_id_companies_id_fk": {
+          "name": "loan_id_counters_tenant_id_companies_id_fk",
+          "tableFrom": "loan_id_counters",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "loan_id_counters_tenant_product_code_unique": {
+          "name": "loan_id_counters_tenant_product_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "product_code"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "loan_id_counters_last_number_check": {
+          "name": "loan_id_counters_last_number_check",
+          "value": "\"application\".\"loan_id_counters\".\"last_number\" between 1 and 9999999"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "application": "application"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
