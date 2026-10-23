@@ -66,7 +66,7 @@ describe("step results", () => {
   });
 
   beforeEach(() => {
-    // Antrean tugas dibangun di BE-S2-02; uji ini memeriksa permintaan tugas yang dikirim orchestrator.
+    // Uji ini memeriksa permintaan tugas yang dikirim orchestrator; tabel tugas diuji di task-queue.int.spec.ts.
     createTask = vi.spyOn(app.get<TaskQueuePort>(TASK_QUEUE_PORT), "create").mockResolvedValue();
   });
 
@@ -128,8 +128,8 @@ describe("step results", () => {
     expect((await latestSteps(db.owner, processId)).get("DEDUP")?.status).toBe("COMPLETED");
   });
 
-  it("turns a wait past its deadline into a timeout error (IN-08)", async () => {
-    const { processId } = await atDedup({
+  it("turns a wait past its deadline into a timeout error with a process error task (IN-08)", async () => {
+    const { processId, dedupId } = await atDedup({
       type: "WAIT_EXTERNAL",
       externalReference: `REF-LATE-${Date.now()}`,
       waitDeadline: new Date(Date.now() + 1_000),
@@ -143,6 +143,10 @@ describe("step results", () => {
       error_message: "No response from the provider before the wait deadline",
     });
     expect(await processStatus(db.owner, processId)).toBe("WAITING");
+    expect(createTask).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ stepExecutionId: dedupId, queueCode: "PROCESS_ERROR" }),
+    );
   });
 
   it("returns the application to draft with the note and cancels the process (BACK_TO_DRAFT)", async () => {

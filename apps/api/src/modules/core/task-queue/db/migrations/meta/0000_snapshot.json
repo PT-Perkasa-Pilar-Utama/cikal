@@ -1,0 +1,312 @@
+{
+  "id": "12a26304-0589-4623-93d8-67d9a1582f1b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "taskqueue.human_tasks": {
+      "name": "human_tasks",
+      "schema": "taskqueue",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step_execution_id": {
+          "name": "step_execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "loan_id": {
+          "name": "loan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "queue_code": {
+          "name": "queue_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eligible_role_id": {
+          "name": "eligible_role_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_user_id": {
+          "name": "assigned_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_by": {
+          "name": "closed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "result_code": {
+          "name": "result_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "human_tasks_queue_status_idx": {
+          "name": "human_tasks_queue_status_idx",
+          "columns": [
+            {
+              "expression": "queue_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "human_tasks_open_step_unique": {
+          "name": "human_tasks_open_step_unique",
+          "columns": [
+            {
+              "expression": "step_execution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"taskqueue\".\"human_tasks\".\"status\" <> 'CLOSED'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "human_tasks_tenant_id_companies_id_fk": {
+          "name": "human_tasks_tenant_id_companies_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "human_tasks_step_execution_id_step_executions_id_fk": {
+          "name": "human_tasks_step_execution_id_step_executions_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "step_executions",
+          "schemaTo": "orchestrator",
+          "columnsFrom": [
+            "step_execution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "human_tasks_application_id_applications_id_fk": {
+          "name": "human_tasks_application_id_applications_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "human_tasks_eligible_role_id_roles_id_fk": {
+          "name": "human_tasks_eligible_role_id_roles_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "roles",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "eligible_role_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "human_tasks_assigned_user_id_users_id_fk": {
+          "name": "human_tasks_assigned_user_id_users_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "assigned_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "human_tasks_closed_by_users_id_fk": {
+          "name": "human_tasks_closed_by_users_id_fk",
+          "tableFrom": "human_tasks",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "closed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "human_tasks_queue_code_check": {
+          "name": "human_tasks_queue_code_check",
+          "value": "\"taskqueue\".\"human_tasks\".\"queue_code\" in ('VERIFICATION', 'CREDIT_REPORT_UPLOAD', 'APPROVAL', 'VALIDITY_CHECK', 'PRINT_AKAD', 'DISBURSEMENT', 'PROCESS_ERROR', 'PRESCREEN_DEDUP', 'PRESCREEN_DUKCAPIL_L1', 'PRESCREEN_FRAUD', 'PRESCREEN_DUKCAPIL_L2', 'RECONTEST')"
+        },
+        "human_tasks_status_check": {
+          "name": "human_tasks_status_check",
+          "value": "\"taskqueue\".\"human_tasks\".\"status\" in ('OPEN', 'ASSIGNED', 'CLOSED')"
+        },
+        "human_tasks_assignee_check": {
+          "name": "human_tasks_assignee_check",
+          "value": "(\"taskqueue\".\"human_tasks\".\"status\" = 'OPEN') = (\"taskqueue\".\"human_tasks\".\"assigned_user_id\" is null)"
+        },
+        "human_tasks_closed_check": {
+          "name": "human_tasks_closed_check",
+          "value": "(\"taskqueue\".\"human_tasks\".\"status\" = 'CLOSED') = (\"taskqueue\".\"human_tasks\".\"closed_at\" is not null)"
+        },
+        "human_tasks_version_check": {
+          "name": "human_tasks_version_check",
+          "value": "\"taskqueue\".\"human_tasks\".\"version\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "taskqueue": "taskqueue"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

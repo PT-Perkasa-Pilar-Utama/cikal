@@ -10,6 +10,7 @@ import { ListProductsUseCase } from "./application/list-products.use-case.js";
 import { PricingChangeHandler } from "./application/pricing-change-handler.js";
 import { ProductChangeHandler } from "./application/product-change-handler.js";
 import { ProductChecks } from "./application/product-checks.js";
+import { ProductCodes } from "./application/product-codes.js";
 import { ProductRoutes } from "./application/product-routes.js";
 import { ProductTerms } from "./application/product-terms.js";
 import { RequestPricingUpdateUseCase } from "./application/request-pricing-update.use-case.js";
@@ -52,8 +53,9 @@ import { RouteActivationJob } from "./jobs/route-activation.job.js";
     RequestRouteUpdateUseCase,
     ProductRoutes,
     ProductTerms,
+    ProductCodes,
   ],
-  exports: [ProductRoutes, ProductTerms],
+  exports: [ProductCodes, ProductRoutes, ProductTerms],
 })
 export class ProductModule implements OnModuleInit {
   constructor(

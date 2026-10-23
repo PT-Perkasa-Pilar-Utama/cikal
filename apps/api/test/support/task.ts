@@ -1,0 +1,81 @@
+import type { StepResult } from "@cikal/contracts";
+import type { INestApplicationContext } from "@nestjs/common";
+import type pg from "pg";
+import { seedRoleIds } from "../../src/modules/core/identity/index.js";
+import { drainProcessJobs, insertApplication, insertRoute, type ScriptedStepHandler, startProcess } from "./process.js";
+import { insertProduct } from "./product.js";
+
+export const TASK_BRANCH_ID = "0192b6a9-0001-7000-8000-000000000001";
+
+export interface TestTask {
+  id: string;
+  applicationId: string;
+  loanId: string;
+  stepExecutionId: string;
+  processInstanceId: string;
+  version: number;
+}
+
+/** Langkah VERIFICATION menunggu tugas antrean VERIFICATION untuk Verifikator cabang uji (api-specs 14 §14.1). */
+const WAIT_FOR_VERIFIKATOR: StepResult = {
+  type: "WAIT_HUMAN",
+  queueCode: "VERIFICATION",
+  branchId: TASK_BRANCH_ID,
+  eligibleRoleId: seedRoleIds.verifikator,
+  summary: "Waiting for document verification",
+};
+
+/**
+ * Tugas yang dibuat orchestrator dari hasil langkah VERIFICATION pengajuan baru, seperti modul Verification nanti.
+ * Bawaannya tugas VERIFICATION; hasil ERROR tanpa retry menghasilkan tugas PROCESS_ERROR.
+ */
+export async function verificationTask(
+  app: INestApplicationContext,
+  owner: pg.Pool,
+  verification: ScriptedStepHandler,
+  result: StepResult = WAIT_FOR_VERIFIKATOR,
+): Promise<TestTask> {
+  const productId = await insertProduct(owner);
+  await insertRoute(owner, productId, [
+    { versionNumber: 1, status: "ACTIVE", steps: { DATA_ENTRY: true, VERIFICATION: true, APPROVAL: true } },
+  ]);
+  const applicationId = await insertApplication(owner, { productId, submittedBy: null });
+  verification.script(applicationId, result);
+  const processInstanceId = await startProcess(app, applicationId);
+  await drainProcessJobs(app, owner);
+  const { rows } = await owner.query<Omit<TestTask, "processInstanceId">>(
+    `select id, application_id as "applicationId", loan_id as "loanId", step_execution_id as "stepExecutionId", version
+       from taskqueue.human_tasks where application_id = $1`,
+    [applicationId],
+  );
+  const task = rows[0];
+  if (!task) throw new Error(`No task for application ${applicationId}`);
+  return { ...task, processInstanceId };
+}
+
+/** Unit kerja dan username user uji, ditulis langsung karena API User ada di sprint lain. */
+export async function setUser(
+  owner: pg.Pool,
+  userId: string,
+  values: { username?: string; branchId?: string | null },
+): Promise<void> {
+  if (values.username) await owner.query("update iam.users set username = $1 where id = $2", [values.username, userId]);
+  if (values.branchId !== undefined) {
+    await owner.query("update iam.users set branch_id = $1 where id = $2", [values.branchId, userId]);
+  }
+}
+
+export async function taskRow(
+  owner: pg.Pool,
+  id: string,
+): Promise<{ status: string; assigned_user_id: string | null; version: number; result_code: string | null }> {
+  const { rows } = await owner.query<{
+    status: string;
+    assigned_user_id: string | null;
+    version: number;
+    result_code: string | null;
+  }>("select status, assigned_user_id, version, result_code from taskqueue.human_tasks where id = $1", [id]);
+  const row = rows[0];
+  if (!row) throw new Error(`Task ${id} not found`);
+  return row;
+}

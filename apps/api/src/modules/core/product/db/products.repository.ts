@@ -1,6 +1,6 @@
 import type { ProductCategory, ProductData } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { and, asc, count, desc, eq, exists, gte, ilike, isNull, lte, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, exists, gte, ilike, inArray, isNull, lte, or, type SQL, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { productRoutes, productRouteVersions, products } from "./schema.js";
 
@@ -146,6 +146,14 @@ export class ProductsRepository {
   async findById(tx: Tx, id: string): Promise<ProductRow | null> {
     const [row] = await tx.select(productColumns).from(products).where(eq(products.id, id));
     return row ?? null;
+  }
+
+  async findCodes(tx: Tx, ids: readonly string[]): Promise<{ id: string; productCode: string }[]> {
+    if (ids.length === 0) return [];
+    return tx
+      .select({ id: products.id, productCode: products.productCode })
+      .from(products)
+      .where(inArray(products.id, [...ids]));
   }
 
   /** Kode dipakai produk lain tanpa membedakan huruf besar dan kecil (AC-20.03). */
