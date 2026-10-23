@@ -12,6 +12,7 @@ const menuRoutes = new Map<string, LinkProps["to"]>([
   ["MST-PRODUCT", "/master/products"],
   ["MST-ROUTE", "/master/routes"],
   ["IAM-ROLE-ACCESS", "/access/role-access"],
+  ["OPS-MONITORING", "/operations/monitoring"],
 ]);
 
 /** Submenu yang sudah punya layar; grup tanpa submenu seperti itu disembunyikan. */
