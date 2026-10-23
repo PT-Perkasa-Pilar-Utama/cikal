@@ -9,7 +9,7 @@ General Parameter, data wilayah, asuransi, dan parameter sistem. Modul pemilik: 
 
 **Input:** path `paramType` (contoh `Occupation`, peka huruf sesuai seed); query `includeInactive` (boolean, default `false`).
 
-**Behavior:** Dari cache memori per tenant. Nilai nonaktif tidak ditawarkan untuk input baru, tetapi tetap terbaca di data lama lewat `includeInactive=true` (AC-21.03).
+**Behavior:** Dibaca dari `masterdata.general_parameters` di tenant sesi, urut `paramId`; tanpa cache selama General Parameter hanya diisi seed (penulisan di 6.4 backlog). Nilai nonaktif tidak ditawarkan untuk input baru, tetapi tetap terbaca di data lama lewat `includeInactive=true` (AC-21.03).
 
 **Output 200**
 

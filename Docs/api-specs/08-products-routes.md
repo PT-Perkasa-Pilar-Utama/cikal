@@ -276,8 +276,9 @@ Langkah modul tak berlisensi tidak ada di `steps` (AC-31.08). `SIKP` bertanda `i
 **Behavior**
 
 1. `items` kosong: `422 NO_DOCUMENT_SELECTED` (AC-25.02).
-2. Kombinasi sudah ada aktif atau diajukan: `409 CHECKLIST_EXISTS` (AC-25.03).
-3. Buat ChangeRequest `DOCUMENT_CHECKLIST`.
+2. Produk tidak dikenal, atau `occupation`, `marital`, `items[].documentType` bukan nilai aktif General Parameter tenant: `400 VALIDATION_FAILED` dengan `details` per field. Dokumen yang sama dua kali juga `400`.
+3. Kombinasi sudah ada (aktif atau nonaktif) atau diajukan: `409 CHECKLIST_EXISTS` (AC-25.03).
+4. Buat ChangeRequest `DOCUMENT_CHECKLIST`; `newData` menyimpan id dan labelnya, dan nama di "Pending Document Checklist" berbentuk `KPR / Karyawan Swasta / Kawin (7 documents)` (AC-25.01).
 
 **Output 202:** `message` "Data submitted for approval" (AC-25.01).
 
@@ -295,7 +296,7 @@ Langkah modul tak berlisensi tidak ada di `steps` (AC-31.08). `SIKP` bertanda `i
 **Purpose:** Daftar checklist dan perubahan isinya.  
 **Access:** `MST-CHECKLIST` VIEW / UPDATE.  
 **Input:** daftar menerima `productId`, `occupation`, `marital`, paging. `PUT` menerima `items[]` seperti 8.11 dan `isActive`.  
-**Behavior:** `PUT` mengikuti aturan 8.11 dan `01-conventions.md` 1.8.  
+**Behavior:** `PUT` mengikuti aturan 8.11 langkah 1 dan 2 serta `01-conventions.md` 1.8 (`409 PENDING_CHANGE_REQUEST` bila ada permintaan terbuka, `404 NOT_FOUND` bila id tidak dikenal); kombinasi tidak bisa diubah, dan isi `items` diganti seluruhnya saat disetujui.  
 **Output:** daftar `{ id, product, occupation, marital, items[], isActive, hasPendingChange }`; `PUT` = 202.  
 **Traceability:** US-25. Checklist yang cocok untuk pengajuan dibaca lewat `12-applications.md` 12.6 (AC-25.04, AC-25.05).
 

@@ -100,7 +100,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /parameters/{paramType}/options` | 06 §6.1 | POC | TODO |
+| `GET /parameters/{paramType}/options` | 06 §6.1 | POC | OK |
 | `GET /insurances` | 06 §6.2 | POC | TODO |
 | `GET /regions/provinces`, `/cities`, `/districts`, `/sub-districts` | 06 §6.3.1 | POC | OK |
 | `GET /regions/search` | 06 §6.3.2 | POC | OK |
@@ -131,8 +131,8 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /products/available` | 08 §8.7 | POC | OK |
 | `PUT /products/{id}/route` | 08 §8.9 | POC | WIP (langkah 3 IN-09 di BE-S2-03) |
 | `GET /products/{id}/route` | 08 §8.10 | POC | OK |
-| `POST /document-checklists` | 08 §8.11 | POC | TODO |
-| `GET /document-checklists`, `PUT /document-checklists/{id}` | 08 §8.12 | POC | TODO |
+| `POST /document-checklists` | 08 §8.11 | POC | OK |
+| `GET /document-checklists`, `PUT /document-checklists/{id}` | 08 §8.12 | POC | OK |
 | `GET /products/{id}/route/versions` | 08 §8.13 | Backlog | TODO |
 
 ### Calculation
