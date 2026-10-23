@@ -1,8 +1,11 @@
 import { readyResponseSchema } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
+import { OpsSignals } from "../src/platform/ops/ops-signals.js";
+import { installQueues } from "../src/platform/queue/install-queues.js";
 import { testConfig } from "./support/test-config.js";
 
 /** Probe asli terhadap PostgreSQL 17 (api-specs 27 §27.2). Storage sengaja tidak terjangkau: kritis, jadi `down`. */
@@ -31,7 +34,20 @@ describe("GET /api/health/ready", () => {
     expect(body.status).toBe("down");
     expect(body.dependencies.database.status).toBe("ok");
     expect(body.dependencies.objectStorage.status).toBe("down");
+    expect(body.dependencies.queue?.status).toBe("down");
     expect(body.version).toBe("0.0.0-test");
+  });
+
+  it("reports pending and recently failed jobs once the queue schema is installed", async () => {
+    const pool = new pg.Pool({ connectionString: container.getConnectionUri(), max: 1 });
+    await installQueues(pool, [{ name: "health.probe" }], null);
+    await pool.query("insert into pgboss.job (name, data) values ('health.probe', '{}')");
+    await pool.end();
+    app.get(OpsSignals).emit("reset_finished");
+
+    const body = readyResponseSchema.parse((await app.inject({ method: "GET", url: "/api/health/ready" })).json());
+
+    expect(body.dependencies.queue).toMatchObject({ status: "ok", pending: 1, failedLastHour: 0 });
   });
 
   it("rejects callers outside the internal network without the monitoring token", async () => {

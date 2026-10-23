@@ -1,6 +1,19 @@
-import type { InterestType, ProductCategory } from "@cikal/contracts";
+import type { InterestType, ProductCategory, StepCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { boolean, check, date, index, integer, numeric, pgSchema, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  numeric,
+  pgSchema,
+  text,
+  timestamp,
+  unique,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { companies } from "../../tenancy/index.js";
 
@@ -17,6 +30,34 @@ const percent = (name: string) => numeric(name, { precision: 9, scale: 4 });
 // drizzle-kit memuat file ini sebagai CommonJS, jadi daftar nilai tidak diimpor dari paket kontrak (ESM).
 const CATEGORIES = "'COLLATERAL', 'NON_COLLATERAL', 'PENSION', 'SYARIAH'";
 const INTEREST_TYPES = "'FLAT', 'EFFECTIVE', 'FLOATING', 'HYBRID', 'CAPPED'";
+const STEP_CODES = [
+  "DATA_ENTRY",
+  "SURVEY",
+  "DEDUP",
+  "DUKCAPIL",
+  "NAME_SCREENING",
+  "VERIFICATION",
+  "FRAUD",
+  "RAC",
+  "SCORING",
+  "CREDIT_BUREAU",
+  "DECISION",
+  "SIKP",
+  "APPROVAL",
+  "EPOLIS",
+  "VALIDITY_CHECK",
+  "PRINT_AKAD",
+  "DISBURSEMENT",
+  "WAIT_CORE",
+] as const satisfies StepCode[];
+export type RouteVersionStatus = "DRAFT" | "WAITING_APPROVAL" | "ACTIVE" | "SUPERSEDED";
+const ROUTE_VERSION_STATUSES = [
+  "DRAFT",
+  "WAITING_APPROVAL",
+  "ACTIVE",
+  "SUPERSEDED",
+] as const satisfies RouteVersionStatus[];
+const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'${value}'`).join(", "));
 
 /** PRODUCTS (UI label: "Master Product"), technical-specs 06 §6.7. */
 export const products = product.table(
@@ -92,6 +133,70 @@ export const subProducts = product.table(
     check("sub_products_approver_rate_min_check", sql`${table.approverRateMin} <= ${table.interestRate}`),
     check("sub_products_approver_rate_max_check", sql`${table.approverRateMax} >= ${table.interestRate}`),
     check("sub_products_valid_to_check", sql`${table.validTo} >= ${table.validFrom}`),
+    tenantIsolation(),
+  ],
+);
+
+/** PRODUCT_ROUTES, technical-specs 06 §6.7: satu rute per produk (RT-01). */
+export const productRoutes = product.table(
+  "product_routes",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id),
+    ...auditColumns(),
+  },
+  (table) => [unique("product_routes_product_id_unique").on(table.productId), tenantIsolation()],
+);
+
+/**
+ * PRODUCT_ROUTE_VERSIONS, technical-specs 06 §6.7. Data berversi DM-11: satu versi ACTIVE per rute. Versi yang
+ * pernah ACTIVE tidak diubah lagi, jadi ProcessInstance yang menguncinya membaca langkah yang sama (RT-06).
+ */
+export const productRouteVersions = product.table(
+  "product_route_versions",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    routeId: uuid("route_id")
+      .notNull()
+      .references(() => productRoutes.id),
+    versionNumber: integer("version_number").notNull(),
+    status: text("status").$type<RouteVersionStatus>().notNull(),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("product_route_versions_route_version_unique").on(table.routeId, table.versionNumber),
+    uniqueIndex("product_route_versions_active_unique").on(table.routeId).where(sql`${table.status} = 'ACTIVE'`),
+    check("product_route_versions_status_check", sql`${table.status} in (${textList(ROUTE_VERSION_STATUSES)})`),
+    check("product_route_versions_version_number_check", sql`${table.versionNumber} >= 1`),
+    check(
+      "product_route_versions_effective_from_check",
+      sql`${table.status} <> 'ACTIVE' or ${table.effectiveFrom} is not null`,
+    ),
+    tenantIsolation(),
+  ],
+);
+
+/** PRODUCT_ROUTE_STEPS, technical-specs 06 §6.7: langkah yang tampil di editor rute untuk satu versi. */
+export const productRouteSteps = product.table(
+  "product_route_steps",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    versionId: uuid("version_id")
+      .notNull()
+      .references(() => productRouteVersions.id),
+    stepCode: text("step_code").$type<StepCode>().notNull(),
+    isEnabled: boolean("is_enabled").notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("product_route_steps_version_step_unique").on(table.versionId, table.stepCode),
+    check("product_route_steps_step_code_check", sql`${table.stepCode} in (${textList(STEP_CODES)})`),
     tenantIsolation(),
   ],
 );

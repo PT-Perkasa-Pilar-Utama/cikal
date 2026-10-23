@@ -17,6 +17,7 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["productList", c.productListResponseSchema, c.productListResponseMock],
   ["productDetail", c.productDetailResponseSchema, c.productDetailResponseMock],
   ["productPricing", c.productPricingResponseSchema, c.productPricingResponseMock],
+  ["processTimeline", c.processTimelineResponseSchema, c.processTimelineResponseMock],
 ];
 
 describe("contract mocks", () => {

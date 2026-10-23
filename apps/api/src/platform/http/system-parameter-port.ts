@@ -10,6 +10,11 @@ export type SystemParameterKey = "CORE_MAX_TENOR_MONTHS";
 export interface SystemParameterPort {
   /** Nilai berlaku untuk tenant transaksi `tx`: nilai produk, lalu nilai tenant, lalu default (PR-03). */
   value(tx: Tx, key: SystemParameterKey, productId?: string): Promise<string | null>;
+  /**
+   * `snapshotLocked(productId)`: semua parameter `lockOnSubmit` dengan urutan nilai yang sama, untuk disimpan di
+   * ProcessInstance saat submit (PR-06). Parameter tanpa nilai tidak ikut.
+   */
+  snapshotLocked(tx: Tx, productId: string): Promise<Record<string, string>>;
 }
 
 export const SYSTEM_PARAMETER_PORT = Symbol("SYSTEM_PARAMETER_PORT");

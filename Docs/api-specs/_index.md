@@ -184,7 +184,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /applications/{id}/process` | 13 §13.2 | POC | TODO |
+| `GET /applications/{id}/process` | 13 §13.2 | POC | OK |
 | `GET /process-monitoring` | 13 §13.3 | POC | TODO |
 | `POST /processes/{processInstanceId}/steps/{stepExecutionId}/retry` | 13 §13.4 | POC | TODO |
 | `POST /processes/{processInstanceId}/finish` | 13 §13.5 | POC | TODO |

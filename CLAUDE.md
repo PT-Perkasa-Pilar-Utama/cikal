@@ -33,17 +33,17 @@ Language policy: identifiers, file names, error codes, and commit subjects in En
 |---|---|
 | Runtime | Node.js 22 (`.nvmrc`), TypeScript 5.9.3 strict, ESM |
 | Workspace | pnpm 10.34.7 (corepack), Turborepo 2.11.10, Biome 2.6.2, Husky 9 |
-| API | NestJS 11.2.7 + Fastify 5.11.3, Zod 4.6.7 + nestjs-zod, Drizzle ORM 0.45.4 + drizzle-kit 0.31.11, pg 8.23.1, prom-client |
+| API | NestJS 11.2.7 + Fastify 5.11.3, Zod 4.6.7 + nestjs-zod, Drizzle ORM 0.45.4 + drizzle-kit 0.31.11, pg 8.23.1, pg-boss 10.4.2, argon2, decimal.js, prom-client |
 | Web | React 19.3.1 SPA, Vite 7.3.7, TanStack Router 1.170.45 and Query 5.104.5, Tailwind 4.3.3 |
 | Data | PostgreSQL 17.6 (one schema per module, RLS), S3-compatible storage (SeaweedFS in dev), Gotenberg 8.20.1 |
 | Tests | Vitest 3.2.7, Testcontainers 11.14.0 (PostgreSQL 17), Playwright 1.64.1 |
-| Planned, not installed yet | pg-boss (queue), argon2, decimal.js in API, docxtemplater |
+| Planned, not installed yet | docxtemplater |
 
 ```text
 cikal/
 ├── apps/api/src/
 │   ├── main.ts, worker.ts, app.factory.ts, app.module.ts
-│   ├── platform/            config, db, http (access guard, error filter), storage, migrate (runner), ops (health, reset, metrics)
+│   ├── platform/            config, db, http (access guard, error filter, ports), queue (pg-boss), storage, migrate (runner), ops (health, reset, metrics)
 │   ├── modules/core/<m>/    CORE modules (tenancy, identity, product, change-request, ...)
 │   └── modules/addons/<m>/  licensed add-ons (m06-dedup ... m15-disbursement)
 ├── apps/api/test/           cross-module tests: architecture, stub contracts, *.int.spec.ts
@@ -72,6 +72,7 @@ cikal/
 | Entity | States and legal transitions |
 |---|---|
 | Application.status | `DRAFT`->`ON_PROGRESS` (Submit); `ON_PROGRESS`->`DRAFT` (BACK_TO_DRAFT), ->`RECONTEST`, ->`FINISHED_REJECTED`, ->`APPROVED` (no M15), ->`DISBURSED` (core SUKSES), ->`FINISHED_CANCELLED`; `RECONTEST`->`ON_PROGRESS`, ->`FINISHED_REJECTED` |
+| ProcessInstance.status | `RUNNING`->`WAITING`/`COMPLETED`/`CANCELLED`; `WAITING`->`RUNNING`/`COMPLETED`/`CANCELLED` |
 | StepExecution.status | `PENDING`->`SKIPPED`/`RUNNING`; `RUNNING`->`COMPLETED`/`WAITING_HUMAN`/`WAITING_EXTERNAL`/`ERROR`; `WAITING_HUMAN`->`COMPLETED`; `WAITING_EXTERNAL`->`COMPLETED`/`ERROR`; `ERROR`->`RUNNING` (retry, attempt + 1) |
 | HumanTask.status | `OPEN`->`ASSIGNED`->`OPEN` (release) ->`CLOSED` |
 | Versioned data (route, formula, parameter, integration, numbering, scoring model) | `DRAFT`->`WAITING_APPROVAL`->`ACTIVE` (at `effective_from`) ->`SUPERSEDED`; rejected goes back to `DRAFT`, never `ACTIVE` |
@@ -123,7 +124,7 @@ cikal/
 | Zod schemas from `packages/contracts` | class-validator, duplicated TS interfaces for API data |
 | Drizzle + drizzle-kit via `db:generate` | Prisma, hand-written migrations, editing merged migrations |
 | `decimal.js` + `numeric`; money as decimal strings on the wire | `number`/float for money or percentages |
-| pg-boss + outbox (when installed) | Redis, RabbitMQ, Kafka |
+| pg-boss via `JobQueue` (enqueue in the caller's transaction) + outbox | Redis, RabbitMQ, Kafka |
 | jsep + whitelist evaluator in `packages/formula` | `eval`, `Function`, expr-eval |
 | `loadConfig()` / `APP_CONFIG` injection | `process.env` outside `platform/config` (except `.env` loading in entrypoints and the migrate runner) |
 | Biome | ESLint, Prettier |
@@ -261,6 +262,7 @@ pnpm --filter @cikal/api db:seed --seed=dev               # base + dev (qa for w
 pnpm --filter @cikal/api db:reset --seed=qa               # drop, migrate, seed, empty bucket
 pnpm --filter @cikal/api db:generate <module> <name>      # migration from db/schema.ts (`platform` for platform/db)
 pnpm dev                                                  # api :3000 + web :5173
+pnpm --filter @cikal/api start:worker                     # pg-boss worker from dist; processes advance only while it runs
 pnpm check                                                # gate: biome, typecheck, test, build
 pnpm test:unit                                            # unit tests only (pre-push)
 pnpm --filter @cikal/api exec vitest run <path>           # focused tests

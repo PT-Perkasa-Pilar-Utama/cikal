@@ -36,6 +36,17 @@ export class TenantTx {
     });
   }
 
+  /**
+   * Transaksi job worker tanpa user, dengan tenant dari payload job (technical-specs 12 §12.5). `app.user_id`
+   * kosong; penulisan mencatat pelaku `null`.
+   */
+  withSystemTx<T>(tenantId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true), set_config('app.user_id', '', true)`);
+      return fn(tx);
+    });
+  }
+
   /** Transaksi pra-tenant dengan satu kunci DM-12; `fn` boleh memanggil `bindTenant` setelah tenant ditemukan. */
   withLookupTx<T>(key: LookupKey, value: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
     return this.db.transaction(async (tx) => {

@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { QueueDefinition } from "../queue/queue-definition.js";
 
 /** Lapisan seed (technical-specs 06 §6.12 MS-07). `dev` dibangun di atas `base`, `qa` di atas `dev`. */
 export type SeedName = "base" | "dev" | "qa";
@@ -30,6 +31,8 @@ export interface ModuleData {
   seeds: Partial<Record<SeedName, ModuleSeed>>;
   /** Tabel yang bagi role aplikasi hanya boleh `SELECT` dan `INSERT`, contoh jejak audit (AD-03). */
   appendOnlyTables: readonly string[];
+  /** Antrean pg-boss milik modul, dibuat runner bersama migrasi. */
+  queues: readonly QueueDefinition[];
 }
 
 /** `moduleUrl` diisi `import.meta.url` milik modul, sehingga folder migrasi tidak pernah berupa path absolut (MS-02). */
@@ -40,6 +43,7 @@ export function defineModuleData(
     schema: string;
     seeds?: Partial<Record<SeedName, ModuleSeed>>;
     appendOnlyTables?: readonly string[];
+    queues?: readonly QueueDefinition[];
   },
 ): ModuleData {
   return {
@@ -47,5 +51,6 @@ export function defineModuleData(
     migrationsFolder: join(dirname(fileURLToPath(moduleUrl)), "db", "migrations"),
     seeds: data.seeds ?? {},
     appendOnlyTables: data.appendOnlyTables ?? [],
+    queues: data.queues ?? [],
   };
 }

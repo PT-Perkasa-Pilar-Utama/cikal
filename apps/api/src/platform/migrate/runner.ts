@@ -4,6 +4,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import { z } from "zod";
+import { installQueues } from "../queue/install-queues.js";
+import { QUEUE_SCHEMA } from "../queue/queue-definition.js";
 import { type ModuleData, SEED_LAYERS, type SeedContext, type SeedName } from "./module-data.js";
 
 /** Ledger per skema modul (MS-04). */
@@ -19,8 +21,6 @@ export function isOpsSignal(value: string): value is OpsSignal {
   return OPS_SIGNALS.some((signal) => signal === value);
 }
 
-/** Skema antrean pg-boss; ikut dihapus saat reset (api-specs 27 §27.4 langkah 3). */
-const QUEUE_SCHEMA = "pgboss";
 const RESET_LOCK_KEY = 7_302_200_101;
 
 export class ResetInProgressError extends Error {
@@ -88,7 +88,7 @@ export function appRoleFor(databaseUrl: string | undefined, migrationUrl: string
 }
 
 /**
- * Menjalankan migrasi setiap modul berlisensi sesuai urutan dependensi (MS-04).
+ * Menjalankan migrasi setiap modul berlisensi sesuai urutan dependensi (MS-04), lalu memasang antrean pg-boss modul.
  * Modul tanpa `meta/_journal.json` belum punya migrasi dan dilewati. Mengembalikan jumlah migrasi baru.
  */
 export async function migrateModules(
@@ -109,6 +109,11 @@ export async function migrateModules(
     applied += (await countApplied(pool, module.schema)) - before;
     if (appRole) await grantAppRole(pool, module, appRole);
   }
+  await installQueues(
+    pool,
+    modules.flatMap((module) => module.queues),
+    appRole,
+  );
   return applied;
 }
 

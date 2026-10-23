@@ -10,6 +10,7 @@ import { AccessGuard } from "./platform/http/access.js";
 import { ErrorEnvelopeFilter } from "./platform/http/error.filter.js";
 import { IdempotencyInterceptor } from "./platform/http/idempotency.interceptor.js";
 import { OpsModule } from "./platform/ops/ops.module.js";
+import { QueueModule } from "./platform/queue/queue.module.js";
 import { StorageModule } from "./platform/storage/storage.module.js";
 
 @Module({})
@@ -21,6 +22,7 @@ export class AppModule {
       imports: [
         ConfigModule.forRoot(config),
         DatabaseModule,
+        QueueModule,
         StorageModule,
         OpsModule.register(config),
         ...licensedModules,

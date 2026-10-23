@@ -487,7 +487,7 @@ Tabel `application_spouses`, `application_businesses`, `application_collaterals`
 | route_version_id | uuid | no | FK product.product_route_versions |
 | formula_versions | jsonb | no | kode rumus ke id versi yang dikunci (FM-05) |
 | parameter_snapshot | jsonb | no | PR-06 |
-| status | text | no | `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED` |
+| status | text | no | `RUNNING`, `WAITING`, `COMPLETED`, `CANCELLED`; paling banyak satu `RUNNING`/`WAITING` per pengajuan (indeks unik parsial) |
 | recontest_reason | text | yes | |
 | started_at, ended_at | timestamptz | no / yes | |
 
@@ -779,6 +779,9 @@ stateDiagram-v2
     WAITING_EXTERNAL --> ERROR : lewat batas tunggu
     ERROR --> RUNNING : Retry (attempt + 1)
 ```
+
+### ProcessInstance.status
+`RUNNING` > `WAITING` (WAITING_HUMAN, WAITING_EXTERNAL, atau ERROR tanpa retry otomatis) > `RUNNING` (tugas ditutup, data masuk, retry); `RUNNING` atau `WAITING` > `COMPLETED` (FINISH) atau `CANCELLED` (BACK_TO_DRAFT, RECONTEST, Finish dari Process Monitoring). `COMPLETED` dan `CANCELLED` adalah status akhir.
 
 ### HumanTask.status
 `OPEN` > `ASSIGNED` (Assign to Me) > `OPEN` (Release) > `CLOSED`.
