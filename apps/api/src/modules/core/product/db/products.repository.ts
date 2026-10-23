@@ -1,8 +1,8 @@
 import type { ProductCategory, ProductData } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { and, asc, count, desc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, exists, gte, ilike, isNull, lte, or, type SQL, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
-import { products } from "./schema.js";
+import { productRoutes, productRouteVersions, products } from "./schema.js";
 
 export interface ProductFilter {
   q?: string;
@@ -30,6 +30,19 @@ export type ProductListRow = Pick<
   | "minTenor"
   | "maxTenor"
   | "isActive"
+>;
+export type AvailableProductRow = Pick<
+  ProductRow,
+  | "id"
+  | "productCode"
+  | "productName"
+  | "interestType"
+  | "minPlafond"
+  | "maxPlafond"
+  | "minTenor"
+  | "maxTenor"
+  | "minAge"
+  | "maxAge"
 >;
 
 /** Kolom `ProductData` dalam urutan kontrak, ditambah id dan waktu ubah. */
@@ -92,6 +105,42 @@ export class ProductsRepository {
   async count(tx: Tx, filter: ProductFilter): Promise<number> {
     const [row] = await tx.select({ total: count() }).from(products).where(this.matching(filter));
     return row?.total ?? 0;
+  }
+
+  /**
+   * Produk aktif kategori ini yang berlaku pada tanggal bisnis `today` dan punya versi rute ACTIVE (api-specs 08
+   * §8.7, RT-07).
+   */
+  async listAvailable(tx: Tx, productCategory: ProductCategory, today: string): Promise<AvailableProductRow[]> {
+    const activeRoute = tx
+      .select({ id: productRouteVersions.id })
+      .from(productRoutes)
+      .innerJoin(productRouteVersions, eq(productRouteVersions.routeId, productRoutes.id))
+      .where(and(eq(productRoutes.productId, products.id), eq(productRouteVersions.status, "ACTIVE")));
+    return tx
+      .select({
+        id: products.id,
+        productCode: products.productCode,
+        productName: products.productName,
+        interestType: products.interestType,
+        minPlafond: products.minPlafond,
+        maxPlafond: products.maxPlafond,
+        minTenor: products.minTenor,
+        maxTenor: products.maxTenor,
+        minAge: products.minAge,
+        maxAge: products.maxAge,
+      })
+      .from(products)
+      .where(
+        and(
+          eq(products.productCategory, productCategory),
+          eq(products.isActive, true),
+          lte(products.validFrom, today),
+          or(isNull(products.validTo), gte(products.validTo, today)),
+          exists(activeRoute),
+        ),
+      )
+      .orderBy(asc(products.productName), asc(products.id));
   }
 
   async findById(tx: Tx, id: string): Promise<ProductRow | null> {

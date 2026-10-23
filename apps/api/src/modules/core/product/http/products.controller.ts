@@ -1,4 +1,6 @@
 import {
+  type AvailableProductsResponse,
+  availableProductsQuerySchema,
   type ChangeRequestAccepted,
   type ProductDetailResponse,
   type ProductListResponse,
@@ -15,21 +17,24 @@ import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { CurrentContext } from "../../../../platform/http/current-context.js";
 import { GetProductUseCase } from "../application/get-product.use-case.js";
 import { GetProductPricingUseCase } from "../application/get-product-pricing.use-case.js";
+import { ListAvailableProductsUseCase } from "../application/list-available-products.use-case.js";
 import { ListProductsUseCase } from "../application/list-products.use-case.js";
 import { RequestPricingUpdateUseCase } from "../application/request-pricing-update.use-case.js";
 import { RequestProductCreateUseCase } from "../application/request-product-create.use-case.js";
 import { RequestProductUpdateUseCase } from "../application/request-product-update.use-case.js";
 
 class ProductListQueryDto extends createZodDto(productListQuerySchema) {}
+class AvailableProductsQueryDto extends createZodDto(availableProductsQuerySchema) {}
 class ProductCreateDto extends createZodDto(productCreateRequestSchema) {}
 class ProductUpdateDto extends createZodDto(productUpdateRequestSchema) {}
 class ProductPricingUpdateDto extends createZodDto(productPricingUpdateRequestSchema) {}
 
-/** Produk dan harga lewat checker-maker (api-specs 08 §8.1 s.d. §8.6). */
+/** Produk dan harga lewat checker-maker, dan dropdown produk pengajuan (api-specs 08 §8.1 s.d. §8.7). */
 @Controller("v1/products")
 export class ProductsController {
   constructor(
     private readonly lists: ListProductsUseCase,
+    private readonly availables: ListAvailableProductsUseCase,
     private readonly details: GetProductUseCase,
     private readonly creates: RequestProductCreateUseCase,
     private readonly updates: RequestProductUpdateUseCase,
@@ -41,6 +46,15 @@ export class ProductsController {
   @Requires("MST-PRODUCT", "VIEW")
   list(@CurrentContext() ctx: RequestContext, @Query() query: ProductListQueryDto): Promise<ProductListResponse> {
     return this.lists.execute(ctx, query);
+  }
+
+  @Get("available")
+  @Requires("APP-ENTRY", "VIEW")
+  available(
+    @CurrentContext() ctx: RequestContext,
+    @Query() query: AvailableProductsQueryDto,
+  ): Promise<AvailableProductsResponse> {
+    return this.availables.execute(ctx, query);
   }
 
   @Get(":id")
