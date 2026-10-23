@@ -87,7 +87,9 @@ const tenantId = () =>
 
 /**
  * PROCESS_INSTANCES, technical-specs 06 §6.10: satu proses pengajuan dengan versi rute, versi rumus, dan parameter
- * yang dikunci saat submit (RT-06, FM-05, PR-06). Paling banyak satu proses berjalan per pengajuan.
+ * yang dikunci saat submit (RT-06, FM-05, PR-06). Paling banyak satu proses berjalan per pengajuan. `loan_id` (tetap
+ * sejak draft pertama) disalin saat proses dibuat agar Process Monitoring bisa dicari dan diurutkan tanpa membaca
+ * skema `application` (XM-02).
  */
 export const processInstances = orchestrator.table(
   "process_instances",
@@ -97,6 +99,7 @@ export const processInstances = orchestrator.table(
     applicationId: uuid("application_id")
       .notNull()
       .references(() => applications.id),
+    loanId: text("loan_id").notNull(),
     recontestNumber: integer("recontest_number").notNull(),
     routeVersionId: uuid("route_version_id")
       .notNull()
@@ -105,12 +108,15 @@ export const processInstances = orchestrator.table(
     parameterSnapshot: jsonb("parameter_snapshot").$type<Record<string, string>>().notNull(),
     status: text("status").$type<ProcessStatus>().notNull(),
     recontestReason: text("recontest_reason"),
+    /** Alasan Admin Operasional saat proses dihentikan dari Process Monitoring (AC-86.02). */
+    finishReason: text("finish_reason"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
     endedAt: timestamp("ended_at", { withTimezone: true }),
     ...auditColumns(),
   },
   (table) => [
     index("process_instances_application_id_idx").on(table.applicationId, table.startedAt),
+    index("process_instances_status_idx").on(table.status),
     uniqueIndex("process_instances_active_unique")
       .on(table.applicationId)
       .where(sql`${table.status} in ('RUNNING', 'WAITING')`),

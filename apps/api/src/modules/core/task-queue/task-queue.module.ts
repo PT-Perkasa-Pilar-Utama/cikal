@@ -5,9 +5,9 @@ import { AuditModule } from "../audit/index.js";
 import { OrchestratorModule } from "../orchestrator/index.js";
 import { ProductModule } from "../product/index.js";
 import { AssignTaskUseCase } from "./application/assign-task.use-case.js";
-import { HumanTaskCreator } from "./application/human-task-creator.js";
 import { ListTasksUseCase } from "./application/list-tasks.use-case.js";
 import { ReleaseTaskUseCase } from "./application/release-task.use-case.js";
+import { StepTasks } from "./application/step-tasks.js";
 import { TaskAccess } from "./application/task-access.js";
 import { TaskQueue } from "./application/task-queue.js";
 import { HumanTasksRepository } from "./db/human-tasks.repository.js";
@@ -24,13 +24,13 @@ import { TasksController } from "./http/tasks.controller.js";
   controllers: [TasksController],
   providers: [
     HumanTasksRepository,
-    HumanTaskCreator,
+    StepTasks,
     TaskAccess,
     TaskQueue,
     ListTasksUseCase,
     AssignTaskUseCase,
     ReleaseTaskUseCase,
-    { provide: TASK_QUEUE_PORT, useExisting: HumanTaskCreator },
+    { provide: TASK_QUEUE_PORT, useExisting: StepTasks },
   ],
   exports: [TASK_QUEUE_PORT, TaskQueue],
 })

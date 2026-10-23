@@ -15,6 +15,13 @@
       "when": 1792719474873,
       "tag": "0001_license_installed_action",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792739561366,
+      "tag": "0002_process_monitoring_actions",
+      "breakpoints": true
     }
   ]
 }

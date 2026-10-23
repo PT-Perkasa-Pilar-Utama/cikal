@@ -12,3 +12,16 @@ export type ProcessErrorCode = keyof typeof PROCESS_ERRORS;
 export function processError(code: ProcessErrorCode): DomainError {
   return new DomainError(code, PROCESS_ERRORS[code].message, PROCESS_ERRORS[code].status);
 }
+
+/** Retry manual yang berakhir ERROR lagi; pesan memakai `errorMessage` langkah (api-specs 13 §13.4, AC-86.03). */
+export function stepFailedAgain(step: {
+  attempt: number;
+  errorCategory: string | null;
+  errorMessage: string | null;
+}): DomainError {
+  const message = step.errorMessage ?? "Step failed";
+  return new DomainError("STEP_FAILED_AGAIN", `Step failed again: ${message}`, 422, [
+    { field: "attempt", code: "STEP_ATTEMPT", message: String(step.attempt) },
+    { field: "errorCategory", code: step.errorCategory ?? "UNKNOWN", message },
+  ]);
+}

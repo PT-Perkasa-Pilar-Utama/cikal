@@ -96,20 +96,48 @@ export class HumanTasksRepository {
   }
 
   async close(tx: Tx, id: string, resultCode: string, userId: string): Promise<void> {
-    const now = new Date();
+    await tx.update(humanTasks).set(closing(resultCode, userId)).where(eq(humanTasks.id, id));
+  }
+
+  /**
+   * Semua tugas belum ditutup satu pengajuan, opsional satu antrean. Tugas CLOSED wajib punya pengambil, jadi tugas
+   * `OPEN` dicatat diambil penutupnya.
+   */
+  async closeOpen(
+    tx: Tx,
+    scope: { applicationId: string; queueCode: QueueCode | undefined },
+    resultCode: string,
+    userId: string,
+  ): Promise<void> {
+    const closed = closing(resultCode, userId);
     await tx
       .update(humanTasks)
       .set({
-        status: "CLOSED",
-        closedAt: now,
-        closedBy: userId,
-        resultCode,
-        version: sql`${humanTasks.version} + 1`,
-        updatedAt: now,
-        updatedBy: userId,
+        ...closed,
+        assignedUserId: sql`coalesce(${humanTasks.assignedUserId}, ${userId}::uuid)`,
+        assignedAt: sql`coalesce(${humanTasks.assignedAt}, ${closed.closedAt})`,
       })
-      .where(eq(humanTasks.id, id));
+      .where(
+        and(
+          eq(humanTasks.applicationId, scope.applicationId),
+          inArray(humanTasks.status, ["OPEN", "ASSIGNED"]),
+          scope.queueCode ? eq(humanTasks.queueCode, scope.queueCode) : undefined,
+        ),
+      );
   }
+}
+
+function closing(resultCode: string, userId: string) {
+  const now = new Date();
+  return {
+    status: "CLOSED" as const,
+    closedAt: now,
+    closedBy: userId,
+    resultCode,
+    version: sql`${humanTasks.version} + 1`,
+    updatedAt: now,
+    updatedBy: userId,
+  };
 }
 
 function matching(filter: TaskFilter): SQL | undefined {

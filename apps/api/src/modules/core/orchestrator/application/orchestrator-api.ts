@@ -5,7 +5,7 @@ import { type ExternalMatch, WaitingSteps } from "./waiting-steps.js";
 
 /**
  * Antarmuka publik Orchestrator untuk modul lain (technical-specs 12 §12.6), dipanggil di transaksi pemanggil.
- * `retry` dan `finish` dibangun di kartu BE-S2-03; `outcomes` di kartu TL-S4-02.
+ * `retry` dan `finish` hanya dipakai Process Monitoring modul ini (`monitoring.ts`); `outcomes` di kartu TL-S4-02.
  */
 @Injectable()
 export class OrchestratorApi {
