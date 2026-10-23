@@ -59,14 +59,18 @@ export type StepResult =
 export type ErrorCategory =
   | "TIMEOUT" | "CONNECTION" | "PROVIDER_ERROR" | "AUTH" | "CONFIG"
   | "INVALID_RESPONSE" | "CONSENT_MISSING" | "FORMULA" | "BUSINESS_SETUP";
+```
 
+`StepHandler` memakai tipe `Tx` platform, jadi antarmukanya ada di modul Orchestrator (`apps/api/src/modules/core/orchestrator/application/step-handler.ts`, diekspor `index.ts`), bukan di `packages/contracts`. Modul langkah mendaftarkan handler lewat `StepHandlerRegistry.register(handler)` saat `onModuleInit`.
+
+```ts
 export interface StepHandler {
   readonly stepCode: StepCode;
-  readonly moduleCode: string;                         // untuk pemeriksaan lisensi
-  isApplicable?(ctx: StepContext): Promise<boolean>;   // langkah bersyarat
-  execute(ctx: StepContext): Promise<StepResult>;      // sekali per attempt
-  onHumanTaskClosed?(ctx: StepContext, resultCode: string, payload: unknown): Promise<StepResult>;
-  onExternalResult?(ctx: StepContext, payload: unknown): Promise<StepResult>;
+  readonly moduleCode: string;                                   // untuk pemeriksaan lisensi; sama dengan tech ref 6.3
+  isApplicable?(tx: Tx, ctx: StepContext): Promise<boolean>;     // langkah bersyarat
+  execute(tx: Tx, ctx: StepContext): Promise<StepResult>;        // sekali per attempt
+  onHumanTaskClosed?(tx: Tx, ctx: StepContext, resultCode: string, payload: unknown): Promise<StepResult>;
+  onExternalResult?(tx: Tx, ctx: StepContext, payload: unknown): Promise<StepResult>;
 }
 ```
 
@@ -83,22 +87,29 @@ Invariant untuk setiap StepHandler:
 ```text
 advance(processId):
   lock ProcessInstance FOR UPDATE
-  step = langkah berikutnya di versi rute yang belum selesai
-  if step tidak ada: selesai (FINISH sudah dicatat oleh langkah terakhir)
-  if step dimatikan di rute:          catat SKIPPED NOT_IN_ROUTE; enqueue advance; return
-  if modul step tidak berlisensi:     catat SKIPPED NOT_LICENSED; enqueue advance; return
-  if handler.isApplicable == false:   catat SKIPPED CONDITION_NOT_MET; enqueue advance; return
-  catat RUNNING; result = handler.execute(ctx)
+  if ProcessInstance bukan RUNNING: return (job ganda atau terlambat tidak mengubah apa pun)
+  step = langkah pertama urutan baku yang attempt terakhirnya belum COMPLETED atau SKIPPED
+  if step tidak ada: gagal (FINISH seharusnya sudah dicatat langkah terakhir); job berakhir di dead-letter
+  if step ERROR:                                   retry otomatis jatuh tempo; attempt + 1, jalankan
+  if step dimatikan di rute:                       catat SKIPPED NOT_IN_ROUTE; enqueue advance; return
+  if modul step tidak berlisensi:                  catat SKIPPED NOT_LICENSED; enqueue advance; return
+  if step tidak ada di versi rute:                 catat SKIPPED NOT_IN_ROUTE; enqueue advance; return
+  if handler.isApplicable == false:                catat SKIPPED CONDITION_NOT_MET; enqueue advance; return
+  catat RUNNING; result = handler ? handler.execute(tx, ctx) : ERROR CONFIG "No step handler is installed for <step>"
   switch result.type:
     CONTINUE      -> COMPLETED; enqueue advance
-    WAIT_HUMAN    -> WAITING_HUMAN; taskQueue.create(...)
-    WAIT_EXTERNAL -> WAITING_EXTERNAL; jadwalkan job batas tunggu
+    WAIT_HUMAN    -> WAITING_HUMAN; ProcessInstance WAITING; taskQueue.create(...)
+    WAIT_EXTERNAL -> WAITING_EXTERNAL; ProcessInstance WAITING; jadwalkan job batas tunggu
     BACK_TO_DRAFT -> COMPLETED; application.returnToDraft(note); ProcessInstance CANCELLED
-    RECONTEST     -> COMPLETED; Application RECONTEST; tugas antrean RECONTEST
+    RECONTEST     -> COMPLETED; Application RECONTEST; ProcessInstance CANCELLED; tugas antrean RECONTEST
     FINISH        -> COMPLETED; Application status sesuai result; ProcessInstance COMPLETED
-    ERROR         -> retryable dan attempt < maxRetries ? jadwalkan ulang dengan jeda : ERROR + tugas PROCESS_ERROR
+    ERROR         -> retryable dan attempt <= 3 ? ERROR, jadwalkan advance dengan jeda : ERROR, ProcessInstance WAITING + tugas PROCESS_ERROR
   publish StepCompleted / StepFailed / StepSkipped (outbox)
 ```
+
+Langkah yang tidak ada di versi rute biasanya modul tak berlisensi, karena editor rute tidak menampilkannya (RT-04); karena itu pemeriksaan lisensi mendahului pemeriksaan "tidak ada di versi rute" (AC-85.06, slot NAME_SCREENING). Langkah yang dimatikan eksplisit tetap NOT_IN_ROUTE walau modulnya tak berlisensi (AC-85.02).
+
+Keluar dari status menunggu memakai pencatatan hasil yang sama: `completeHumanStep` (WAITING_HUMAN -> COMPLETED), `receiveExternal` (WAITING_EXTERNAL -> COMPLETED atau ERROR), dan job batas tunggu (WAITING_EXTERNAL -> ERROR `TIMEOUT` tanpa retry otomatis). Hasil yang tidak diizinkan state machine 06 §6.13 ditolak.
 
 ## 12.4 Target kinerja
 
@@ -119,14 +130,20 @@ advance(processId):
 
 ```text
 apps/api/src/modules/core/orchestrator/
-├── index.ts                      export: OrchestratorApi, StepHandler (re-export dari contracts), STEP_HANDLERS token
-├── domain/route-runner.ts        siklus advance (12.3)
-├── domain/step-order.ts          urutan baku tech ref 6.3
-├── application/start.ts          snapshot rute, rumus, parameter
-├── application/recontest.ts
-├── application/monitoring.ts     retry, finish (US-86)
-├── jobs/advance.job.ts           konsumen pg-boss
-└── db/schema.ts                  process_instances, step_executions
+├── index.ts                          export: OrchestratorApi, StepHandler, StepHandlerRegistry, stepExecutions (FK)
+├── orchestrator.data.ts              migrasi dan antrean pg-boss modul
+├── domain/route-plan.ts              alasan lewati, langkah saat ini, urutan baku tech ref 6.3
+├── domain/step-transitions.ts        state machine StepExecution dan ProcessInstance
+├── domain/retry-policy.ts, aging.ts  jeda retry ER-03, aging hari kalender
+├── application/start-process.ts      snapshot rute, rumus, parameter
+├── application/step-runner.ts        siklus advance (12.3)
+├── application/step-results.ts       pencatatan tujuh hasil
+├── application/waiting-steps.ts      completeHumanStep, receiveExternal, batas tunggu
+├── application/recontest.ts          (backlog, US-71)
+├── application/monitoring.ts         retry, finish (US-86, kartu BE-S2-03)
+├── jobs/advance.job.ts               konsumen pg-boss orchestrator.advance
+├── jobs/wait-deadline.job.ts         konsumen pg-boss orchestrator.wait-deadline
+└── db/schema.ts                      process_instances, step_executions
 ```
 
 ```ts

@@ -1,8 +1,21 @@
 import { Injectable } from "@nestjs/common";
-import { and, desc, eq, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import type { SystemParameterKey } from "../../../../platform/http/system-parameter-port.js";
 import { systemParameterDefinitions, systemParameterValues } from "./schema.js";
+
+export interface LockedDefinition {
+  id: string;
+  paramKey: string;
+  defaultValue: string | null;
+}
+
+export interface ActiveValue {
+  definitionId: string;
+  /** `null` untuk nilai tenant. */
+  productId: string | null;
+  value: string | null;
+}
 
 export interface ParameterLookup {
   defaultValue: string | null;
@@ -36,5 +49,34 @@ export class SystemParametersRepository {
       .orderBy(sql`${values.productId} is null`, desc(values.effectiveFrom))
       .limit(1);
     return { defaultValue: definition.defaultValue, value: active?.value };
+  }
+
+  /** Definisi bertanda `lock_on_submit` (PR-06). */
+  async listLockedDefinitions(tx: Tx): Promise<LockedDefinition[]> {
+    return tx
+      .select({
+        id: systemParameterDefinitions.id,
+        paramKey: systemParameterDefinitions.paramKey,
+        defaultValue: systemParameterDefinitions.defaultValue,
+      })
+      .from(systemParameterDefinitions)
+      .where(eq(systemParameterDefinitions.lockOnSubmit, true));
+  }
+
+  /** Nilai ACTIVE yang sudah berlaku untuk produk dan tenant; satu baris per definisi dan produk (DM-11). */
+  async listActiveValues(tx: Tx, definitionIds: readonly string[], productId: string): Promise<ActiveValue[]> {
+    if (definitionIds.length === 0) return [];
+    const values = systemParameterValues;
+    return tx
+      .select({ definitionId: values.definitionId, productId: values.productId, value: values.value })
+      .from(values)
+      .where(
+        and(
+          inArray(values.definitionId, [...definitionIds]),
+          eq(values.status, "ACTIVE"),
+          lte(values.effectiveFrom, sql`now()`),
+          or(eq(values.productId, productId), isNull(values.productId)),
+        ),
+      );
   }
 }

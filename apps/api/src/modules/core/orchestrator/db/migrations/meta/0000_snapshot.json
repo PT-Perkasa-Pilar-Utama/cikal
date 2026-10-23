@@ -1,0 +1,489 @@
+{
+  "id": "aae2bd5b-c417-408e-a025-95acf4612eb9",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "orchestrator.process_instances": {
+      "name": "process_instances",
+      "schema": "orchestrator",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recontest_number": {
+          "name": "recontest_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "route_version_id": {
+          "name": "route_version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "formula_versions": {
+          "name": "formula_versions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parameter_snapshot": {
+          "name": "parameter_snapshot",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recontest_reason": {
+          "name": "recontest_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "process_instances_application_id_idx": {
+          "name": "process_instances_application_id_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "process_instances_active_unique": {
+          "name": "process_instances_active_unique",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"orchestrator\".\"process_instances\".\"status\" in ('RUNNING', 'WAITING')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "process_instances_tenant_id_companies_id_fk": {
+          "name": "process_instances_tenant_id_companies_id_fk",
+          "tableFrom": "process_instances",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "process_instances_application_id_applications_id_fk": {
+          "name": "process_instances_application_id_applications_id_fk",
+          "tableFrom": "process_instances",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "process_instances_route_version_id_product_route_versions_id_fk": {
+          "name": "process_instances_route_version_id_product_route_versions_id_fk",
+          "tableFrom": "process_instances",
+          "tableTo": "product_route_versions",
+          "schemaTo": "product",
+          "columnsFrom": [
+            "route_version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "process_instances_status_check": {
+          "name": "process_instances_status_check",
+          "value": "\"orchestrator\".\"process_instances\".\"status\" in ('RUNNING', 'WAITING', 'COMPLETED', 'CANCELLED')"
+        },
+        "process_instances_recontest_number_check": {
+          "name": "process_instances_recontest_number_check",
+          "value": "\"orchestrator\".\"process_instances\".\"recontest_number\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "orchestrator.step_executions": {
+      "name": "step_executions",
+      "schema": "orchestrator",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "step_code": {
+          "name": "step_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome_code": {
+          "name": "outcome_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "result_type": {
+          "name": "result_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "external_reference": {
+          "name": "external_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wait_deadline": {
+          "name": "wait_deadline",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_category": {
+          "name": "error_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reused_from_step_execution_id": {
+          "name": "reused_from_step_execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "skip_reason": {
+          "name": "skip_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempt": {
+          "name": "attempt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aging": {
+          "name": "aging",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "step_executions_external_reference_idx": {
+          "name": "step_executions_external_reference_idx",
+          "columns": [
+            {
+              "expression": "external_reference",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "step_executions_tenant_id_companies_id_fk": {
+          "name": "step_executions_tenant_id_companies_id_fk",
+          "tableFrom": "step_executions",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "step_executions_process_instance_id_process_instances_id_fk": {
+          "name": "step_executions_process_instance_id_process_instances_id_fk",
+          "tableFrom": "step_executions",
+          "tableTo": "process_instances",
+          "schemaTo": "orchestrator",
+          "columnsFrom": [
+            "process_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "step_executions_reused_from_step_execution_id_step_executions_id_fk": {
+          "name": "step_executions_reused_from_step_execution_id_step_executions_id_fk",
+          "tableFrom": "step_executions",
+          "tableTo": "step_executions",
+          "schemaTo": "orchestrator",
+          "columnsFrom": [
+            "reused_from_step_execution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "step_executions_process_step_attempt_unique": {
+          "name": "step_executions_process_step_attempt_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "process_instance_id",
+            "step_code",
+            "attempt"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "step_executions_step_code_check": {
+          "name": "step_executions_step_code_check",
+          "value": "\"orchestrator\".\"step_executions\".\"step_code\" in ('DATA_ENTRY', 'SURVEY', 'DEDUP', 'DUKCAPIL', 'NAME_SCREENING', 'VERIFICATION', 'FRAUD', 'RAC', 'SCORING', 'CREDIT_BUREAU', 'DECISION', 'SIKP', 'APPROVAL', 'EPOLIS', 'VALIDITY_CHECK', 'PRINT_AKAD', 'DISBURSEMENT', 'WAIT_CORE')"
+        },
+        "step_executions_status_check": {
+          "name": "step_executions_status_check",
+          "value": "\"orchestrator\".\"step_executions\".\"status\" in ('PENDING', 'RUNNING', 'WAITING_HUMAN', 'WAITING_EXTERNAL', 'COMPLETED', 'SKIPPED', 'ERROR')"
+        },
+        "step_executions_result_type_check": {
+          "name": "step_executions_result_type_check",
+          "value": "\"orchestrator\".\"step_executions\".\"result_type\" in ('CONTINUE', 'WAIT_HUMAN', 'WAIT_EXTERNAL', 'BACK_TO_DRAFT', 'RECONTEST', 'FINISH', 'ERROR')"
+        },
+        "step_executions_skip_reason_check": {
+          "name": "step_executions_skip_reason_check",
+          "value": "\"orchestrator\".\"step_executions\".\"skip_reason\" in ('NOT_IN_ROUTE', 'NOT_LICENSED', 'CONDITION_NOT_MET', 'DEDUP_MATCH')"
+        },
+        "step_executions_error_category_check": {
+          "name": "step_executions_error_category_check",
+          "value": "\"orchestrator\".\"step_executions\".\"error_category\" in ('TIMEOUT', 'CONNECTION', 'PROVIDER_ERROR', 'AUTH', 'CONFIG', 'INVALID_RESPONSE', 'CONSENT_MISSING', 'FORMULA', 'BUSINESS_SETUP')"
+        },
+        "step_executions_attempt_check": {
+          "name": "step_executions_attempt_check",
+          "value": "\"orchestrator\".\"step_executions\".\"attempt\" >= 1"
+        },
+        "step_executions_skipped_reason_check": {
+          "name": "step_executions_skipped_reason_check",
+          "value": "(\"orchestrator\".\"step_executions\".\"status\" = 'SKIPPED') = (\"orchestrator\".\"step_executions\".\"skip_reason\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "orchestrator": "orchestrator"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

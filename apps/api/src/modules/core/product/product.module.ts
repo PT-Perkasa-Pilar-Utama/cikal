@@ -7,10 +7,13 @@ import { ListProductsUseCase } from "./application/list-products.use-case.js";
 import { PricingChangeHandler } from "./application/pricing-change-handler.js";
 import { ProductChangeHandler } from "./application/product-change-handler.js";
 import { ProductChecks } from "./application/product-checks.js";
+import { ProductRoutes } from "./application/product-routes.js";
+import { ProductTerms } from "./application/product-terms.js";
 import { RequestPricingUpdateUseCase } from "./application/request-pricing-update.use-case.js";
 import { RequestProductCreateUseCase } from "./application/request-product-create.use-case.js";
 import { RequestProductUpdateUseCase } from "./application/request-product-update.use-case.js";
 import { ProductsRepository } from "./db/products.repository.js";
+import { RouteVersionsRepository } from "./db/route-versions.repository.js";
 import { SubProductsRepository } from "./db/sub-products.repository.js";
 import { ProductsController } from "./http/products.controller.js";
 
@@ -20,6 +23,7 @@ import { ProductsController } from "./http/products.controller.js";
   providers: [
     ProductsRepository,
     SubProductsRepository,
+    RouteVersionsRepository,
     ProductChecks,
     ProductChangeHandler,
     PricingChangeHandler,
@@ -29,7 +33,10 @@ import { ProductsController } from "./http/products.controller.js";
     RequestProductUpdateUseCase,
     GetProductPricingUseCase,
     RequestPricingUpdateUseCase,
+    ProductRoutes,
+    ProductTerms,
   ],
+  exports: [ProductRoutes, ProductTerms],
 })
 export class ProductModule implements OnModuleInit {
   constructor(

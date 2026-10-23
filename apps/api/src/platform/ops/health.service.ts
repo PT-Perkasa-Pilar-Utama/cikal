@@ -5,6 +5,7 @@ import { APP_CONFIG, type AppConfig } from "../config/config.js";
 import { DB_POOL } from "../db/database.js";
 import { installedModuleData } from "../migrate/installed-modules.js";
 import { latestMigration } from "../migrate/runner.js";
+import { QUEUE_SCHEMA } from "../queue/queue-definition.js";
 import { StorageService } from "../storage/storage.module.js";
 import { OpsSignals } from "./ops-signals.js";
 
@@ -15,7 +16,7 @@ type Probe = { status: HealthStatus; latencyMs: number; error?: string };
 
 /**
  * Kesiapan dan status dependensi (api-specs 27 §27.2). Database dan storage kritis: gagal = `down`.
- * Konverter PDF non-kritis: gagal = `degraded`. Antrean dan integrasi ditambahkan saat modulnya dibangun.
+ * Antrean dan konverter PDF non-kritis: gagal = `degraded`. Integrasi ditambahkan saat modulnya dibangun.
  */
 @Injectable()
 export class HealthService {
@@ -37,17 +38,21 @@ export class HealthService {
       return this.cached.value;
     }
     let migration: string | null = null;
-    const [database, objectStorage, pdfConverter] = await Promise.all([
+    let jobs = { pending: 0, failedLastHour: 0 };
+    const [database, objectStorage, queue, pdfConverter] = await Promise.all([
       this.probe(async (signal) => {
         migration = await this.inspectDatabase(signal);
       }),
       this.probe((signal) => this.storage.ping(signal)),
+      this.probe(async () => {
+        jobs = await this.countJobs();
+      }),
       this.config.gotenbergUrl ? this.probe((signal) => this.pingGotenberg(signal)) : Promise.resolve(null),
     ]);
     const critical = [database, objectStorage];
     const status: HealthStatus = critical.some((p) => p.status === "down")
       ? "down"
-      : pdfConverter?.status === "down"
+      : [queue, pdfConverter].some((p) => p?.status === "down")
         ? "degraded"
         : "ok";
     const value: ReadyResponse = {
@@ -57,6 +62,7 @@ export class HealthService {
       dependencies: {
         database: { ...database, migration },
         objectStorage,
+        queue: { ...queue, ...jobs },
         ...(pdfConverter ? { pdfConverter } : {}),
       },
     };
@@ -76,6 +82,16 @@ export class HealthService {
       signal.removeEventListener("abort", onAbort);
       if (!signal.aborted) client.release();
     }
+  }
+
+  /** Job pending dan gagal satu jam terakhir di skema pg-boss. */
+  private async countJobs(): Promise<{ pending: number; failedLastHour: number }> {
+    const { rows } = await this.pool.query<{ pending: number; failed: number }>(
+      `select count(*) filter (where state in ('created', 'retry'))::int as pending,
+              count(*) filter (where state = 'failed' and completed_on > now() - interval '1 hour')::int as failed
+         from ${QUEUE_SCHEMA}.job`,
+    );
+    return { pending: rows[0]?.pending ?? 0, failedLastHour: rows[0]?.failed ?? 0 };
   }
 
   private async pingGotenberg(signal: AbortSignal): Promise<void> {

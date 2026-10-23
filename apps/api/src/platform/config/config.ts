@@ -37,6 +37,7 @@ export const envSchema = z
     RESET_API_TOKEN_FILE: z.string().optional(),
     DEFAULT_RESET_SEED: z.enum(["dev", "qa"]).default("qa"),
     SEED_USER_PASSWORD_FILE: z.string().min(1).optional(),
+    WORKER_CONCURRENCY: z.coerce.number().int().positive().default(5),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   })
   .superRefine((env, ctx) => {
@@ -92,6 +93,8 @@ export interface AppConfig {
    * password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5).
    */
   resetApi: { token: string; defaultSeed: "dev" | "qa"; seedUserPassword: string } | null;
+  /** Konsumen pg-boss per antrean di proses worker. */
+  worker: { concurrency: number };
 }
 
 const RESET_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["dev", "test", "sit", "uat"]);
@@ -137,6 +140,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
             seedUserPassword: readSecret(env.SEED_USER_PASSWORD_FILE),
           }
         : null,
+    worker: { concurrency: env.WORKER_CONCURRENCY },
   };
 }
 

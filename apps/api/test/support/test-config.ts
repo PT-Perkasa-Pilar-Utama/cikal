@@ -21,6 +21,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     sessionCookieSecure: true,
     monitoringToken: "monitoring-test-token",
     resetApi: null,
+    worker: { concurrency: 1 },
     ...overrides,
   };
 }

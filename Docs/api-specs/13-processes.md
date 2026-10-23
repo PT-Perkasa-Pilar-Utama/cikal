@@ -59,6 +59,8 @@ Server mengirim kode; klien menampilkan label berikut.
 |---|---|---|
 | `PROCESS_NOT_STARTED` | 409 | "Process has not started. Submit the application to start the process" (AC-85.05) |
 | `APPLICATION_NOT_FOUND` | 404 | "Application not found" |
+| `NOT_FOUND` | 404 | `processInstanceId` bukan proses pengajuan ini |
+| `VALIDATION_FAILED` | 400 | `processInstanceId` bukan uuid |
 
 **Traceability:** US-85; AC-85.01 s.d. AC-85.06; AC-31.04; AC-59.02, AC-61.02, AC-67.04 (pesan error langkah).
 

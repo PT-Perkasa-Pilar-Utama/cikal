@@ -1,4 +1,5 @@
 export * from "./access-control/index.js";
+export * from "./application/index.js";
 export * from "./auth/index.js";
 export * from "./change-request/index.js";
 export * from "./common/envelope.js";
@@ -6,5 +7,6 @@ export * from "./common/errors.js";
 export * from "./common/menu.js";
 export * from "./common/scalars.js";
 export * from "./health/index.js";
+export * from "./orchestrator/index.js";
 export * from "./product/index.js";
 export * from "./system/index.js";
