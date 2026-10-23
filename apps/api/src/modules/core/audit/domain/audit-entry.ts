@@ -1,6 +1,7 @@
 /**
  * Daftar `AuditLog.action` (data dictionary; grooming v2 R-18 menambah `VIEW_APPLICATION`, api-specs 17 §17.2
- * `LOGOUT`, api-specs 04 §4.2 `LICENSE_INSTALLED`, api-specs 13 §13.4 `STEP_RETRIED`, §13.5 `PROCESS_FINISHED`).
+ * `LOGOUT`, api-specs 04 §4.2 `LICENSE_INSTALLED`, api-specs 13 §13.4 `STEP_RETRIED`, §13.5 `PROCESS_FINISHED`,
+ * api-specs 10 §10.1 `VIEW_DOCUMENT`).
  */
 export const AUDIT_ACTIONS = [
   "CREATE",
@@ -22,6 +23,7 @@ export const AUDIT_ACTIONS = [
   "LICENSE_INSTALLED",
   "STEP_RETRIED",
   "PROCESS_FINISHED",
+  "VIEW_DOCUMENT",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 

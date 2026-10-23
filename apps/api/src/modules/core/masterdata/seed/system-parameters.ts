@@ -6,6 +6,7 @@ import { systemParameterDefinitions, systemParameterValues } from "../db/schema.
 export const seedSystemParameterIds = {
   coreMaxTenorMonths: "0192b6a7-0001-7000-8000-000000000001",
   coreMaxTenorMonths001: "0192b6a8-0001-7000-8000-000000000001",
+  uploadMaxMb: "0192b6a7-0002-7000-8000-000000000001",
 } as const;
 
 /** Batas tenor contoh produk KTA 60 bulan (AC-20.01); AC-20.07 menguji nilai 24 secara terpisah. */
@@ -19,20 +20,36 @@ const SEEDED_FROM = new Date("2026-01-01T00:00:00Z");
 export async function seedSystemParameterDefinitions(db: NodePgDatabase): Promise<void> {
   await db
     .insert(systemParameterDefinitions)
-    .values({
-      id: seedSystemParameterIds.coreMaxTenorMonths,
-      paramKey: "CORE_MAX_TENOR_MONTHS",
-      label: "Core Banking Maximum Tenor (Months)",
-      description: "Maximum tenor in months accepted by the core banking system",
-      moduleCode: "M15",
-      category: "BUSINESS",
-      valueType: "NUMBER",
-      minValue: "1",
-      maxValue: "360",
-      defaultValue: "24",
-      scope: "TENANT",
-      lockOnSubmit: true,
-    })
+    .values([
+      {
+        id: seedSystemParameterIds.coreMaxTenorMonths,
+        paramKey: "CORE_MAX_TENOR_MONTHS",
+        label: "Core Banking Maximum Tenor (Months)",
+        description: "Maximum tenor in months accepted by the core banking system",
+        moduleCode: "M15",
+        category: "BUSINESS",
+        valueType: "NUMBER",
+        minValue: "1",
+        maxValue: "360",
+        defaultValue: "24",
+        scope: "TENANT",
+        lockOnSubmit: true,
+      },
+      {
+        id: seedSystemParameterIds.uploadMaxMb,
+        paramKey: "UPLOAD_MAX_MB",
+        label: "Upload Maximum Size (MB)",
+        description: "Maximum size in MB of one uploaded document",
+        moduleCode: "CORE",
+        category: "SECURITY",
+        valueType: "NUMBER",
+        minValue: "1",
+        maxValue: "20",
+        defaultValue: "2",
+        scope: "TENANT",
+        lockOnSubmit: false,
+      },
+    ])
     .onConflictDoNothing();
 }
 
