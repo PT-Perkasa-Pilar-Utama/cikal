@@ -12,7 +12,7 @@ import {
   registerStepHandlers,
   type ScriptedStepHandler,
 } from "./support/process.js";
-import { createSession, type TestSession } from "./support/session.js";
+import { createRole, createSession, type TestSession } from "./support/session.js";
 import { TASK_BRANCH_ID } from "./support/task.js";
 
 const UNKNOWN_ID = "0192b6b1-ffff-7000-8000-000000000001";
@@ -166,5 +166,19 @@ describe("process monitoring", () => {
     const res = await monitoringRequest(app, outsider).get("/process-monitoring");
 
     expectError(res, 403, "ACCESS_DENIED", "You do not have access to this page");
+  });
+
+  it("rejects Retry and Finish for a viewer without UPDATE rights (ACTION_DENIED)", async () => {
+    const failed = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    const viewerRole = await createRole(db.owner, "Monitoring Viewer", [{ menuCode: "OPS-MONITORING", view: true }]);
+    const viewer = monitoringRequest(app, await createSession(db.owner, { roleId: viewerRole }));
+
+    expect((await viewer.get(`/process-monitoring?q=${failed.loanId}`)).statusCode).toBe(200);
+    for (const res of [
+      await viewer.post(retryUrl(failed.processId, failed.dukcapilId)),
+      await viewer.post(`/processes/${failed.processId}/finish`, { reason: "Dibatalkan" }),
+    ]) {
+      expectError(res, 403, "ACTION_DENIED", "You do not have permission to perform this action");
+    }
   });
 });
