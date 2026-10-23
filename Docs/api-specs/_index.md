@@ -173,9 +173,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `PUT /applications/{id}/sections/{section}` | 12 §12.3 | POC | OK |
 | `GET /applications/drafts` | 12 §12.4 | POC | OK |
 | `GET /applications/{id}/form` | 12 §12.5 | POC | OK |
-| `GET /applications/{id}/documents` | 12 §12.6 | POC | TODO |
-| `PUT /applications/{id}/documents/{documentType}` | 12 §12.7 | POC | TODO |
-| `POST /applications/{id}/submit` | 12 §12.8 | POC | TODO |
+| `GET /applications/{id}/documents` | 12 §12.6 | POC | OK |
+| `PUT /applications/{id}/documents/{documentType}` | 12 §12.7 | POC | OK |
+| `POST /applications/{id}/submit` | 12 §12.8 | POC | OK |
 | `GET /applications/{id}` | 12 §12.9 | POC | TODO |
 | `GET /applications/by-loan-id/{loanId}` | 12 §12.10 | POC | TODO |
 | Sections spouse, business, collateral; OCR; pension | 12 §12.11 | Backlog | TODO |

@@ -107,6 +107,8 @@ advance(processId):
   publish StepCompleted / StepFailed / StepSkipped (outbox)
 ```
 
+Event langkah ditulis ke outbox platform di transaksi langkah dengan `aggregate_id` = id pengajuan dan payload `{ processInstanceId, applicationId, stepCode, attempt, outcomeCode, skipReason }`; status menunggu (WAITING_HUMAN, WAITING_EXTERNAL) tidak menghasilkan event.
+
 Langkah yang tidak ada di versi rute biasanya modul tak berlisensi, karena editor rute tidak menampilkannya (RT-04); karena itu pemeriksaan lisensi mendahului pemeriksaan "tidak ada di versi rute" (AC-85.06, slot NAME_SCREENING). Langkah yang dimatikan eksplisit tetap NOT_IN_ROUTE walau modulnya tak berlisensi (AC-85.02).
 
 Keluar dari status menunggu memakai pencatatan hasil yang sama: `completeHumanStep` (WAITING_HUMAN -> COMPLETED), `receiveExternal` (WAITING_EXTERNAL -> COMPLETED atau ERROR), dan job batas tunggu (WAITING_EXTERNAL -> ERROR `TIMEOUT` tanpa retry otomatis). Hasil yang tidak diizinkan state machine 06 §6.13 ditolak.

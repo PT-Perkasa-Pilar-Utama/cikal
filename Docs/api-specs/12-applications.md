@@ -170,7 +170,7 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 
 Parameter sistem aturan section (seed `base`, `masterdata`): `NPWP_MIN_LIMIT` (MONEY, default `50000000.00`), `REQUIRE_CONSENT_FOR_EXTERNAL_CHECK` (BOOLEAN, default `false`), `SELF_EMPLOYED_ONLY` (BOOLEAN, scope PRODUCT, default `false`), `SELF_EMPLOYED_OCCUPATIONS` dan `EMPLOYED_INCOME_SOURCES` (MULTI_CHOICE berisi `paramId` General Parameter). Usia saat lunas memakai default RM-02 (usia dalam bulan penuh + tenor dibanding `maxAgeAtMaturityMonth`) sampai rumus `AGE_AT_MATURITY_MONTH` tersedia di modul Calculation.
 
-Angka di pesan diisi dari produk dan parameter aktif. `consentGiven = true` menyimpan `consentAt = now` dan `consentChannel = WEB` (AC-40.08, IN-12). Perubahan produk, status kawin, atau pekerjaan menghitung ulang `steps[]`.
+Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas membawa satu `details[]` berisi field penyebabnya (contoh `requestedLimit`, `dateOfBirth`, `mobileNumber`). `consentGiven = true` menyimpan `consentAt = now` dan `consentChannel = WEB` (AC-40.08, IN-12). Perubahan produk, status kawin, atau pekerjaan menghitung ulang `steps[]`.
 
 **Output 200**
 
@@ -239,7 +239,7 @@ Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pemb
 **Purpose:** Slot unggah step "Document" dari checklist yang cocok (produk, pekerjaan, status kawin).  
 **Access:** `APP-ENTRY` VIEW untuk draft miliknya; `APP-INQUIRY` VIEW untuk pengajuan dalam lingkup data.
 
-**Behavior:** Checklist ACTIVE untuk kombinasi pengajuan (AC-25.04). Tidak ada checklist: `422 CHECKLIST_NOT_CONFIGURED`; submit juga diblokir (AC-25.05).
+**Behavior:** Checklist ACTIVE untuk kombinasi pengajuan (AC-25.04). Tidak ada checklist, atau Occupation dan Marital belum disimpan sehingga belum bisa dicocokkan: `422 CHECKLIST_NOT_CONFIGURED`; submit juga diblokir (AC-25.05). Label slot dari General Parameter `Document`. Akses `APP-INQUIRY` sesuai lingkup data dipasang di kartu FE-S5-04; sampai saat itu hanya pembuat draft.
 
 **Output 200**
 
@@ -289,7 +289,10 @@ Klien menampilkan `completeness` sebagai "0 of 7 documents"; dokumen opsional ti
 |---|---|---|
 | `UNSUPPORTED_FILE_TYPE` | 415 | "Allowed file types: png, jpg, jpeg, pdf, docx" (AC-47.02) |
 | `FILE_TOO_LARGE` | 413 | "File must not exceed 2 MB" (AC-47.04) |
+| `BUSINESS_RULE_VIOLATION` | 422 | "Document type is not in the checklist" |
+| `CHECKLIST_NOT_CONFIGURED` | 422 | Checklist tidak ada (AC-25.05) |
 | `INVALID_STATE` | 409 | Pengajuan bukan `DRAFT` |
+| `NOT_FOUND` | 404 | Bukan pembuat draft |
 | `SERVICE_UNAVAILABLE` | 503 | Storage atau konverter PDF tidak tersedia |
 
 **Traceability:** US-47; AC-47.01 s.d. AC-47.05.
@@ -305,11 +308,11 @@ Klien menampilkan `completeness` sebagai "0 of 7 documents"; dokumen opsional ti
 **Behavior** (satu transaksi)
 
 1. Kunci baris Application. Status bukan `DRAFT`: bila pengajuan sudah disubmit dengan kunci idempotensi lain, `409 ALREADY_SUBMITTED`; klik ganda dengan kunci sama mendapat respons pertama (AC-50.07).
-2. Jalankan validasi strict semua section di `steps[]`. Gagal: `422 INCOMPLETE_APPLICATION` dengan `details[].field` berisi path dan `details[].section` berisi section yang ditandai error di stepper (AC-50.03).
-3. Dokumen wajib belum lengkap: `422 DOCUMENTS_INCOMPLETE` dengan jumlah terunggah dan wajib (AC-50.02). Checklist tidak ada: `422 CHECKLIST_NOT_CONFIGURED` (AC-25.05).
+2. Jalankan validasi strict semua section di `steps[]` dengan data tersimpan, memakai aturan 12.3 yang sama dengan "Next". Gagal: `422 INCOMPLETE_APPLICATION` dengan `details[].field` berisi path, `details[].code` berisi kode aturan (contoh `REQUIRED`, `AGE_OUT_OF_RANGE`), dan `details[].section` berisi section yang ditandai error di stepper (AC-50.03). Section yang belum pernah disimpan ditandai dengan semua field wajibnya.
+3. Dokumen wajib belum lengkap: `422 DOCUMENTS_INCOMPLETE` dengan jumlah terunggah dan wajib, detail `section` = `documents` (AC-50.02). Checklist tidak ada: `422 CHECKLIST_NOT_CONFIGURED` (AC-25.05).
 4. Status `ON_PROGRESS`, `submittedAt`, `submittedBy`; hapus `returnNote`.
 5. `orchestrator.start(applicationId)` di transaksi yang sama: ProcessInstance dengan versi rute ACTIVE, versi rumus, dan snapshot parameter (RT-06, FM-05, PR-06); StepExecution `DATA_ENTRY` `COMPLETED`; job `advance` di-enqueue. Langkah pertama berikutnya mengikuti rute produk (AC-50.04).
-6. Publish `ApplicationSubmitted`; Notification mengirim email "Pengajuan kredit <Loan ID> telah kami terima" bila email pemohon terisi (AC-50.05); kosong dicatat `SKIPPED`.
+6. Publish `ApplicationSubmitted` ke outbox platform dengan payload `{ applicationId, loanId }`; Notification mengirim email "Pengajuan kredit <Loan ID> telah kami terima" bila email pemohon terisi (AC-50.05); kosong dicatat `SKIPPED`.
 
 **Output 200**
 
