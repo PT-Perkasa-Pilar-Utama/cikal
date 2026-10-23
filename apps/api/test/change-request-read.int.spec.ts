@@ -36,11 +36,11 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
-      recordHandler("DOCUMENT_CHECKLIST", "Document Checklist"),
+      recordHandler("SCORING_MODEL", "Scoring Model"),
       recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
       packageHandler("DECISION_MATRIX", "Decision Matrix"),
     ]);
-    const menus = ["MST-CHECKLIST", "MST-APPROVAL", "MST-DECISION"];
+    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-DECISION"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -58,7 +58,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     checker = await createSession(db.owner, { roleId: checkerRole });
     admin = await createSession(db.owner, { roleId: adminRole });
     viewer = await createSession(db.owner, {
-      roleId: await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-CHECKLIST", view: true }]),
+      roleId: await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-SCORING", view: true }]),
     });
     outsider = await createSession(db.owner, { roleId: await createRole(db.owner, "Tanpa Hak", []) });
   });
@@ -81,14 +81,14 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     return changeRequestDetailResponseSchema.parse(res.json()).data;
   };
   const errorOf = (res: { json(): unknown }) => errorEnvelopeSchema.parse(res.json());
-  const submitNew = (session: TestSession, entityType: "DOCUMENT_CHECKLIST" | "APPROVAL_HIERARCHY", name: string) =>
+  const submitNew = (session: TestSession, entityType: "SCORING_MODEL" | "APPROVAL_HIERARCHY", name: string) =>
     submitAs(app, session, { entityType, entityId: null, oldData: null, newData: { name } });
   const reject = (id: string) =>
     app.inject({ method: "POST", url: `/api/v1/change-requests/${id}/reject`, headers: checker.headers, payload: {} });
 
   it("lists new data waiting for approval on its Pending page with its maker (AC-12.01)", async () => {
-    const { changeRequestId } = await submitNew(maker, "DOCUMENT_CHECKLIST", "KPR Subsidi");
-    const { data } = await listOf(checker, "entityType=DOCUMENT_CHECKLIST");
+    const { changeRequestId } = await submitNew(maker, "SCORING_MODEL", "KPR Subsidi");
+    const { data } = await listOf(checker, "entityType=SCORING_MODEL");
     expect(data.find((row) => row.id === changeRequestId)).toMatchObject({
       action: "CREATE",
       displayName: "KPR Subsidi",
@@ -98,7 +98,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
       canReview: true,
     });
     expect(await lastAudit(db.owner, maker.userId, "SUBMIT")).toMatchObject({
-      module: "Document Checklist",
+      module: "Scoring Model",
       record_id: changeRequestId,
     });
   });
@@ -106,7 +106,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   it("shows Current Data and Proposed Data with the changed field marked (AC-12.02)", async () => {
     const entityId = uuidv7();
     const { changeRequestId } = await submitAs(app, maker, {
-      entityType: "DOCUMENT_CHECKLIST",
+      entityType: "SCORING_MODEL",
       entityId,
       oldData: { name: "KTA", limitAutoApproval: "10000000.00" },
       newData: { name: "KTA", limitAutoApproval: "15000000.00" },
@@ -123,11 +123,11 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("drops a rejected change from the pending list (AC-12.03)", async () => {
-    const { changeRequestId } = await submitNew(maker, "DOCUMENT_CHECKLIST", "KTA Ditolak");
+    const { changeRequestId } = await submitNew(maker, "SCORING_MODEL", "KTA Ditolak");
     await reject(changeRequestId);
-    const pending = await listOf(checker, "entityType=DOCUMENT_CHECKLIST");
+    const pending = await listOf(checker, "entityType=SCORING_MODEL");
     expect(pending.data.map((row) => row.id)).not.toContain(changeRequestId);
-    const rejected = await listOf(checker, "entityType=DOCUMENT_CHECKLIST&status=REJECTED");
+    const rejected = await listOf(checker, "entityType=SCORING_MODEL&status=REJECTED");
     expect(rejected.data.map((row) => row.id)).toContain(changeRequestId);
   });
 
@@ -144,7 +144,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   it("refuses a second change while the data has a pending one (AC-12.06)", async () => {
     const entityId = uuidv7();
     const change = {
-      entityType: "DOCUMENT_CHECKLIST",
+      entityType: "SCORING_MODEL",
       entityId,
       oldData: { name: "KTA" },
       newData: { name: "KTA 2" },
@@ -162,7 +162,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   it("accepts a new change once the pending one is reviewed (AC-12.06)", async () => {
     const entityId = uuidv7();
     const change = {
-      entityType: "DOCUMENT_CHECKLIST",
+      entityType: "SCORING_MODEL",
       entityId,
       oldData: { name: "KTA" },
       newData: { name: "KTA 2" },
@@ -187,8 +187,8 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("pages and sorts by submission time", async () => {
-    const first = await listOf(checker, "entityType=DOCUMENT_CHECKLIST&pageSize=1&sort=submittedAt,asc");
-    const all = await listOf(checker, "entityType=DOCUMENT_CHECKLIST&sort=submittedAt,asc");
+    const first = await listOf(checker, "entityType=SCORING_MODEL&pageSize=1&sort=submittedAt,asc");
+    const all = await listOf(checker, "entityType=SCORING_MODEL&sort=submittedAt,asc");
     expect(first.data).toEqual([all.data[0]]);
     expect(first.meta).toEqual({
       page: 1,
@@ -199,26 +199,26 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("hides the review action from a user without the Approve right", async () => {
-    const { data } = await listOf(viewer, "entityType=DOCUMENT_CHECKLIST");
+    const { data } = await listOf(viewer, "entityType=SCORING_MODEL");
     expect(data.length).toBeGreaterThan(0);
     expect(data.every((row) => !row.canReview)).toBe(true);
   });
 
   it("requires the View right on the entity menu", async () => {
-    const res = await get(outsider, "?entityType=DOCUMENT_CHECKLIST");
+    const res = await get(outsider, "?entityType=SCORING_MODEL");
     expect(res.statusCode).toBe(403);
     expect(errorOf(res)).toMatchObject({ code: "ACCESS_DENIED", message: "You do not have access to this page" });
   });
 
   it("requires the View right to open a request", async () => {
-    const { data } = await listOf(checker, "entityType=DOCUMENT_CHECKLIST");
+    const { data } = await listOf(checker, "entityType=SCORING_MODEL");
     const res = await get(outsider, `/${data[0]?.id}`);
     expect(res.statusCode).toBe(403);
     expect(errorOf(res)).toMatchObject({ code: "ACCESS_DENIED" });
   });
 
   it("rejects entity types from different menus in one list", async () => {
-    const res = await get(checker, "?entityType=DOCUMENT_CHECKLIST,APPROVAL_HIERARCHY");
+    const res = await get(checker, "?entityType=SCORING_MODEL,APPROVAL_HIERARCHY");
     expect(res.statusCode).toBe(400);
     expect(errorOf(res)).toMatchObject({
       code: "VALIDATION_FAILED",

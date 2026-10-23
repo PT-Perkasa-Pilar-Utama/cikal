@@ -37,11 +37,11 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
-      recordHandler("DOCUMENT_CHECKLIST", "Document Checklist"),
+      recordHandler("SCORING_MODEL", "Scoring Model"),
       recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
       packageHandler("DECISION_MATRIX", "Decision Matrix"),
     ]);
-    const menus = ["MST-CHECKLIST", "MST-APPROVAL", "MST-DECISION"];
+    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-DECISION"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -55,7 +55,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     const adminRole = await createRole(db.owner, "Admin Uji", [
       { menuCode: "MST-APPROVAL", view: true, create: true, approve: true },
     ]);
-    const viewerRole = await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-CHECKLIST", view: true }]);
+    const viewerRole = await createRole(db.owner, "Viewer Uji", [{ menuCode: "MST-SCORING", view: true }]);
     maker = await createSession(db.owner, { roleId: makerRole });
     checker = await createSession(db.owner, { roleId: checkerRole });
     otherChecker = await createSession(db.owner, { roleId: checkerRole });
@@ -81,7 +81,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     (await db.owner.query<{ status: string }>("select status from cr.change_requests where id = $1", [id])).rows[0]
       ?.status;
   const newRecord = (name: string) =>
-    submitAs(app, maker, { entityType: "DOCUMENT_CHECKLIST", entityId: null, oldData: null, newData: { name } });
+    submitAs(app, maker, { entityType: "SCORING_MODEL", entityId: null, oldData: null, newData: { name } });
 
   it("approves new data, applies it, and audits the checker with the IP (AC-12.01)", async () => {
     const { changeRequestId } = await newRecord("KPR Subsidi");
@@ -93,7 +93,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     expect(applied.rows).toEqual([{ id: body.data.entityId }]);
     expect(await lastAudit(db.owner, checker.userId, "APPROVE")).toMatchObject({
       role: "Checker Uji",
-      module: "Document Checklist",
+      module: "Scoring Model",
       record_id: body.data.entityId,
       description: "Approve change request",
       ip_address: CHECKER_IP,
@@ -107,7 +107,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("rejects a change, leaves the active data unchanged, and audits it (AC-12.03)", async () => {
-    const before = await recordCount(db.owner, "DOCUMENT_CHECKLIST");
+    const before = await recordCount(db.owner, "SCORING_MODEL");
     const { changeRequestId } = await newRecord("KTA Ditolak");
     const res = await review(checker, changeRequestId, "reject");
     expect(res.statusCode).toBe(200);
@@ -115,9 +115,9 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
       data: { id: changeRequestId, status: "REJECTED" },
       message: "Data rejected",
     });
-    expect(await recordCount(db.owner, "DOCUMENT_CHECKLIST")).toBe(before);
+    expect(await recordCount(db.owner, "SCORING_MODEL")).toBe(before);
     expect(await lastAudit(db.owner, checker.userId, "REJECT")).toMatchObject({
-      module: "Document Checklist",
+      module: "Scoring Model",
       ip_address: CHECKER_IP,
     });
   });
@@ -145,7 +145,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   });
 
   it("processes two simultaneous approvals once (AC-12.05)", async () => {
-    const before = await recordCount(db.owner, "DOCUMENT_CHECKLIST");
+    const before = await recordCount(db.owner, "SCORING_MODEL");
     const { changeRequestId } = await newRecord("KTA Bersamaan");
     const results = await Promise.all([
       review(checker, changeRequestId, "approve"),
@@ -154,7 +154,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     expect(results.map((res) => res.statusCode).sort()).toEqual([200, 409]);
     const loser = results.find((res) => res.statusCode === 409);
     expect(loser && errorOf(loser)).toMatchObject(alreadyProcessed);
-    expect(await recordCount(db.owner, "DOCUMENT_CHECKLIST")).toBe(before + 1);
+    expect(await recordCount(db.owner, "SCORING_MODEL")).toBe(before + 1);
   });
 
   it("refuses to reject a request that is already approved (AC-12.05)", async () => {

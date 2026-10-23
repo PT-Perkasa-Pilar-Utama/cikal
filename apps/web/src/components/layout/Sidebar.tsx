@@ -11,6 +11,7 @@ import { menuGroupIcon } from "./menu-icons";
 const menuRoutes = new Map<string, LinkProps["to"]>([
   ["MST-PRODUCT", "/master/products"],
   ["MST-ROUTE", "/master/routes"],
+  ["MST-CHECKLIST", "/master/checklists"],
   ["IAM-ROLE-ACCESS", "/access/role-access"],
   ["OPS-MONITORING", "/operations/monitoring"],
 ]);

@@ -330,7 +330,7 @@ Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INS
 | document_checklists.product_id | uuid | no | FK products |
 | document_checklists.occupation, marital | text | no | `param_id`; UQ(tenant_id, product_id, occupation, marital) (AC-25.03) |
 | document_checklist_items.checklist_id | uuid | no | FK checklists |
-| document_checklist_items.document_type | text | no | `param_id` ParamType Document |
+| document_checklist_items.document_type | text | no | `param_id` ParamType Document; UQ(checklist_id, document_type) |
 | document_checklist_items.is_mandatory | boolean | no | default true |
 
 ## 6.8 Change Request (`cr`), Audit (`audit`), Notification (`notification`), Document (`document`)

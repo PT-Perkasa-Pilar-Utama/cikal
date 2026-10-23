@@ -15,6 +15,13 @@
       "when": 1792715024669,
       "tag": "0001_product_routes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792766236230,
+      "tag": "0002_document_checklists",
+      "breakpoints": true
     }
   ]
 }
