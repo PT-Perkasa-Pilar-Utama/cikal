@@ -30,6 +30,11 @@ function csrfToken(): string | undefined {
   return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : undefined;
 }
 
+/** Header `Idempotency-Key` baru untuk satu aksi pengguna pada operasi bertanda Idempotency wajib (api-specs 01 §1.7). */
+export function idempotencyHeader(): Record<string, string> {
+  return { "Idempotency-Key": crypto.randomUUID() };
+}
+
 /** Panggil API dan validasi respons dengan skema kontrak dari `@cikal/contracts` (RP-04). */
 export async function apiRequest<T extends z.ZodType>(
   schema: T,
