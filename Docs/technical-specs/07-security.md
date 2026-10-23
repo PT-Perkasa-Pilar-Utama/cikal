@@ -73,7 +73,7 @@ Kontrol keamanan per lapisan. Mekanisme login dan matriks role ada di `09-authen
 | Kontrol | Implementasi |
 |---|---|
 | Akses | Bucket privat; unduhan lewat URL bertanda tangan 5 menit setelah otorisasi aplikasi |
-| Enkripsi | Server-side encryption storage bank; bila tidak tersedia, enkripsi di aplikasi dengan data key tenant |
+| Enkripsi | Enkripsi saat tersimpan oleh storage, bukan oleh aplikasi (ADR-005): SeaweedFS hosting PPU dengan `-filer.encryptVolumeData`; storage client atau penyedia cloud dengan default encryption bucket atau grid yang dikonfirmasi penyedia sebelum go-live. Aplikasi tidak mengenkripsi isi file, karena URL bertanda tangan menyajikan objek apa adanya dan file tidak boleh lewat origin aplikasi (api-specs 10 §10.1) |
 | Kunci objek | `tenants/<tenantId>/<modul>/<uuid>`; tanpa nama file asli di path |
 
 ## 7.8 Endpoint operasional

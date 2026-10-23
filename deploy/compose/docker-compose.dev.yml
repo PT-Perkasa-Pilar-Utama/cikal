@@ -24,7 +24,7 @@ services:
 
   storage:
     image: chrislusf/seaweedfs:3.97
-    command: server -dir=/data -s3 -s3.port=9000 -s3.config=/run/secrets/s3_config
+    command: server -dir=/data -filer.encryptVolumeData -s3 -s3.port=9000 -s3.config=/run/secrets/s3_config
     secrets:
       - s3_config
     ports:
