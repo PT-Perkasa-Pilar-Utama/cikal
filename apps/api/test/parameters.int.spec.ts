@@ -96,7 +96,7 @@ describe("parameter options", () => {
   });
 
   it("accepts a ParamType with spaces and answers an empty list when the company has no values", async () => {
-    expect(await values(sales, "Relation with Applicant")).toEqual([]);
+    expect(await values(sales, "Status Of Residency")).toEqual([]);
   });
 
   it("answers 404 NOT_FOUND for an unknown ParamType", async () => {

@@ -38,9 +38,36 @@ export interface DraftRow {
   tenorProposed: number | null;
   requestedLimit: string | null;
   insuranceId: string | null;
+  sourceCode: string | null;
+  salesCode: string | null;
+  referralCode: string | null;
+  marketingCode: string | null;
+  consentAt: Date | null;
   currentSection: FormSection;
   returnNote: string | null;
 }
+
+/** Kolom section Application, persetujuan pemohon, dan posisi form yang diubah simpan section. */
+export type DraftChanges = Partial<
+  Pick<
+    typeof applications.$inferInsert,
+    | "productCategory"
+    | "productId"
+    | "applicationType"
+    | "segment"
+    | "purposeOfLoan"
+    | "tenorProposed"
+    | "requestedLimit"
+    | "insuranceId"
+    | "sourceCode"
+    | "salesCode"
+    | "referralCode"
+    | "marketingCode"
+    | "consentAt"
+    | "consentChannel"
+    | "currentSection"
+  >
+>;
 
 export interface DraftListRow {
   id: string;
@@ -71,6 +98,11 @@ const draftColumns = {
   tenorProposed: applications.tenorProposed,
   requestedLimit: applications.requestedLimit,
   insuranceId: applications.insuranceId,
+  sourceCode: applications.sourceCode,
+  salesCode: applications.salesCode,
+  referralCode: applications.referralCode,
+  marketingCode: applications.marketingCode,
+  consentAt: applications.consentAt,
   currentSection: applications.currentSection,
   returnNote: applications.returnNote,
 };
@@ -104,6 +136,23 @@ export class ApplicationsRepository {
       .from(applications)
       .where(and(eq(applications.id, id), eq(applications.createdBy, createdBy)));
     return row ?? null;
+  }
+
+  /** Seperti `findOwned`, dengan baris terkunci sampai transaksi simpan section selesai. */
+  async lockOwned(tx: Tx, id: string, createdBy: string): Promise<DraftRow | null> {
+    const [row] = await tx
+      .select(draftColumns)
+      .from(applications)
+      .where(and(eq(applications.id, id), eq(applications.createdBy, createdBy)))
+      .for("update");
+    return row ?? null;
+  }
+
+  async updateDraft(tx: Tx, id: string, changes: DraftChanges, userId: string): Promise<void> {
+    await tx
+      .update(applications)
+      .set({ ...changes, updatedAt: new Date(), updatedBy: userId })
+      .where(eq(applications.id, id));
   }
 
   async listDrafts(

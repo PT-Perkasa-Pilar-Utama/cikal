@@ -1,13 +1,22 @@
-import type {
-  ApplicationDraftListResponse,
-  ApplicationDraftResponse,
-  ApplicationFormResponse,
-} from "./drafts.schema.js";
+import type { ApplicationDraftListResponse, ApplicationDraftResponse } from "./drafts.schema.js";
+import type { ApplicationFormResponse } from "./form.schema.js";
+import type { SectionSaveResponse } from "./sections.schema.js";
 
 const DRAFT_ID = "0192b6f3-0001-7000-8000-000000000001";
 const PRODUCT_ID = "0192b6f3-0001-7000-8000-000000000002";
 const LOAN_ID = "20102026KTA0000013";
 const POC_STEPS = ["application", "personal", "occupation", "documents", "emergency-contact"] as const;
+
+const KTP_ADDRESS = {
+  address: "Jl. Merdeka No. 10",
+  rt: "001",
+  rw: "002",
+  provinceCode: "32",
+  cityCode: "32.73",
+  districtCode: "32.73.01",
+  subDistrictCode: "32.73.01.1001",
+  zipCode: "40111",
+};
 
 /** Draft KTA pertama (AC-49.01). */
 export const applicationDraftResponseMock = {
@@ -50,12 +59,33 @@ export const applicationFormResponseMock = {
         tenorProposed: 36,
         requestedLimit: "20000000.00",
         insuranceId: null,
+        sourceCode: null,
+        salesCode: null,
+        referralCode: null,
+        marketingCode: null,
       },
       personal: {
         idType: "KTP",
         idCardNumber: "3273011402900001",
         fullName: "Rudi Hartono",
         fullNameId: "RUDI HARTONO",
+        placeOfBirth: "Bandung",
+        dateOfBirth: "1990-02-14",
+        gender: "L",
+        religion: "ISLAM",
+        nationality: "WNI",
+        education: "S1",
+        marital: "001",
+        motherMaidenName: "Siti",
+        idIssuedDate: "2020-01-10",
+        idExpiredDate: "SEUMUR HIDUP",
+        npwpNumber: null,
+        kkNumber: null,
+        mobileNumber: "081298765432",
+        phoneNumber: null,
+        email: null,
+        addresses: { id: KTP_ADDRESS, residence: { ...KTP_ADDRESS, sameAsId: true } },
+        consentAt: "2026-10-20T07:00:00.000Z",
       },
       occupation: null,
       "emergency-contact": null,
@@ -64,3 +94,15 @@ export const applicationFormResponseMock = {
     returnNote: null,
   },
 } satisfies ApplicationFormResponse;
+
+/** Section Personal disimpan dengan "Next" (AC-40.01). */
+export const sectionSaveResponseMock = {
+  data: {
+    id: DRAFT_ID,
+    loanId: LOAN_ID,
+    status: "DRAFT",
+    savedSection: "personal",
+    nextSection: "occupation",
+    steps: [...POC_STEPS],
+  },
+} satisfies SectionSaveResponse;

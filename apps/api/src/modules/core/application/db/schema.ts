@@ -1,12 +1,15 @@
 import type { ApplicationStatus, FormSection, ProductCategory, StepCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, numeric, pgSchema, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
+import { bigint, check, index, integer, numeric, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { users } from "../../identity/index.js";
+import { insurances } from "../../masterdata/index.js";
 import { products } from "../../product/index.js";
 import { companies } from "../../tenancy/index.js";
+import { application } from "./pg-schema.js";
 
-export const application = pgSchema("application");
+export * from "./applicant.schema.js";
+export { application } from "./pg-schema.js";
 
 export type ApplicationChannel = "WEB" | "MOBILE" | "API" | "UPLOAD";
 
@@ -21,6 +24,7 @@ const STATUSES = [
   "FINISHED_CANCELLED",
 ] as const satisfies ApplicationStatus[];
 const CHANNELS = ["WEB", "MOBILE", "API", "UPLOAD"] as const satisfies ApplicationChannel[];
+const CONSENT_CHANNELS = ["WEB", "MOBILE", "API"] as const satisfies ApplicationChannel[];
 const CATEGORIES = ["COLLATERAL", "NON_COLLATERAL", "PENSION", "SYARIAH"] as const satisfies ProductCategory[];
 const STEP_CODES = [
   "DATA_ENTRY",
@@ -58,9 +62,8 @@ const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'
 const money = (name: string) => numeric(name, { precision: 18, scale: 2 });
 
 /**
- * APPLICATIONS, technical-specs 06 §6.9: kolom orchestrator dan field draft pertama. Kolom section lain
- * ditambahkan kartu BE-S3-02; `branch_id` menunggu tabel `org.branches`. `insurance_id` mendapat foreign key
- * bersama tabel `masterdata.insurances` di kartu BE-S3-02.
+ * APPLICATIONS, technical-specs 06 §6.9: kolom orchestrator dan section Application. `branch_id` menunggu tabel
+ * `org.branches`; kolom pencairan dan mitra ditambahkan kartu yang memakainya.
  */
 export const applications = application.table(
   "applications",
@@ -80,7 +83,13 @@ export const applications = application.table(
     purposeOfLoan: text("purpose_of_loan"),
     tenorProposed: integer("tenor_proposed"),
     requestedLimit: money("requested_limit"),
-    insuranceId: uuid("insurance_id"),
+    insuranceId: uuid("insurance_id").references(() => insurances.id),
+    sourceCode: text("source_code"),
+    salesCode: text("sales_code"),
+    referralCode: text("referral_code"),
+    marketingCode: text("marketing_code"),
+    consentAt: timestamp("consent_at", { withTimezone: true }),
+    consentChannel: text("consent_channel").$type<ApplicationChannel>(),
     currentSection: text("current_section").$type<FormSection>().notNull().default("application"),
     status: text("status").$type<ApplicationStatus>().notNull().default("DRAFT"),
     currentStep: text("current_step").$type<StepCode>(),
@@ -93,38 +102,11 @@ export const applications = application.table(
     unique("applications_tenant_loan_id_unique").on(table.tenantId, table.loanId),
     check("applications_status_check", sql`${table.status} in (${textList(STATUSES)})`),
     check("applications_channel_check", sql`${table.channel} in (${textList(CHANNELS)})`),
+    check("applications_consent_channel_check", sql`${table.consentChannel} in (${textList(CONSENT_CHANNELS)})`),
     check("applications_product_category_check", sql`${table.productCategory} in (${textList(CATEGORIES)})`),
     check("applications_current_step_check", sql`${table.currentStep} in (${textList(STEP_CODES)})`),
     check("applications_current_section_check", sql`${table.currentSection} in (${textList(SECTIONS)})`),
     index("applications_created_by_status_idx").on(table.tenantId, table.createdBy, table.status),
-    tenantIsolation(),
-  ],
-);
-
-/**
- * APPLICATION_PERSONALS, technical-specs 06 §6.9: field draft pertama. NIK terenkripsi bersama versi kuncinya
- * dan blind index untuk Dedup (DM-08, technical-specs 07 §7.4.1). Field Personal lain ditambahkan kartu BE-S3-02.
- */
-export const applicationPersonals = application.table(
-  "application_personals",
-  {
-    applicationId: uuid("application_id")
-      .primaryKey()
-      .references(() => applications.id),
-    tenantId: uuid("tenant_id")
-      .notNull()
-      .references(() => companies.id),
-    fullName: text("full_name").notNull(),
-    fullNameId: text("full_name_id").notNull(),
-    idType: text("id_type").$type<"KTP">().notNull(),
-    idCardNumberEnc: bytea("id_card_number_enc").notNull(),
-    idCardNumberKeyVersion: integer("id_card_number_key_version").notNull(),
-    idCardNumberBidx: bytea("id_card_number_bidx").notNull(),
-    ...auditColumns(),
-  },
-  (table) => [
-    check("application_personals_id_type_check", sql`${table.idType} in ('KTP')`),
-    index("application_personals_id_card_number_bidx_idx").on(table.tenantId, table.idCardNumberBidx),
     tenantIsolation(),
   ],
 );
