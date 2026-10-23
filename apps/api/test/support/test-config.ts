@@ -25,6 +25,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     sessionCookieSecure: true,
     monitoringToken: "monitoring-test-token",
     resetApi: null,
+    allowSimulationAdapters: true,
     worker: { concurrency: 1 },
     licensePublicKey: testLicenseKeys.publicKey,
     ...overrides,

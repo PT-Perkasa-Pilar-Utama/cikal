@@ -35,6 +35,7 @@ export const envSchema = z
     SESSION_COOKIE_SECURE: secureFlag,
     MONITORING_TOKEN_FILE: z.string().min(1),
     ENABLE_RESET_API: flag,
+    ALLOW_SIMULATION_ADAPTERS: flag,
     RESET_API_TOKEN_FILE: z.string().optional(),
     DEFAULT_RESET_SEED: z.enum(["dev", "qa"]).default("qa"),
     SEED_USER_PASSWORD_FILE: z.string().min(1).optional(),
@@ -44,6 +45,10 @@ export const envSchema = z
   .superRefine((env, ctx) => {
     if (env.APP_ENV === "production" && env.ENABLE_RESET_API) {
       ctx.addIssue({ code: "custom", path: ["ENABLE_RESET_API"], message: "must not be true in production" });
+    }
+    // Tenant bertanda trial belum dimodelkan, jadi production menolak adapter simulasi tanpa pengecualian (IN-03).
+    if (env.APP_ENV === "production" && env.ALLOW_SIMULATION_ADAPTERS) {
+      ctx.addIssue({ code: "custom", path: ["ALLOW_SIMULATION_ADAPTERS"], message: "must not be true in production" });
     }
     if (env.ENABLE_RESET_API && !env.RESET_API_TOKEN_FILE) {
       ctx.addIssue({
@@ -94,6 +99,8 @@ export interface AppConfig {
    * password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5).
    */
   resetApi: { token: string; defaultSeed: "dev" | "qa"; seedUserPassword: string } | null;
+  /** Adapter simulasi boleh dipanggil Integration Registry (IN-03, technical-specs 11 §11.2). */
+  allowSimulationAdapters: boolean;
   /** Konsumen pg-boss per antrean di proses worker. */
   worker: { concurrency: number };
   /**
@@ -146,6 +153,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
             seedUserPassword: readSecret(env.SEED_USER_PASSWORD_FILE),
           }
         : null,
+    allowSimulationAdapters: env.ALLOW_SIMULATION_ADAPTERS,
     worker: { concurrency: env.WORKER_CONCURRENCY },
     licensePublicKey: licensePublicKeyPem,
   };
