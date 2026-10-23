@@ -483,7 +483,7 @@ Tabel `application_spouses`, `application_businesses`, `application_collaterals`
 | column | type | nullable | notes |
 |---|---|---|---|
 | product_code | text | no | UQ(tenant_id, product_code) |
-| last_number | bigint | no | maks 9.999.999 (TRM_LID_005) |
+| last_number | bigint | no | 1 s.d. 9.999.999 (CHECK, TRM_LID_005); tidak direset harian (TRM_LID_003) |
 
 ## 6.10 Orchestrator (`orchestrator`), Task Queue (`taskqueue`), Verification, Approval, Integration, Calculation
 
