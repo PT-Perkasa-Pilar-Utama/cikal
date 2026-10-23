@@ -35,7 +35,8 @@ Konfigurasi teknis per lingkungan diatur lewat environment variable saat deploy 
 | `SESSION_COOKIE_SECURE` | Ya | `true` | `false` hanya di `dev` |
 | `MONITORING_TOKEN_FILE` | Ya | `/run/secrets/monitoring_token` | Untuk `/api/health/ready` dan `/api/metrics` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD_FILE`, `SMTP_FROM` | Ya | `smtp.bankcontoh.co.id` | `dev`: Mailpit |
-| `REGION_API_KEY_FILE` | Ya | `/run/secrets/oksara_key` | Parameter bercakupan INSTALLATION |
+| `REGION_API_URL` | Tidak | `https://oksara.senar.id` | Base URL Oksara data wilayah |
+| `REGION_API_KEY_FILE` | Kondisional | `/run/secrets/oksara_key` | Parameter bercakupan INSTALLATION. Wajib bila `ALLOW_SIMULATION_ADAPTERS=false`; kosong di `dev` dan `test` berarti adapter simulasi |
 | `ALLOW_SIMULATION_ADAPTERS` | Ya | `false` | Boleh `true` di `dev`, `test`, `sit`, `uat`; production hanya untuk tenant bertanda trial |
 | `WORKER_CONCURRENCY` | Tidak | `5` | Konkurensi per antrean pg-boss |
 | `LOG_LEVEL` | Tidak | `info` | |
