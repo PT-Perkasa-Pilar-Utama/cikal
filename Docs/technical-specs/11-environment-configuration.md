@@ -30,7 +30,7 @@ Konfigurasi teknis per lingkungan diatur lewat environment variable saat deploy 
 | `S3_ACCESS_KEY_FILE`, `S3_SECRET_KEY_FILE` | Ya | `/run/secrets/s3_access_key` | Dibaca dari file secret |
 | `S3_FORCE_PATH_STYLE` | Tidak | `true` | Untuk server S3 cadangan |
 | `GOTENBERG_URL` | Ya | `http://gotenberg:3000` | Jaringan internal |
-| `MASTER_KEY_FILE` | Ya | `/run/secrets/cikal_master_key` | Kunci utama envelope encryption |
+| `MASTER_KEY_FILE` | Ya | `/run/secrets/cikal_master_key` | Kunci utama envelope encryption: Base64 standar dari 32 byte acak; file wajib terbaca. Start ditolak bila file hilang atau format/panjang salah |
 | `LICENSE_FILE` | Ya | `/etc/cikal/license.json` | File lisensi bertanda tangan |
 | `SESSION_COOKIE_SECURE` | Ya | `true` | `false` hanya di `dev` |
 | `MONITORING_TOKEN_FILE` | Ya | `/run/secrets/monitoring_token` | Untuk `/api/health/ready` dan `/api/metrics` |

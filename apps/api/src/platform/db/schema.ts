@@ -1,4 +1,5 @@
-import { integer, jsonb, pgSchema, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, integer, jsonb, pgSchema, text, timestamp, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, bytea, tenantIsolation } from "./columns.js";
 
 export const platform = pgSchema("platform");
@@ -22,4 +23,28 @@ export const idempotencyKeys = platform.table(
     ...auditColumns(),
   },
   (table) => [unique("idempotency_keys_user_key_unique").on(table.userId, table.idempotencyKey), tenantIsolation()],
+);
+
+/** Kunci tenant dibungkus master key; platform dimigrasi sebelum tenancy sehingga tanpa FK (tech 06 §6.3). */
+export const tenantKeys = platform.table(
+  "tenant_keys",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    keyPurpose: text("key_purpose").$type<"ENCRYPTION" | "BLIND_INDEX">().notNull(),
+    wrappedKey: bytea("wrapped_key").notNull(),
+    keyVersion: integer("key_version").notNull().default(1),
+    status: text("status").$type<"ACTIVE" | "RETIRED">().notNull().default("ACTIVE"),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("tenant_keys_tenant_purpose_version_unique").on(table.tenantId, table.keyPurpose, table.keyVersion),
+    uniqueIndex("tenant_keys_active_unique")
+      .on(table.tenantId, table.keyPurpose)
+      .where(sql`${table.status} = 'ACTIVE'`),
+    check("tenant_keys_purpose_check", sql`${table.keyPurpose} in ('ENCRYPTION', 'BLIND_INDEX')`),
+    check("tenant_keys_status_check", sql`${table.status} in ('ACTIVE', 'RETIRED')`),
+    check("tenant_keys_version_check", sql`${table.keyVersion} > 0`),
+    tenantIsolation(),
+  ],
 );

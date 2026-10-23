@@ -312,6 +312,8 @@ Ganti `ppu-deploy` dengan nama akun GitHub pemilik token. Kredensial tersimpan d
 
 Secret dibuat di VM, tidak pernah lewat git atau chat. Setelah dibuat, salin isi item bertanda "Simpan" ke vault password manager tim, satu entri per lingkungan.
 
+Jalankan `pnpm dev:secrets` untuk membuat kunci dev tanpa menimpa file yang sudah ada. API, worker, seed, dan reset wajib memakai file kunci yang sama. Nilai file adalah Base64 standar dari 32 byte acak, bukan passphrase. Runner `migrate` tidak membaca kunci.
+
 **Kehilangan `cikal_master_key` berarti data terenkripsi (rahasia integrasi, kunci tenant) tidak bisa dibaca lagi, termasuk dari backup.** Simpan salinannya sebelum aplikasi pertama kali jalan.
 
 ```bash
@@ -401,7 +403,7 @@ S3_SECRET_KEY_FILE=/run/secrets/s3_secret_key
 
 # Layanan internal dan kunci
 GOTENBERG_URL=http://gotenberg:3000
-MASTER_KEY_FILE=/run/secrets/cikal_master_key
+MASTER_KEY_FILE=/run/secrets/cikal_master_key # Base64 32 byte; wajib pada api, worker, seed, dan reset
 LICENSE_FILE=/etc/cikal/license.json
 SESSION_COOKIE_SECURE=true
 MONITORING_TOKEN_FILE=/run/secrets/monitoring_token

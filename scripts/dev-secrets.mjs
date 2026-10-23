@@ -8,6 +8,7 @@ const dir = join(import.meta.dirname, "..", "deploy", "compose", ".secrets");
 mkdirSync(dir, { recursive: true });
 
 const secrets = {
+  cikal_master_key: () => randomBytes(32).toString("base64"),
   s3_access_key: () => `cikal${randomBytes(6).toString("hex")}`,
   s3_secret_key: () => randomBytes(24).toString("hex"),
   monitoring_token: () => randomBytes(24).toString("hex"),

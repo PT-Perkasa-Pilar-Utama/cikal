@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 import { licensePublicKeyPem } from "../../license-public-key.generated.js";
+import { readMasterKey } from "./master-key.js";
 
 const appEnvSchema = z.enum(["dev", "test", "sit", "uat", "production"]);
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -25,6 +26,7 @@ export const envSchema = z
     DATABASE_URL: z.string().startsWith("postgres"),
     DATABASE_MIGRATION_URL: z.string().startsWith("postgres").optional(),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
+    MASTER_KEY_FILE: z.string().min(1),
     S3_ENDPOINT: z.url(),
     S3_REGION: z.string().min(1),
     S3_BUCKET: z.string().min(1),
@@ -83,6 +85,7 @@ export const envSchema = z
   });
 
 export interface AppConfig {
+  masterKey: Buffer;
   appEnv: AppEnv;
   version: string;
   port: number;
@@ -138,6 +141,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
   const env = parsed.data;
   const resetAllowed = env.ENABLE_RESET_API && RESET_ENVIRONMENTS.has(env.APP_ENV);
   return {
+    masterKey: readMasterKey(env.MASTER_KEY_FILE),
     appEnv: env.APP_ENV,
     version: env.APP_VERSION,
     port: env.PORT,

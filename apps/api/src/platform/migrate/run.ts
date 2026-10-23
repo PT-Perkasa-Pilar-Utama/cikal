@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import pg from "pg";
 import { loadConfig } from "../config/config.js";
+import { readMasterKey } from "../config/master-key.js";
 import { createS3Client, emptyBucket } from "../storage/storage.module.js";
 import { installedModuleData } from "./installed-modules.js";
 import type { SeedName } from "./module-data.js";
@@ -49,7 +50,10 @@ try {
     }
     case "seed": {
       const seed = seedArg(["base", "dev", "qa"]);
-      await seedModules(pool, installedModuleData, seed, seedContext);
+      await seedModules(pool, installedModuleData, seed, {
+        ...seedContext,
+        masterKey: readMasterKey(process.env.MASTER_KEY_FILE),
+      });
       console.log(`Seed ${seed} applied`);
       break;
     }
@@ -64,7 +68,7 @@ try {
         modules: installedModuleData,
         appRole,
         seed,
-        seedContext,
+        seedContext: { ...seedContext, masterKey: config.masterKey },
         emptyBucket: () => emptyBucket(s3, config.storage.bucket),
       });
       console.log(JSON.stringify(result));
