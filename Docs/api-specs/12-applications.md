@@ -131,7 +131,7 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 | tenureAtCurrentJob | decimal (1 digit) | ya, kecuali kategori `PENSION` (AC-44.03) | tahun |
 | monthlyIncomeAllowance | money | ya, kecuali kategori `PENSION` (AC-44.03) | > 0 |
 | organization, previousEmployer, pensionInstance | string | tidak | |
-| company.name, company.address, company.provinceCode, company.cityCode, company.districtCode, company.subDistrictCode, company.zipCode, company.phoneNumber | | ya bila sumber penghasilan bekerja | |
+| company.name, company.address, company.provinceCode, company.cityCode, company.districtCode, company.subDistrictCode, company.zipCode, company.phoneNumber | | ya bila `sourceOfIncome` ada di parameter `EMPLOYED_INCOME_SOURCES` (default `["001"]` Bekerja) | |
 
 `emergency-contact`
 
@@ -155,9 +155,20 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 | NPWP kosong dan limit > 50.000.000; tepat 50.000.000 tidak wajib | `422 NPWP_REQUIRED` "NPWP is required for requested limit above 50,000,000" | AC-40.05, AC-40.06 |
 | Usia saat lunas (rumus `AGE_AT_MATURITY`) > batas produk | `422 AGE_AT_MATURITY_EXCEEDED` "Applicant age at maturity must not exceed 55 years" | AC-40.09 |
 | `monthlyIncomeAllowance` = 0 | `422 INVALID_INCOME` "Monthly income must be greater than 0" | AC-44.02 |
-| Produk KUR dan pekerjaan bukan wiraswasta | `422 OCCUPATION_NOT_ELIGIBLE` "This product is only available for self-employed applicants" | AC-44.04 |
+| Produk KUR (parameter produk `SELF_EMPLOYED_ONLY = true`) dan `occupation` di luar parameter `SELF_EMPLOYED_OCCUPATIONS` (default `["005"]` Wiraswasta) | `422 OCCUPATION_NOT_ELIGIBLE` "This product is only available for self-employed applicants" | AC-44.04 |
 | Nomor HP tidak cocok `^08\d{8,11}$` | `400`, detail "Mobile number must start with 08 and contain 10 to 13 digits" | AC-48.02, AC-48.04 |
 | Nomor kontak darurat sama dengan nomor pemohon | `422 EMERGENCY_CONTACT_SAME_NUMBER` "Emergency contact number must be different from applicant number" | AC-48.03 |
+
+**Behavior (kedua mode)**
+
+| Aturan | Error | Rujukan |
+|---|---|---|
+| Format field terisi salah: NIK, nomor HP, NPWP 15 atau 16 digit, KK 16 digit, telepon 6 s.d. 15 digit, lama kerja satu desimal, tanggal, email | `400 VALIDATION_FAILED` dengan pesan per field | AC-40.02, AC-48.02, AC-48.04; pesan NPWP, KK, telepon, dan lama kerja teks usulan engineering |
+| Section `application` atau `personal` tanpa field minimum draft (A-15) pada `strict=false` | `422 DRAFT_MINIMUM_FIELDS` | AC-49.02 |
+| Section `application`: produk tidak tersedia atau beda kategori (RT-07) | `422 PRODUCT_NOT_AVAILABLE` | 12.2 langkah 3 |
+| Section `application`: `insuranceId` tidak ada atau nonaktif | `400 VALIDATION_FAILED`, detail `insuranceId` "Selected insurance is not available" (teks usulan engineering) | api-specs 06 §6.2 |
+
+Parameter sistem aturan section (seed `base`, `masterdata`): `NPWP_MIN_LIMIT` (MONEY, default `50000000.00`), `REQUIRE_CONSENT_FOR_EXTERNAL_CHECK` (BOOLEAN, default `false`), `SELF_EMPLOYED_ONLY` (BOOLEAN, scope PRODUCT, default `false`), `SELF_EMPLOYED_OCCUPATIONS` dan `EMPLOYED_INCOME_SOURCES` (MULTI_CHOICE berisi `paramId` General Parameter). Usia saat lunas memakai default RM-02 (usia dalam bulan penuh + tenor dibanding `maxAgeAtMaturityMonth`) sampai rumus `AGE_AT_MATURITY_MONTH` tersedia di modul Calculation.
 
 Angka di pesan diisi dari produk dan parameter aktif. `consentGiven = true` menyimpan `consentAt = now` dan `consentChannel = WEB` (AC-40.08, IN-12). Perubahan produk, status kawin, atau pekerjaan menghitung ulang `steps[]`.
 
@@ -171,7 +182,7 @@ Angka di pesan diisi dari produk dan parameter aktif. `consentGiven = true` meny
 }
 ```
 
-`message` hanya dikirim pada `strict=false` (AC-49.03). Loan ID tidak berubah saat disimpan ulang (AC-49.03).
+`nextSection` adalah step setelah section yang disimpan, `null` untuk step terakhir. `strict=true` memindahkan `currentSection` ke `nextSection`; `strict=false` menyimpan `currentSection` = section yang disimpan. Simpan section mengganti seluruh field section; field yang tidak dikirim menjadi kosong. `message` hanya dikirim pada `strict=false` (AC-49.03). Loan ID tidak berubah saat disimpan ulang (AC-49.03).
 
 **Errors:** tabel di atas; `NOT_FOUND` 404 untuk draft milik Sales lain (AC-49.06); `INVALID_STATE` 409 bila bukan `DRAFT`; `NOT_FOUND` 404 untuk section backlog yang belum tersedia.
 
