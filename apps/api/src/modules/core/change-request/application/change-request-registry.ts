@@ -37,6 +37,8 @@ export interface EntityHandler {
   /** Aturan entity terhadap data terkini; `DomainError` yang dilempar dijawab `422 BUSINESS_RULE_VIOLATION`. */
   validate(tx: Tx, request: ChangeRequestSnapshot): Promise<void>;
   apply(tx: Tx, request: ChangeRequestSnapshot, reviewer: Actor): Promise<ApplyResult>;
+  /** Data berversi kembali ke `DRAFT` saat ditolak (api-specs 07 §7.5); data biasa tidak perlu method ini. */
+  reject?(tx: Tx, request: ChangeRequestSnapshot, reviewer: Actor): Promise<void>;
   /** Path field yang berubah; tanpa method ini dipakai perbandingan field per field (`changedFields`). */
   diff?(oldData: JsonRecord | null, newData: JsonRecord): string[];
 }
