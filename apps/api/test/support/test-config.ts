@@ -1,5 +1,8 @@
+import { randomBytes } from "node:crypto";
 import type { AppConfig } from "../../src/platform/config/config.js";
 import { testLicenseKeys } from "./license.js";
+
+export const TEST_MASTER_KEY = randomBytes(32);
 
 /**
  * Konfigurasi uji tanpa file secret. Database dan storage menunjuk ke alamat yang tidak menjawab kecuali di-override.
@@ -7,6 +10,7 @@ import { testLicenseKeys } from "./license.js";
  */
 export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
   return {
+    masterKey: TEST_MASTER_KEY,
     appEnv: "test",
     version: "0.0.0-test",
     port: 0,

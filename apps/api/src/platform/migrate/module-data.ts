@@ -15,6 +15,7 @@ export const SEED_LAYERS: Record<SeedName, readonly SeedName[]> = {
 /** Masukan seed dari luar repo. `userPassword` adalah password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5). */
 export interface SeedContext {
   userPassword: string | null;
+  masterKey: Buffer;
 }
 
 /** Seed berjalan sebagai role pemilik skema di dalam satu transaksi; wajib idempoten (`ON CONFLICT DO NOTHING`). */

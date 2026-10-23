@@ -43,9 +43,9 @@ describe("migrate runner", () => {
   });
 
   it("applies the platform and each licensed module's migrations once and records them in the module ledger", async () => {
-    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(24);
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(25);
     expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(0);
-    expect(await latestMigration(app, installedModuleData)).toBe("product/0002_document_checklists");
+    expect(await latestMigration(app, installedModuleData)).toBe("platform/0001_tenant_keys");
   });
 
   it("applies seed layers idempotently", async () => {
@@ -69,7 +69,7 @@ describe("migrate runner", () => {
     await expect(app.query("drop schema tenancy cascade")).rejects.toThrow(/must be owner/);
   });
 
-  it("resets to the initial state and signals api and worker", async () => {
+  it("TL-S3-05 resets state, provisions tenant keys, and signals api and worker", async () => {
     await owner.query(
       "insert into tenancy.companies (id, company_code, company_name, address) values ($1, '002', 'Uji', 'Alamat')",
       ["0192b6a0-0002-7000-8000-000000000002"],
@@ -90,13 +90,18 @@ describe("migrate runner", () => {
 
     expect(result).toMatchObject({
       seed: "qa",
-      migrationsApplied: 24,
+      migrationsApplied: 25,
       tenantsSeeded: ["001"],
       bucketObjectsDeleted: 3,
     });
     await expect(app.query("select company_code from tenancy.companies")).resolves.toMatchObject({ rowCount: 1 });
     await new Promise((resolve) => setTimeout(resolve, 500));
     await stop();
+    const keys = await owner.query("select key_purpose, status from platform.tenant_keys order by key_purpose");
+    expect(keys.rows).toEqual([
+      { key_purpose: "BLIND_INDEX", status: "ACTIVE" },
+      { key_purpose: "ENCRYPTION", status: "ACTIVE" },
+    ]);
     expect(signals).toEqual(["reset_started", "reset_finished"]);
   });
 

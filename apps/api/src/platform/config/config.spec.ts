@@ -10,7 +10,15 @@ const BASE_ENV = {
   S3_SECRET_KEY_FILE: "/run/secrets/s3_secret_key",
   MONITORING_TOKEN_FILE: "/run/secrets/monitoring_token",
   REGION_API_KEY_FILE: "/run/secrets/oksara_key",
+  MASTER_KEY_FILE: "/run/secrets/cikal_master_key",
 };
+
+it("TL-S3-05 refuses startup without MASTER_KEY_FILE", () => {
+  const { MASTER_KEY_FILE: _key, ...withoutKey } = BASE_ENV;
+  const result = envSchema.safeParse({ ...withoutKey, APP_ENV: "dev" });
+  expect(result.success).toBe(false);
+  expect(result.error?.issues).toContainEqual(expect.objectContaining({ path: ["MASTER_KEY_FILE"] }));
+});
 
 describe("envSchema ALLOW_SIMULATION_ADAPTERS", () => {
   it("allows simulation adapters outside production (technical-specs 11 §11.2)", () => {

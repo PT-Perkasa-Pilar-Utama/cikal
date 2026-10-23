@@ -5,11 +5,11 @@ import { installedModuleData } from "../../src/platform/migrate/installed-module
 import type { SeedName } from "../../src/platform/migrate/module-data.js";
 import { migrateModules, seedModules } from "../../src/platform/migrate/runner.js";
 import { installTestLicense, issueTestLicense } from "./license.js";
-import { testConfig } from "./test-config.js";
+import { TEST_MASTER_KEY, testConfig } from "./test-config.js";
 
 /** Password akun seed di lingkungan uji; hanya dipakai container sekali pakai. */
 export const SEED_USER_PASSWORD = "Seed-Test-Password-1";
-export const seedContext = { userPassword: SEED_USER_PASSWORD };
+export const seedContext = { userPassword: SEED_USER_PASSWORD, masterKey: TEST_MASTER_KEY };
 
 export interface TestDatabase {
   /** Role pemilik skema untuk menyiapkan data uji di luar RLS. */

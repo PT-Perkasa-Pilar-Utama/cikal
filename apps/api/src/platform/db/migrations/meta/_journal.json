@@ -8,6 +8,13 @@
       "when": 1792658533694,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792770116011,
+      "tag": "0001_tenant_keys",
+      "breakpoints": true
     }
   ]
 }

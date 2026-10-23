@@ -43,6 +43,15 @@ Kontrol keamanan per lapisan. Mekanisme login dan matriks role ada di `09-authen
 | Log | pino redaction untuk field sensitif; log integrasi menyamarkan PII (IN-06) |
 | Retensi | Audit 5 tahun; log integrasi 1 tahun; data pengajuan 10 tahun sejak selesai [Usulan BA DD-07] |
 
+### 7.4.1 Layanan kunci tenant (TL-S3-05)
+
+- `platform.tenant_keys` menyimpan dua data key acak 32 byte per company: `ENCRYPTION` dan `BLIND_INDEX`. Data key dibungkus AES-256-GCM dengan kunci utama dari `MASTER_KEY_FILE`.
+- Format `wrapped_key` dan ciphertext field: IV acak 12 byte, tag autentikasi 16 byte, lalu ciphertext. AAD pembungkus adalah `tenant-key:<tenantId>:<purpose>:<version>`; AAD field adalah `field:<tenantId>:<version>`.
+- `TenantEncryption.encrypt(tx, value)` mengembalikan `{ ciphertext, keyVersion }`; pemanggil menyimpan keduanya. `decrypt(tx, value)` memakai versi tersimpan, termasuk kunci `RETIRED`. `blindIndex(tx, value)` memakai HMAC-SHA256 dengan kunci `BLIND_INDEX` aktif; validasi dan normalisasi NIK milik pemanggil.
+- Tenant berasal dari transaksi `TenantTx`, bukan argumen request. Tabel memakai RLS; pembacaan juga memfilter tenant. Tidak ada cache kunci yang dapat bertahan melewati reset.
+- Seed `base` menyediakan kunci untuk company yang sudah ada. Seed `dev` membuat company dan kuncinya dalam transaksi seed yang sama; `qa` dan reset mewarisi lapisan tersebut. Seed ulang mempertahankan kunci dan versi. Jalur pembuatan company saat ini adalah seed; jalur baru wajib memanggil `provisionTenantKeys` dalam transaksi pembentukan company.
+- Kunci dibuat `ACTIVE`; `RETIRED` hanya untuk membaca data lama. Kartu ini tidak menyediakan operasi rotasi, job re-enkripsi, atau `platform.secrets` (issue #105).
+
 ## 7.5 Request hardening
 
 | Kontrol | Implementasi |
