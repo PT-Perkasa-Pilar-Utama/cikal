@@ -48,3 +48,22 @@ export const tenantKeys = platform.table(
     tenantIsolation(),
   ],
 );
+
+/**
+ * OUTBOX_EVENTS, technical-specs 06 §6.3: event lintas modul ditulis di transaksi aksi dan dikirim worker setelah
+ * commit (XM-04). `tenant_id` untuk transaksi worker; tanpa FK karena platform dimigrasi sebelum tenancy.
+ */
+export const outboxEvents = platform.table(
+  "outbox_events",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id").notNull(),
+    eventType: text("event_type").notNull(),
+    aggregateId: uuid("aggregate_id").notNull(),
+    payload: jsonb("payload").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    attempts: integer("attempts").notNull().default(0),
+    ...auditColumns(),
+  },
+  (table) => [check("outbox_events_attempts_check", sql`${table.attempts} >= 0`), tenantIsolation()],
+);

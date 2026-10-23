@@ -1,4 +1,5 @@
-import { Module } from "@nestjs/common";
+import { Global, Module } from "@nestjs/common";
+import { PROCESS_START_PORT } from "../../../platform/http/process-start-port.js";
 import { ApplicationModule } from "../application/index.js";
 import { AuditModule } from "../audit/index.js";
 import { ProductModule } from "../product/index.js";
@@ -12,6 +13,7 @@ import { OrchestratorApi } from "./application/orchestrator-api.js";
 import { ProcessJobs } from "./application/process-jobs.js";
 import { RetryStepUseCase } from "./application/retry-step.use-case.js";
 import { StartProcess } from "./application/start-process.js";
+import { StepEvents } from "./application/step-events.js";
 import { StepHandlerRegistry } from "./application/step-handler.js";
 import { StepResults } from "./application/step-results.js";
 import { StepRunner } from "./application/step-runner.js";
@@ -24,7 +26,11 @@ import { ProcessesController } from "./http/processes.controller.js";
 import { AdvanceJob } from "./jobs/advance.job.js";
 import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
 
-/** Orchestrator: rute langkah, retry, recontest (technical-specs 05 §5.11, 12). */
+/**
+ * Orchestrator: rute langkah, retry, recontest (technical-specs 05 §5.11, 12). Global karena mendaftarkan port
+ * platform `PROCESS_START_PORT`: submit pengajuan memulai proses tanpa modul Application mengimpor modul ini.
+ */
+@Global()
 @Module({
   imports: [ApplicationModule, AuditModule, ProductModule, TenancyModule],
   controllers: [ProcessesController, ProcessMonitoringController],
@@ -34,6 +40,7 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
     ProcessMonitoringRepository,
     StepHandlerRegistry,
     ProcessJobs,
+    StepEvents,
     StepResults,
     StepRunner,
     StartProcess,
@@ -47,7 +54,8 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
     FinishProcessUseCase,
     AdvanceJob,
     WaitDeadlineJob,
+    { provide: PROCESS_START_PORT, useExisting: OrchestratorApi },
   ],
-  exports: [OrchestratorApi, StepHandlerRegistry],
+  exports: [OrchestratorApi, StepHandlerRegistry, PROCESS_START_PORT],
 })
 export class OrchestratorModule {}

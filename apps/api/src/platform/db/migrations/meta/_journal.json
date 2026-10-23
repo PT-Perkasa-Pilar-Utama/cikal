@@ -15,6 +15,13 @@
       "when": 1792770116011,
       "tag": "0001_tenant_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792785032970,
+      "tag": "0002_outbox_events",
+      "breakpoints": true
     }
   ]
 }
