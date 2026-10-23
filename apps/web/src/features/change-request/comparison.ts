@@ -8,6 +8,8 @@ export interface FieldPresentation {
   valueLabels?: Readonly<Record<string, Readonly<Record<string, string>>>>;
   /** Field teknis yang tidak ditampilkan, contoh id role yang sudah diwakili nama role. */
   hidden?: readonly string[];
+  /** Bentuk ulang data sebelum dibandingkan, contoh daftar langkah rute menjadi satu field per langkah. */
+  reshape?: (data: JsonRecord) => JsonRecord;
 }
 
 export interface ComparisonRow {
@@ -87,8 +89,9 @@ export function comparisonRows(
   changedFields: readonly string[],
   presentation: FieldPresentation,
 ): ComparisonRow[] {
-  const before = flatten(current);
-  const after = flatten(proposed);
+  const reshape = presentation.reshape ?? ((data: JsonRecord) => data);
+  const before = flatten(current && reshape(current));
+  const after = flatten(reshape(proposed));
   const hidden = new Set(presentation.hidden);
   const shown = [...new Set([...after.keys(), ...before.keys()])].filter((path) => !hidden.has(path));
   const paths = inLabelOrder(shown, presentation);
