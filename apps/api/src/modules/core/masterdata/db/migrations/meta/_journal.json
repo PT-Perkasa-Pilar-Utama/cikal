@@ -29,6 +29,13 @@
       "when": 1792765971353,
       "tag": "0003_general_parameters",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792779533954,
+      "tag": "0004_insurances",
+      "breakpoints": true
     }
   ]
 }

@@ -7,8 +7,9 @@ import { generalParameters } from "../db/schema.js";
 type SeedValues = ReadonlyArray<readonly [paramId: string, paramValue: string]>;
 
 /**
- * Pilihan contoh company 001 untuk checklist dokumen (US-25) dan form pengajuan. Nama dokumen mengikuti AC-25.01
- * dan AC-47; `paramId` dokumen adalah `documentType` slot unggah (api-specs 12 §12.6).
+ * Pilihan contoh company 001 untuk checklist dokumen (US-25) dan form pengajuan (nilai contoh AC-39.01, AC-40.01,
+ * AC-44.01, AC-48.01). Nama dokumen mengikuti AC-25.01 dan AC-47; `paramId` dokumen adalah `documentType` slot
+ * unggah (api-specs 12 §12.6).
  */
 const SEED_PARAMETERS: ReadonlyArray<readonly [ParamType, SeedValues]> = [
   [
@@ -30,6 +31,79 @@ const SEED_PARAMETERS: ReadonlyArray<readonly [ParamType, SeedValues]> = [
       ["002", "Kawin"],
       ["003", "Cerai Hidup"],
       ["004", "Cerai Mati"],
+    ],
+  ],
+  [
+    "Application Type",
+    [
+      ["NTB", "NTB"],
+      ["RO", "Repeat Order"],
+    ],
+  ],
+  [
+    "Segment",
+    [
+      ["MIKRO", "Mikro"],
+      ["KECIL", "Kecil"],
+      ["KONSUMER", "Konsumer"],
+    ],
+  ],
+  [
+    "Gender",
+    [
+      ["L", "Laki-laki"],
+      ["P", "Perempuan"],
+    ],
+  ],
+  [
+    "Religion",
+    [
+      ["ISLAM", "Islam"],
+      ["KRISTEN", "Kristen"],
+      ["KATOLIK", "Katolik"],
+      ["HINDU", "Hindu"],
+      ["BUDDHA", "Buddha"],
+      ["KONGHUCU", "Konghucu"],
+    ],
+  ],
+  [
+    "Nationality",
+    [
+      ["WNI", "WNI"],
+      ["WNA", "WNA"],
+    ],
+  ],
+  [
+    "Education",
+    [
+      ["SMA", "SMA"],
+      ["D3", "D3"],
+      ["S1", "S1"],
+      ["S2", "S2"],
+    ],
+  ],
+  [
+    "Source of Income",
+    [
+      ["001", "Bekerja"],
+      ["002", "Usaha"],
+      ["003", "Pensiun"],
+    ],
+  ],
+  [
+    "Industry of Profession",
+    [
+      ["001", "Perdagangan"],
+      ["002", "Jasa Keuangan"],
+      ["003", "Industri Pengolahan"],
+    ],
+  ],
+  [
+    "Relation with Applicant",
+    [
+      ["001", "Orang Tua"],
+      ["002", "Saudara Kandung"],
+      ["003", "Anak"],
     ],
   ],
   [
