@@ -200,3 +200,50 @@ export const productRouteSteps = product.table(
     tenantIsolation(),
   ],
 );
+
+/**
+ * DOCUMENT_CHECKLISTS, technical-specs 06 §6.7: daftar dokumen per kombinasi produk, pekerjaan, dan status kawin
+ * (`param_id` General Parameter). Satu baris per kombinasi, aktif atau tidak (AC-25.03).
+ */
+export const documentChecklists = product.table(
+  "document_checklists",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id),
+    occupation: text("occupation").notNull(),
+    marital: text("marital").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("document_checklists_combination_unique").on(
+      table.tenantId,
+      table.productId,
+      table.occupation,
+      table.marital,
+    ),
+    tenantIsolation(),
+  ],
+);
+
+/** DOCUMENT_CHECKLIST_ITEMS, technical-specs 06 §6.7: `document_type` adalah `param_id` ParamType Document. */
+export const documentChecklistItems = product.table(
+  "document_checklist_items",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    checklistId: uuid("checklist_id")
+      .notNull()
+      .references(() => documentChecklists.id),
+    documentType: text("document_type").notNull(),
+    isMandatory: boolean("is_mandatory").notNull().default(true),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("document_checklist_items_document_unique").on(table.checklistId, table.documentType),
+    tenantIsolation(),
+  ],
+);

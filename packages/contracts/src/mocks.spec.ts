@@ -34,6 +34,8 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["regionSyncStarted", c.regionSyncStartedResponseSchema, c.regionSyncStartedResponseMock],
   ["regionSyncCompleted", c.regionSyncStateResponseSchema, c.regionSyncCompletedResponseMock],
   ["regionSyncFailed", c.regionSyncStateResponseSchema, c.regionSyncFailedResponseMock],
+  ["documentChecklistList", c.documentChecklistListResponseSchema, c.documentChecklistListResponseMock],
+  ["occupationOptions", c.parameterOptionsResponseSchema, c.occupationOptionsResponseMock],
   ["fileDownloadUrl", c.fileDownloadUrlResponseSchema, c.fileDownloadUrlResponseMock],
 ];
 
