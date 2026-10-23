@@ -2,6 +2,8 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  type ExtraConfigColumn,
+  index,
   integer,
   jsonb,
   numeric,
@@ -85,5 +87,103 @@ export const systemParameterValues = masterdata.table(
       .on(table.tenantId, table.definitionId, sql`coalesce(${table.productId}, ${sql.raw(`'${NO_PRODUCT}'`)}::uuid)`)
       .where(sql`${table.status} = 'ACTIVE'`),
     tenantIsolation(),
+  ],
+);
+
+/** Indeks `pg_trgm` untuk pencarian `ILIKE '%q%'` tanpa membedakan huruf besar dan kecil (AC-23.03). */
+const trigram = (name: string, column: ExtraConfigColumn) => index(name).using("gin", column.op("gin_trgm_ops"));
+
+/** PROVINCES [instalasi], technical-specs 06 §6.6: hasil sinkronisasi Oksara untuk semua company. */
+export const provinces = masterdata.table(
+  "provinces",
+  {
+    id: uuid("id").primaryKey(),
+    provinceCode: text("province_code").notNull().unique(),
+    provinceName: text("province_name").notNull(),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [trigram("provinces_province_name_trgm", table.provinceName)],
+);
+
+/** CITIES [instalasi], technical-specs 06 §6.6. */
+export const cities = masterdata.table(
+  "cities",
+  {
+    id: uuid("id").primaryKey(),
+    cityCode: text("city_code").notNull().unique(),
+    cityName: text("city_name").notNull(),
+    provinceCode: text("province_code")
+      .notNull()
+      .references(() => provinces.provinceCode),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    index("cities_province_code_idx").on(table.provinceCode),
+    trigram("cities_city_name_trgm", table.cityName),
+  ],
+);
+
+/** DISTRICTS [instalasi], technical-specs 06 §6.6. */
+export const districts = masterdata.table(
+  "districts",
+  {
+    id: uuid("id").primaryKey(),
+    districtCode: text("district_code").notNull().unique(),
+    districtName: text("district_name").notNull(),
+    cityCode: text("city_code")
+      .notNull()
+      .references(() => cities.cityCode),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    index("districts_city_code_idx").on(table.cityCode),
+    trigram("districts_district_name_trgm", table.districtName),
+  ],
+);
+
+/** SUB_DISTRICTS [instalasi], technical-specs 06 §6.6. Oksara memberi satu kode pos per kelurahan. */
+export const subDistricts = masterdata.table(
+  "sub_districts",
+  {
+    id: uuid("id").primaryKey(),
+    subDistrictCode: text("sub_district_code").notNull().unique(),
+    subDistrictName: text("sub_district_name").notNull(),
+    districtCode: text("district_code")
+      .notNull()
+      .references(() => districts.districtCode),
+    zipCode: text("zip_code").notNull(),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    index("sub_districts_district_code_idx").on(table.districtCode),
+    trigram("sub_districts_sub_district_name_trgm", table.subDistrictName),
+    trigram("sub_districts_zip_code_trgm", table.zipCode),
+  ],
+);
+
+/**
+ * REGION_SYNCS [instalasi], technical-specs 06 §6.6: satu baris per sinkronisasi (api-specs 06 §6.3.3).
+ * `created_by` adalah Maker yang menekan "Sync Region Data". Satu sinkronisasi RUNNING per instalasi.
+ */
+export const regionSyncs = masterdata.table(
+  "region_syncs",
+  {
+    id: uuid("id").primaryKey(),
+    status: text("status").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    addedCount: integer("added_count"),
+    updatedCount: integer("updated_count"),
+    errorCategory: text("error_category"),
+    ...auditColumns(),
+  },
+  (table) => [
+    check("region_syncs_status_check", sql`${table.status} in ('RUNNING', 'COMPLETED', 'FAILED')`),
+    uniqueIndex("region_syncs_running_unique").on(table.status).where(sql`${table.status} = 'RUNNING'`),
+    index("region_syncs_finished_at_idx").on(table.finishedAt).where(sql`${table.status} = 'COMPLETED'`),
   ],
 );

@@ -26,6 +26,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     monitoringToken: "monitoring-test-token",
     resetApi: null,
     allowSimulationAdapters: true,
+    regionApi: { url: "http://127.0.0.1:1", apiKey: null },
     worker: { concurrency: 1 },
     licensePublicKey: testLicenseKeys.publicKey,
     ...overrides,
