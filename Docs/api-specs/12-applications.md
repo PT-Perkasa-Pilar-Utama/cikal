@@ -217,7 +217,7 @@ Angka di pesan diisi dari produk dan parameter aktif. `consentGiven = true` meny
 }
 ```
 
-Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pembuat draft.
+Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pembuat draft. `currentSection` adalah step yang sedang diisi saat "Save as Draft" atau step berikutnya saat "Next". `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan karena pekerjaan atau status kawin belum diisi.
 
 **Errors:** `NOT_FOUND` 404 (bukan pembuat atau tidak ada).
 
