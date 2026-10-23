@@ -112,11 +112,6 @@ export class ProductsRepository {
    * §8.7, RT-07).
    */
   async listAvailable(tx: Tx, productCategory: ProductCategory, today: string): Promise<AvailableProductRow[]> {
-    const activeRoute = tx
-      .select({ id: productRouteVersions.id })
-      .from(productRoutes)
-      .innerJoin(productRouteVersions, eq(productRouteVersions.routeId, productRoutes.id))
-      .where(and(eq(productRoutes.productId, products.id), eq(productRouteVersions.status, "ACTIVE")));
     return tx
       .select({
         id: products.id,
@@ -131,16 +126,35 @@ export class ProductsRepository {
         maxAge: products.maxAge,
       })
       .from(products)
-      .where(
-        and(
-          eq(products.productCategory, productCategory),
-          eq(products.isActive, true),
-          lte(products.validFrom, today),
-          or(isNull(products.validTo), gte(products.validTo, today)),
-          exists(activeRoute),
-        ),
-      )
+      .where(and(eq(products.productCategory, productCategory), this.availableOn(tx, today)))
       .orderBy(asc(products.productName), asc(products.id));
+  }
+
+  /** Produk yang tersedia untuk pengajuan baru pada `today` dengan aturan yang sama dengan dropdown (RT-07). */
+  async findAvailable(
+    tx: Tx,
+    id: string,
+    today: string,
+  ): Promise<{ id: string; productCode: string; productCategory: ProductCategory } | null> {
+    const [row] = await tx
+      .select({ id: products.id, productCode: products.productCode, productCategory: products.productCategory })
+      .from(products)
+      .where(and(eq(products.id, id), this.availableOn(tx, today)));
+    return row ?? null;
+  }
+
+  private availableOn(tx: Tx, today: string): SQL | undefined {
+    const activeRoute = tx
+      .select({ id: productRouteVersions.id })
+      .from(productRoutes)
+      .innerJoin(productRouteVersions, eq(productRouteVersions.routeId, productRoutes.id))
+      .where(and(eq(productRoutes.productId, products.id), eq(productRouteVersions.status, "ACTIVE")));
+    return and(
+      eq(products.isActive, true),
+      lte(products.validFrom, today),
+      or(isNull(products.validTo), gte(products.validTo, today)),
+      exists(activeRoute),
+    );
   }
 
   async findById(tx: Tx, id: string): Promise<ProductRow | null> {

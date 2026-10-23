@@ -1,3 +1,4 @@
+export { type AvailableProduct, ProductAvailability } from "./application/product-availability.js";
 export { ProductCodes } from "./application/product-codes.js";
 export { ProductRoutes, type RouteVersion } from "./application/product-routes.js";
 export { ProductTerms } from "./application/product-terms.js";

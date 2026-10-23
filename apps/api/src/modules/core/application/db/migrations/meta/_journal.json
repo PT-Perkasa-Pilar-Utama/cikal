@@ -15,6 +15,13 @@
       "when": 1792763995613,
       "tag": "0001_loan_id_counters",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792774396396,
+      "tag": "0002_application_drafts",
+      "breakpoints": true
     }
   ]
 }
