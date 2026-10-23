@@ -34,6 +34,7 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["regionSyncStarted", c.regionSyncStartedResponseSchema, c.regionSyncStartedResponseMock],
   ["regionSyncCompleted", c.regionSyncStateResponseSchema, c.regionSyncCompletedResponseMock],
   ["regionSyncFailed", c.regionSyncStateResponseSchema, c.regionSyncFailedResponseMock],
+  ["fileDownloadUrl", c.fileDownloadUrlResponseSchema, c.fileDownloadUrlResponseMock],
 ];
 
 describe("contract mocks", () => {

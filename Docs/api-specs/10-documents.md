@@ -14,7 +14,7 @@ Unggahan dokumen pengajuan memakai `12-applications.md` 12.7 karena aturan slot 
 **Behavior**
 
 1. Cari `document_files` di tenant sesi; cari pemiliknya (pengajuan, GeneratedDocument). Di luar lingkup: `404 NOT_FOUND`.
-2. Buat URL bertanda tangan S3 berumur 5 menit ([../technical-specs/07-security.md](../technical-specs/07-security.md) 7.7). File tidak pernah disajikan dari origin aplikasi.
+2. Buat URL bertanda tangan S3 berumur 5 menit ([../technical-specs/07-security.md](../technical-specs/07-security.md) 7.7). File tidak pernah disajikan dari origin aplikasi. URL menandatangani `response-content-type` `application/pdf` dan `response-content-disposition` dengan `disposition` dan `fileName`; `fileName` adalah nama unggahan dengan ekstensi `.pdf`.
 3. Catat audit `VIEW_DOCUMENT` (Data Access).
 
 **Output 200**

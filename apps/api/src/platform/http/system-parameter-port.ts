@@ -1,7 +1,7 @@
 import type { Tx } from "../db/tenant-tx.js";
 
 /** Kunci parameter sistem yang sudah dipakai kode (data dictionary, daftar parameter awal). */
-export type SystemParameterKey = "CORE_MAX_TENOR_MONTHS";
+export type SystemParameterKey = "CORE_MAX_TENOR_MONTHS" | "UPLOAD_MAX_MB";
 
 /**
  * `param(key, productId?)` Master Data (technical-specs 05 §5.4) untuk modul lain tanpa impor modul masterdata,

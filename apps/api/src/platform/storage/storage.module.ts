@@ -1,6 +1,15 @@
-import { DeleteObjectsCommand, HeadBucketCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadBucketCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Global, Inject, Injectable, Module } from "@nestjs/common";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
+import { DomainError } from "../http/domain-error.js";
 
 export const S3_CLIENT = Symbol("S3_CLIENT");
 
@@ -26,7 +35,14 @@ export async function emptyBucket(client: S3Client, bucket: string): Promise<num
   }
 }
 
-/** Port storage S3-compatible (technical-specs 07 §7.7). Unggah dan URL bertanda tangan dipasang di TL-S3-02. */
+/** Header respons yang ditanam di URL bertanda tangan. */
+export interface SignedDownload {
+  expiresInSeconds: number;
+  contentType: string;
+  contentDisposition: string;
+}
+
+/** Port storage S3-compatible (technical-specs 07 §7.7): bucket privat, unduhan lewat URL bertanda tangan. */
 @Injectable()
 export class StorageService {
   constructor(
@@ -36,6 +52,30 @@ export class StorageService {
 
   async ping(signal: AbortSignal): Promise<void> {
     await this.client.send(new HeadBucketCommand({ Bucket: this.config.storage.bucket }), { abortSignal: signal });
+  }
+
+  /** Storage tidak terjangkau dijawab `503 SERVICE_UNAVAILABLE` (api-specs 12 §12.7). */
+  async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+    const command = new PutObjectCommand({
+      Bucket: this.config.storage.bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    });
+    await this.client.send(command).catch(() => {
+      throw DomainError.standard("SERVICE_UNAVAILABLE");
+    });
+  }
+
+  /** URL GET yang ditandatangani lokal tanpa memanggil storage, sehingga file tidak lewat origin aplikasi. */
+  signedGetUrl(key: string, download: SignedDownload): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.storage.bucket,
+      Key: key,
+      ResponseContentType: download.contentType,
+      ResponseContentDisposition: download.contentDisposition,
+    });
+    return getSignedUrl(this.client, command, { expiresIn: download.expiresInSeconds });
   }
 
   emptyBucket(): Promise<number> {
