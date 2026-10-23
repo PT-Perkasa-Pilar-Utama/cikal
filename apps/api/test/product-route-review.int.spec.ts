@@ -4,7 +4,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { RouteActivation } from "../src/modules/core/product/application/route-activation.js";
 import { ROUTE_ACTIVATION_QUEUE } from "../src/modules/core/product/jobs/queues.js";
+import { Licensing } from "../src/modules/core/tenancy/index.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
+import { installTestLicense, issueTestLicense, POC_LICENSE_MODULES } from "./support/license.js";
 import { insertProduct } from "./support/product.js";
 import {
   acceptedOf,
@@ -59,6 +61,27 @@ describe("ChangeRequest ROUTE review", () => {
     expect(route).toMatchObject({ versionNumber: 3, status: "ACTIVE", pendingVersionNumber: null });
     expect(route.steps.find((step) => step.stepCode === "CREDIT_BUREAU")).toMatchObject({ isEnabled: false });
     expect(await api.routeOf(productId, "?version=2")).toMatchObject({ status: "SUPERSEDED" });
+  });
+
+  it("refuses approval once a submitted step's module is no longer licensed", async () => {
+    const productId = await ktaWithVersion2(db.owner);
+    const { data } = acceptedOf(await api.propose(productId, { ...KTA_VERSION_2, DEDUP: false }));
+    const withoutM10 = POC_LICENSE_MODULES.filter((code) => code !== "M10");
+    await installTestLicense(db.owner, issueTestLicense({ modules: withoutM10 }));
+    app.get(Licensing).invalidate();
+
+    try {
+      expectError(
+        await api.review(data.changeRequestId, "approve"),
+        422,
+        "BUSINESS_RULE_VIOLATION",
+        "Module Credit Bureau is not licensed",
+      );
+      expect(await api.routeOf(productId)).toMatchObject({ versionNumber: 2, pendingVersionNumber: 3 });
+    } finally {
+      await installTestLicense(db.owner, issueTestLicense());
+      app.get(Licensing).invalidate();
+    }
   });
 
   it("returns a rejected version to Draft and accepts the next submission", async () => {

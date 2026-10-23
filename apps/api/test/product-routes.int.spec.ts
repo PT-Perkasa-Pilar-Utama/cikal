@@ -112,7 +112,7 @@ describe("/products/{id}/route", () => {
       isConditional: false,
     });
     const res = await api.send(checker, "PUT", `/products/${productId}/route`, { steps: routeSettings(KTA_VERSION_2) });
-    expect(res.statusCode).toBe(403);
+    expectError(res, 403, "ACTION_DENIED", "You do not have permission to perform this action");
   });
 
   it("AC-31.08 leaves unlicensed modules out of the editor and rejects them on submit", async () => {
@@ -155,6 +155,6 @@ describe("/products/{id}/route", () => {
     const productId = await ktaWithVersion2(db.owner);
     const steps = [...routeSettings(KTA_VERSION_2), { stepCode: "DEDUP", isEnabled: false }];
     const res = await api.send(maker, "PUT", `/products/${productId}/route`, { steps });
-    expect(res.statusCode).toBe(400);
+    expectError(res, 400, "VALIDATION_FAILED", "Please complete all required fields");
   });
 });

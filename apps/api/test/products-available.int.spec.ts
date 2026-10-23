@@ -12,6 +12,7 @@ import { startDatabase, type TestDatabase } from "./support/database.js";
 import { businessDateIn } from "./support/license.js";
 import { insertRoute } from "./support/process.js";
 import { insertProduct, insertSubProduct, nextProductCode } from "./support/product.js";
+import { expectError } from "./support/route.js";
 import { createRole, createSession, type TestSession } from "./support/session.js";
 
 const STEPS: Partial<Record<StepCode, boolean>> = { DATA_ENTRY: true, APPROVAL: true };
@@ -126,10 +127,20 @@ describe("/products/available", () => {
   });
 
   it("requires a product category", async () => {
-    expect((await get(sales, "/products/available")).statusCode).toBe(400);
+    expectError(
+      await get(sales, "/products/available"),
+      400,
+      "VALIDATION_FAILED",
+      "Please complete all required fields",
+    );
   });
 
   it("refuses a user without Application Entry access", async () => {
-    expect((await get(maker, "/products/available?productCategory=PENSION")).statusCode).toBe(403);
+    expectError(
+      await get(maker, "/products/available?productCategory=PENSION"),
+      403,
+      "ACCESS_DENIED",
+      "You do not have access to this page",
+    );
   });
 });
