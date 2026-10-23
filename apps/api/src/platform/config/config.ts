@@ -39,6 +39,8 @@ export const envSchema = z
     RESET_API_TOKEN_FILE: z.string().optional(),
     DEFAULT_RESET_SEED: z.enum(["dev", "qa"]).default("qa"),
     SEED_USER_PASSWORD_FILE: z.string().min(1).optional(),
+    REGION_API_URL: z.url().default("https://oksara.senar.id"),
+    REGION_API_KEY_FILE: z.string().min(1).optional(),
     WORKER_CONCURRENCY: z.coerce.number().int().positive().default(5),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   })
@@ -49,6 +51,13 @@ export const envSchema = z
     // Tenant bertanda trial belum dimodelkan, jadi production menolak adapter simulasi tanpa pengecualian (IN-03).
     if (env.APP_ENV === "production" && env.ALLOW_SIMULATION_ADAPTERS) {
       ctx.addIssue({ code: "custom", path: ["ALLOW_SIMULATION_ADAPTERS"], message: "must not be true in production" });
+    }
+    if (!env.ALLOW_SIMULATION_ADAPTERS && !env.REGION_API_KEY_FILE) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["REGION_API_KEY_FILE"],
+        message: "is required when ALLOW_SIMULATION_ADAPTERS=false",
+      });
     }
     if (env.ENABLE_RESET_API && !env.RESET_API_TOKEN_FILE) {
       ctx.addIssue({
@@ -101,6 +110,11 @@ export interface AppConfig {
   resetApi: { token: string; defaultSeed: "dev" | "qa"; seedUserPassword: string } | null;
   /** Adapter simulasi boleh dipanggil Integration Registry (IN-03, technical-specs 11 §11.2). */
   allowSimulationAdapters: boolean;
+  /**
+   * Penyedia data wilayah Oksara (technical-specs 11 §11.2). `apiKey` kosong berarti adapter simulasi, yang hanya
+   * boleh bila `allowSimulationAdapters`.
+   */
+  regionApi: { url: string; apiKey: string | null };
   /** Konsumen pg-boss per antrean di proses worker. */
   worker: { concurrency: number };
   /**
@@ -154,6 +168,10 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
           }
         : null,
     allowSimulationAdapters: env.ALLOW_SIMULATION_ADAPTERS,
+    regionApi: {
+      url: env.REGION_API_URL,
+      apiKey: env.REGION_API_KEY_FILE ? readSecret(env.REGION_API_KEY_FILE) : null,
+    },
     worker: { concurrency: env.WORKER_CONCURRENCY },
     licensePublicKey: licensePublicKeyPem,
   };

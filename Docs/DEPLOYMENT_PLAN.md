@@ -414,6 +414,7 @@ SMTP_PASSWORD_FILE=/run/secrets/smtp_password
 SMTP_FROM=no-reply@example.id
 
 # Integrasi
+REGION_API_URL=https://oksara.senar.id
 REGION_API_KEY_FILE=/run/secrets/oksara_key
 ALLOW_SIMULATION_ADAPTERS=true
 WORKER_CONCURRENCY=5
@@ -996,8 +997,8 @@ Hasil yang diharapkan: status `ok` atau `degraded`, satu baris `qa`, dan jumlah 
 
 | Seed | Isi | Dipakai di |
 |---|---|---|
-| `base` | Menu, role standar, parameter sistem default, data wilayah; tanpa user dan tanpa data nasabah | Production, dan dasar seed lain |
-| `dev` | `base` + company 001, satu user per role, produk KTA, rute, level approval, model scoring, matrix | `dev` |
+| `base` | Menu, role standar, parameter sistem default; tanpa user dan tanpa data nasabah. Data wilayah diisi Maker lewat "Sync Region Data" setelah deploy pertama | Production, dan dasar seed lain |
+| `dev` | `base` + company 001, satu user per role, produk KTA, rute, level approval, model scoring, matrix, 15 baris data wilayah simulasi | `dev` |
 | `qa` | `base` + data `dev` + data uji kartu wiring dan skenario MRTM | `test`, `sit`, `uat` |
 
 - Lokasi: `apps/api/src/modules/<area>/<modul>/seed/{base,dev,qa}`; hanya modul berlisensi yang ikut ke image.

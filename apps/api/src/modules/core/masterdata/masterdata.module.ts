@@ -1,7 +1,27 @@
 import { Global, Module } from "@nestjs/common";
+import { APP_CONFIG, type AppConfig } from "../../../platform/config/config.js";
 import { SYSTEM_PARAMETER_PORT } from "../../../platform/http/system-parameter-port.js";
+import { OksaraRegionAdapter } from "./adapters/oksara-region.adapter.js";
+import { SimulationRegionAdapter } from "./adapters/simulation-region.adapter.js";
+import { GetRegionSyncUseCase } from "./application/get-region-sync.use-case.js";
+import { ListRegionOptionsUseCase } from "./application/list-region-options.use-case.js";
+import { RegionSync } from "./application/region-sync.js";
+import { SearchRegionsUseCase } from "./application/search-regions.use-case.js";
+import { StartRegionSyncUseCase } from "./application/start-region-sync.use-case.js";
 import { SystemParameters } from "./application/system-parameters.js";
+import { RegionSnapshotsRepository } from "./db/region-snapshots.repository.js";
+import { RegionSyncsRepository } from "./db/region-syncs.repository.js";
+import { RegionsRepository } from "./db/regions.repository.js";
 import { SystemParametersRepository } from "./db/system-parameters.repository.js";
+import { RegionsController } from "./http/regions.controller.js";
+import { RegionSyncJob } from "./jobs/region-sync.job.js";
+import { REGION_DATA_PORT, type RegionDataPort } from "./ports/region-data.port.js";
+
+/** Adapter Oksara bila kunci tersedia; tanpa kunci adapter simulasi, yang tunduk pada IN-03. */
+function regionDataAdapter(config: AppConfig): RegionDataPort {
+  if (config.regionApi.apiKey) return new OksaraRegionAdapter(config.regionApi.url, config.regionApi.apiKey);
+  return new SimulationRegionAdapter(config.allowSimulationAdapters);
+}
 
 /**
  * Master Data: General Parameter, wilayah, asuransi, parameter sistem (technical-specs 05 §5.4).
@@ -10,10 +30,21 @@ import { SystemParametersRepository } from "./db/system-parameters.repository.js
  */
 @Global()
 @Module({
+  controllers: [RegionsController],
   providers: [
     SystemParameters,
     SystemParametersRepository,
     { provide: SYSTEM_PARAMETER_PORT, useExisting: SystemParameters },
+    { provide: REGION_DATA_PORT, inject: [APP_CONFIG], useFactory: regionDataAdapter },
+    RegionsRepository,
+    RegionSnapshotsRepository,
+    RegionSyncsRepository,
+    RegionSync,
+    RegionSyncJob,
+    ListRegionOptionsUseCase,
+    SearchRegionsUseCase,
+    StartRegionSyncUseCase,
+    GetRegionSyncUseCase,
   ],
   exports: [SYSTEM_PARAMETER_PORT],
 })

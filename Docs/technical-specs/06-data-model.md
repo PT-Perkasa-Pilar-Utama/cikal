@@ -232,8 +232,16 @@ Tabel tenant itu sendiri: `id` adalah `tenant_id` bagi tabel lain; RLS memakai `
 | bi_code | text | yes | | | kode pelaporan regulator |
 | is_active | boolean | no | true | | |
 
-### PROVINCES, CITIES, DISTRICTS, SUB_DISTRICTS, ZIP_CODES [instalasi]
-Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INSTALLATION). Kolom: `<level>_code text UQ`, `<level>_name text`, FK ke induk, `last_sync_at timestamptz`. Indeks `pg_trgm` pada nama untuk AC-23.03.
+### PROVINCES, CITIES, DISTRICTS, SUB_DISTRICTS, REGION_SYNCS [instalasi]
+Data wilayah Oksara berlaku untuk semua company (`REGION_API_KEY` bercakupan INSTALLATION). Kolom: `<level>_code text UQ`, `<level>_name text`, FK ke kode induk (`province_code`, `city_code`, `district_code`), `last_sync_at timestamptz`. Kode pos adalah kolom `sub_districts.zip_code`, karena Oksara memberi satu kode pos per kelurahan. Indeks `pg_trgm` pada nama dan kode pos untuk AC-23.03.
+
+| table.column | type | nullable | notes |
+|---|---|---|---|
+| region_syncs.status | text | no | `RUNNING`, `COMPLETED`, `FAILED`; indeks unik parsial: satu `RUNNING` per instalasi (`409 SYNC_IN_PROGRESS`) |
+| region_syncs.started_at, finished_at | timestamptz | no, yes | |
+| region_syncs.added_count, updated_count | integer | yes | Jumlah di pesan AC-23.01 |
+| region_syncs.error_category | text | yes | Kategori IN-07 saat `FAILED` |
+| region_syncs.created_by | uuid | yes | Maker yang menekan "Sync Region Data" |
 
 ### INSURANCES, INSURANCE_RATES
 | table.column | type | nullable | notes |

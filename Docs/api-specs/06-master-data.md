@@ -97,8 +97,9 @@ Semua menerima `q` untuk menyaring nama tanpa membedakan huruf besar dan kecil.
 
 1. Satu sinkronisasi berjalan per instalasi; permintaan saat masih berjalan: `409 SYNC_IN_PROGRESS`.
 2. Enqueue job `masterdata.region-sync` (pg-boss) lewat `RegionDataPort` (adapter Oksara, simulasi di dev/test).
-3. Job mengambil seluruh data ke tabel sementara lalu menukar dalam satu transaksi. Gagal atau timeout: data lama tidak berubah (AC-23.02).
-4. Hasil disimpan di baris job: jumlah ditambah, diubah, waktu selesai.
+3. Job mengambil seluruh data Oksara ke memori lebih dulu, lalu membandingkan dan menulisnya dalam satu transaksi. Gagal, timeout, kode ganda, atau kelurahan tanpa kode pos: data lama tidak berubah (AC-23.02).
+4. Cabang yang induknya tidak ada di Oksara (contoh kecamatan kabupaten 9209 dan 9210 setelah pemekaran Papua Barat Daya) tidak disimpan dan dicatat di log worker. Baris lokal yang hilang di Oksara tidak dihapus, karena kodenya mungkin dipakai alamat pengajuan.
+5. Hasil disimpan di baris `masterdata.region_syncs`: jumlah ditambah, diubah, waktu selesai. Sinkronisasi RUNNING lebih dari 30 menit dianggap gagal (`TIMEOUT`) saat sinkronisasi berikutnya diminta.
 
 **Output 202**
 
@@ -121,7 +122,7 @@ Semua menerima `q` untuk menyaring nama tanpa membedakan huruf besar dan kecil.
 |---|---|---|
 | `RUNNING` | `{ "status": "RUNNING" }` | |
 | `COMPLETED` | `{ "status": "COMPLETED", "added": 12, "updated": 3, "finishedAt": "...", "lastSyncAt": "..." }` | "Region sync completed: 12 added, 3 updated" (AC-23.01) |
-| `FAILED` | `{ "status": "FAILED", "errorCategory": "TIMEOUT" }` | "Region sync failed. Existing data is unchanged" (AC-23.02) |
+| `FAILED` | `{ "status": "FAILED", "errorCategory": "TIMEOUT" }`; `errorCategory` IN-07 atau `null` bila kegagalan bukan dari penyedia | "Region sync failed. Existing data is unchanged" (AC-23.02) |
 
 **Errors:** `NOT_FOUND` 404.
 

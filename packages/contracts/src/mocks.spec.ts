@@ -28,6 +28,12 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["taskRelease", c.taskStateResponseSchema, c.taskReleaseResponseMock],
   ["license", c.licenseResponseSchema, c.licenseResponseMock],
   ["licenseInstall", c.licenseInstallResponseSchema, c.licenseInstallResponseMock],
+  ["cityOptions", c.regionOptionsResponseSchema, c.cityOptionsResponseMock],
+  ["subDistrictOptions", c.subDistrictOptionsResponseSchema, c.subDistrictOptionsResponseMock],
+  ["regionSearch", c.regionSearchResponseSchema, c.regionSearchResponseMock],
+  ["regionSyncStarted", c.regionSyncStartedResponseSchema, c.regionSyncStartedResponseMock],
+  ["regionSyncCompleted", c.regionSyncStateResponseSchema, c.regionSyncCompletedResponseMock],
+  ["regionSyncFailed", c.regionSyncStateResponseSchema, c.regionSyncFailedResponseMock],
 ];
 
 describe("contract mocks", () => {

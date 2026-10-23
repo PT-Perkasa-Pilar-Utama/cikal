@@ -1,0 +1,364 @@
+{
+  "id": "101c9417-39c7-4af7-a311-0fb5ea94add2",
+  "prevId": "43a638f5-fc3f-4240-90ea-83873fa01e94",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "masterdata.system_parameter_definitions": {
+      "name": "system_parameter_definitions",
+      "schema": "masterdata",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "param_key": {
+          "name": "param_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "module_code": {
+          "name": "module_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value_type": {
+          "name": "value_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "allowed_values": {
+          "name": "allowed_values",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_value": {
+          "name": "min_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_value": {
+          "name": "max_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default_value": {
+          "name": "default_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lock_on_submit": {
+          "name": "lock_on_submit",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "system_parameter_definitions_param_key_unique": {
+          "name": "system_parameter_definitions_param_key_unique",
+          "columns": [
+            "param_key"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "system_parameter_definitions_category_check": {
+          "name": "system_parameter_definitions_category_check",
+          "value": "\"masterdata\".\"system_parameter_definitions\".\"category\" in ('BUSINESS', 'SECURITY', 'INTEGRATION', 'DISPLAY')"
+        },
+        "system_parameter_definitions_value_type_check": {
+          "name": "system_parameter_definitions_value_type_check",
+          "value": "\"masterdata\".\"system_parameter_definitions\".\"value_type\" in ('NUMBER', 'MONEY', 'PERCENT', 'TEXT', 'BOOLEAN', 'CHOICE', 'MULTI_CHOICE', 'SECRET')"
+        },
+        "system_parameter_definitions_scope_check": {
+          "name": "system_parameter_definitions_scope_check",
+          "value": "\"masterdata\".\"system_parameter_definitions\".\"scope\" in ('INSTALLATION', 'TENANT', 'PRODUCT')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "masterdata.system_parameter_values": {
+      "name": "system_parameter_values",
+      "schema": "masterdata",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition_id": {
+          "name": "definition_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "secret_ref": {
+          "name": "secret_ref",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_number": {
+          "name": "version_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effective_from": {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "change_request_id": {
+          "name": "change_request_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "system_parameter_values_active_unique": {
+          "name": "system_parameter_values_active_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "definition_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "coalesce(\"product_id\", '00000000-0000-0000-0000-000000000000'::uuid)",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"masterdata\".\"system_parameter_values\".\"status\" = 'ACTIVE'",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "system_parameter_values_tenant_id_companies_id_fk": {
+          "name": "system_parameter_values_tenant_id_companies_id_fk",
+          "tableFrom": "system_parameter_values",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "system_parameter_values_definition_id_system_parameter_definitions_id_fk": {
+          "name": "system_parameter_values_definition_id_system_parameter_definitions_id_fk",
+          "tableFrom": "system_parameter_values",
+          "columnsFrom": [
+            "definition_id"
+          ],
+          "tableTo": "system_parameter_definitions",
+          "schemaTo": "masterdata",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "system_parameter_values_product_id_products_id_fk": {
+          "name": "system_parameter_values_product_id_products_id_fk",
+          "tableFrom": "system_parameter_values",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "tableTo": "products",
+          "schemaTo": "product",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "system_parameter_values_change_request_id_change_requests_id_fk": {
+          "name": "system_parameter_values_change_request_id_change_requests_id_fk",
+          "tableFrom": "system_parameter_values",
+          "columnsFrom": [
+            "change_request_id"
+          ],
+          "tableTo": "change_requests",
+          "schemaTo": "cr",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "system_parameter_values_status_check": {
+          "name": "system_parameter_values_status_check",
+          "value": "\"masterdata\".\"system_parameter_values\".\"status\" in ('WAITING_APPROVAL', 'ACTIVE', 'SUPERSEDED')"
+        },
+        "system_parameter_values_version_number_check": {
+          "name": "system_parameter_values_version_number_check",
+          "value": "\"masterdata\".\"system_parameter_values\".\"version_number\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "masterdata": "masterdata"
+  },
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

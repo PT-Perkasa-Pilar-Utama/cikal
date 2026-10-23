@@ -102,10 +102,10 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 |---|---|---|---|
 | `GET /parameters/{paramType}/options` | 06 §6.1 | POC | TODO |
 | `GET /insurances` | 06 §6.2 | POC | TODO |
-| `GET /regions/provinces`, `/cities`, `/districts`, `/sub-districts` | 06 §6.3.1 | POC | TODO |
-| `GET /regions/search` | 06 §6.3.2 | POC | TODO |
-| `POST /regions/sync` | 06 §6.3.3 | POC | TODO |
-| `GET /regions/sync/{syncId}` | 06 §6.3.4 | POC | TODO |
+| `GET /regions/provinces`, `/cities`, `/districts`, `/sub-districts` | 06 §6.3.1 | POC | OK |
+| `GET /regions/search` | 06 §6.3.2 | POC | OK |
+| `POST /regions/sync` | 06 §6.3.3 | POC | OK |
+| `GET /regions/sync/{syncId}` | 06 §6.3.4 | POC | OK |
 | General Parameter, import/export, insurance, system parameter (tulis) | 06 §6.4 | Backlog | TODO |
 
 ### Change requests
