@@ -47,6 +47,14 @@ export const sessionResponseMock = {
             actions: ["VIEW", "CREATE", "UPDATE", "DELETE"],
             children: [],
           },
+          {
+            menuCode: "MST-CHECKLIST",
+            menuName: "Document Checklist",
+            link: "/master/checklists",
+            iconName: "list-checks",
+            actions: ["VIEW", "CREATE", "UPDATE", "DELETE"],
+            children: [],
+          },
         ],
       },
       {

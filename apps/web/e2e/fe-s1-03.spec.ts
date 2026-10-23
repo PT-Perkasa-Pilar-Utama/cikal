@@ -13,7 +13,7 @@ const PENDING_PRODUCT = "/master/products/pending";
 test("AC-20.01 a Maker submits a new product from the form and it waits for approval", async ({ pageAs }) => {
   const page = await pageAs("maker.01");
   await page.goto("/");
-  await page.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name: "Product" }).click();
+  await page.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name: "Product", exact: true }).click();
   await page.getByRole("link", { name: "New Product" }).click();
 
   await page.getByLabel(/^Product Code/).fill("KTA");

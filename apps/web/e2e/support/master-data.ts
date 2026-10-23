@@ -1,6 +1,7 @@
 import {
   changeRequestAcceptedSchema,
   changeRequestReviewResponseSchema,
+  type DocumentChecklistCreateRequest,
   type ProductCreateRequest,
 } from "@cikal/contracts";
 import { todayIsoDate } from "../../src/lib/format";
@@ -32,9 +33,18 @@ export async function submitProduct(username: SessionUser, productCode: string, 
   return accepted.data.changeRequestId;
 }
 
-/** Persetujuan lewat `POST /api/v1/change-requests/{id}/approve` (api-specs 07 §7.4). */
-export async function approve(username: SessionUser, changeRequestId: string): Promise<void> {
-  await ApiSession.as(username, (checker) =>
+/** Persetujuan lewat `POST /api/v1/change-requests/{id}/approve` (api-specs 07 §7.4); hasilnya id data. */
+export async function approve(username: SessionUser, changeRequestId: string): Promise<string | null> {
+  const reviewed = await ApiSession.as(username, (checker) =>
     checker.post(changeRequestReviewResponseSchema, `/api/v1/change-requests/${changeRequestId}/approve`, {}),
   );
+  return reviewed.data.entityId ?? null;
+}
+
+/** Pengajuan checklist dokumen lewat `POST /api/v1/document-checklists` (api-specs 08 §8.11). */
+export async function submitChecklist(username: SessionUser, body: DocumentChecklistCreateRequest): Promise<string> {
+  const accepted = await ApiSession.as(username, (maker) =>
+    maker.post(changeRequestAcceptedSchema, "/api/v1/document-checklists", body),
+  );
+  return accepted.data.changeRequestId;
 }
