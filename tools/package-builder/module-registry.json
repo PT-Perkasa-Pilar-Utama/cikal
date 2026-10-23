@@ -49,12 +49,12 @@
       "importPath": "./modules/core/application/index.js"
     },
     {
-      "className": "TaskQueueModule",
-      "importPath": "./modules/core/task-queue/index.js"
-    },
-    {
       "className": "OrchestratorModule",
       "importPath": "./modules/core/orchestrator/index.js"
+    },
+    {
+      "className": "TaskQueueModule",
+      "importPath": "./modules/core/task-queue/index.js"
     },
     {
       "className": "VerificationModule",

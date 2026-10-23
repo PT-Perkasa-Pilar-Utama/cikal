@@ -194,9 +194,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /tasks` | 14 §14.2 | POC | TODO |
-| `POST /tasks/{id}/assign` | 14 §14.3 | POC | TODO |
-| `POST /tasks/{id}/release` | 14 §14.4 | POC | TODO |
+| `GET /tasks` | 14 §14.2 | POC | OK |
+| `POST /tasks/{id}/assign` | 14 §14.3 | POC | OK |
+| `POST /tasks/{id}/release` | 14 §14.4 | POC | OK |
 
 ### Verification
 

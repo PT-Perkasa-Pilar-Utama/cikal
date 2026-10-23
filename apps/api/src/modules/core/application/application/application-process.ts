@@ -20,6 +20,11 @@ export class ApplicationProcess {
     return this.applications.findById(tx, id);
   }
 
+  /** Pengajuan tenant transaksi untuk daftar modul lain, contoh antrean tugas; id yang tidak ada dilewati. */
+  findMany(tx: Tx, ids: readonly string[]): Promise<ProcessApplication[]> {
+    return this.applications.findMany(tx, [...new Set(ids)]);
+  }
+
   /** Langkah tempat proses berada, untuk detail pengajuan dan Process Monitoring (tech ref 6.4). */
   setCurrentStep(tx: Tx, id: string, step: StepCode): Promise<void> {
     return this.applications.updateCurrentStep(tx, id, step);

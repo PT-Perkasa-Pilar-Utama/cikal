@@ -24,6 +24,8 @@ export interface StepRun {
 
 /** Antrean Risk Manager untuk hasil RECONTEST (technical-specs 12 §12.3, data dictionary HumanTask). */
 const RECONTEST_QUEUE = "RECONTEST";
+/** Antrean Process Monitoring untuk ERROR tanpa retry otomatis lagi (technical-specs 12 §12.3). */
+const PROCESS_ERROR_QUEUE = "PROCESS_ERROR";
 
 /**
  * Pencatatan tujuh hasil langkah (technical-specs 12 §12.3) di transaksi langkah: StepExecution, ProcessInstance,
@@ -101,9 +103,15 @@ export class StepResults {
       case "FINISH":
         return this.applications.transition(tx, process.applicationId, result.applicationStatus, { userId });
       case "ERROR":
-        // Tugas antrean PROCESS_ERROR untuk ERROR akhir dibuat di kartu BE-S2-02 (butuh tabel human_tasks).
-        if (retryDelay !== null) await this.jobs.advance(tx, process, retryDelay);
-        return;
+        if (retryDelay !== null) return this.jobs.advance(tx, process, retryDelay);
+        return this.tasks.create(tx, {
+          stepExecutionId: step.id,
+          applicationId: process.applicationId,
+          queueCode: PROCESS_ERROR_QUEUE,
+          branchId: null,
+          eligibleRoleId: null,
+          assigneeUserId: null,
+        });
     }
   }
 }

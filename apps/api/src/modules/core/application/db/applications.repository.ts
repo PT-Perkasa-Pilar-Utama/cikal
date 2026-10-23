@@ -1,6 +1,6 @@
 import type { ApplicationStatus, StepCode } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { applications } from "./schema.js";
 
@@ -32,6 +32,14 @@ export class ApplicationsRepository {
   async findById(tx: Tx, id: string): Promise<ApplicationProcessRow | null> {
     const [row] = await tx.select(processColumns).from(applications).where(eq(applications.id, id));
     return row ?? null;
+  }
+
+  async findMany(tx: Tx, ids: readonly string[]): Promise<ApplicationProcessRow[]> {
+    if (ids.length === 0) return [];
+    return tx
+      .select(processColumns)
+      .from(applications)
+      .where(inArray(applications.id, [...ids]));
   }
 
   /** Mengunci baris sampai transaksi selesai agar perubahan status tidak saling menimpa. */

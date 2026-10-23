@@ -11,4 +11,5 @@ export * from "./health/index.js";
 export * from "./orchestrator/index.js";
 export * from "./product/index.js";
 export * from "./system/index.js";
+export * from "./task/index.js";
 export * from "./tenancy/index.js";

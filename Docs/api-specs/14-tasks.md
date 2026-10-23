@@ -32,7 +32,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 | queueCode | enum | ya | |
 | status | enum | tidak | default `OPEN,ASSIGNED` |
 | assignedToMe | boolean | tidak | |
-| q | string | tidak | Loan ID atau nama |
+| q | string | tidak | Loan ID atau nama; pencarian nama ditambahkan bersama data debitur di BE-S3-01 |
 | page, pageSize, sort | | tidak | `sort`: `createdAt` (default `createdAt,asc`), `loanId` |
 
 **Behavior:** Tugas yang boleh dilihat user: role sama dengan `eligibleRoleId` dan unit kerja mencakup cabang tugas; antrean `APPROVAL` hanya tugas dengan `assignedUserId` = user sesi (`../technical-specs/09-authentication-authorization.md` 9.4). Supervisor dengan `OPS-PRESCREEN-L2` melihat tugas antrean cabangnya untuk dilepas.
@@ -49,6 +49,8 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
   "meta": { "page": 1, "pageSize": 20, "totalItems": 5, "totalPages": 1 }
 }
 ```
+
+`fullName` bernilai `null` sampai data debitur ada (BE-S3-01); `branchCode` bernilai `null` sampai tabel cabang ada (TL-S5-04).
 
 `allowedActions` dihitung server untuk user sesi: `ASSIGN` (tugas `OPEN`, antrean dengan Assign to Me), `PROCEED` dan `RELEASE` (pemilik), `RELEASE_OTHER` (Supervisor). Tugas milik orang lain tidak punya `ASSIGN` dan `PROCEED` (AC-58.02, AC-58.06).
 
@@ -69,7 +71,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 
 1. Antrean tanpa Assign to Me: `409 INVALID_STATE`.
 2. `UPDATE ... SET assigned_user_id = :me, status = 'ASSIGNED', version = version + 1 WHERE id = :id AND status = 'OPEN' AND version = :version`. Nol baris: `409 TASK_ALREADY_ASSIGNED` dengan username pengambil di pesan (AC-58.04).
-3. Catat audit `TASK_ASSIGNED`.
+3. Catat audit aksi `ASSIGN` (daftar `AuditLog.action` data dictionary).
 
 **Output 200:** `{"data":{"id":"0192...","status":"ASSIGNED","assignedTo":{"username":"veri.02"},"version":3}}` (AC-58.01).
 
@@ -94,7 +96,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 
 1. Bukan pemilik dan tanpa hak Supervisor: `403 ACTION_DENIED` (AC-58.06).
 2. Kosongkan `assignedUserId`, status `OPEN`, `version + 1`; progres yang tersimpan (contoh verifikasi sebagian) tetap ada.
-3. Catat audit `TASK_RELEASED` beserta pelepas (AC-58.05).
+3. Catat audit aksi `RELEASE` dengan pelepas sebagai pelaku (AC-58.05).
 
 **Output 200:** `{"data":{"id":"0192...","status":"OPEN","assignedTo":null,"version":4}}` (AC-58.03, AC-58.05).
 
