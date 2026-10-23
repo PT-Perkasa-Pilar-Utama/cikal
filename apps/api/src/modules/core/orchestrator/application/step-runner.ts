@@ -10,6 +10,7 @@ import { StepExecutionsRepository, type StepRow } from "../db/step-executions.re
 import { currentStep, routeSkipReason } from "../domain/route-plan.js";
 import { stepContext } from "../domain/step-context.js";
 import { ProcessJobs } from "./process-jobs.js";
+import { StepEvents } from "./step-events.js";
 import { type StepHandler, StepHandlerRegistry } from "./step-handler.js";
 import { StepResults } from "./step-results.js";
 
@@ -37,6 +38,7 @@ export class StepRunner {
     private readonly results: StepResults,
     private readonly jobs: ProcessJobs,
     private readonly licensing: Licensing,
+    private readonly events: StepEvents,
   ) {}
 
   /** Proses harus RUNNING dan terkunci. ERROR pada langkah saat ini berarti retry otomatis yang sudah jatuh tempo. */
@@ -81,6 +83,12 @@ export class StepRunner {
       const reason = await this.skipReason(tx, process, step, handler, ctx);
       if (reason) {
         await this.steps.update(tx, step.id, { status: "SKIPPED", skipReason: reason });
+        await this.events.publish(tx, process, "StepSkipped", {
+          stepCode: step.stepCode,
+          attempt: step.attempt,
+          outcomeCode: null,
+          skipReason: reason,
+        });
         await this.jobs.advance(tx, process);
         return null;
       }

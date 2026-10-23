@@ -41,6 +41,9 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["applicationDraftList", c.applicationDraftListResponseSchema, c.applicationDraftListResponseMock],
   ["applicationForm", c.applicationFormResponseSchema, c.applicationFormResponseMock],
   ["sectionSave", c.sectionSaveResponseSchema, c.sectionSaveResponseMock],
+  ["applicationDocuments", c.applicationDocumentsResponseSchema, c.applicationDocumentsResponseMock],
+  ["documentUpload", c.documentUploadResponseSchema, c.documentUploadResponseMock],
+  ["applicationSubmit", c.applicationSubmitResponseSchema, c.applicationSubmitResponseMock],
   ["insurances", c.insuranceListResponseSchema, c.insuranceListResponseMock],
 ];
 

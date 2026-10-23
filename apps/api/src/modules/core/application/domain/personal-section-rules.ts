@@ -3,7 +3,7 @@ import { Decimal } from "decimal.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { formatAmount } from "./amount.js";
 import { ageInMonths, ageInYears } from "./applicant-age.js";
-import { requiredFieldsError } from "./required-fields.js";
+import { fieldRuleError, requiredFieldsError } from "./section-errors.js";
 
 /** Data pengajuan, produk, dan parameter yang dibutuhkan aturan section Personal (api-specs 12 §12.3). */
 export interface PersonalRuleContext {
@@ -55,17 +55,17 @@ export function personalSectionError(input: PersonalSectionInput, context: Perso
   const age = ageInYears(dateOfBirth, today);
   if (age < product.minAge || age > product.maxAge) {
     const message = APPLICATION_SECTION_MESSAGES.ageOutOfRange(product.minAge, product.maxAge);
-    return new DomainError("AGE_OUT_OF_RANGE", message, 422);
+    return fieldRuleError("AGE_OUT_OF_RANGE", message, "dateOfBirth");
   }
   if (npwpMissing(input, context)) {
     const message = APPLICATION_SECTION_MESSAGES.npwpRequired(formatAmount(context.npwpMinLimit));
-    return new DomainError("NPWP_REQUIRED", message, 422);
+    return fieldRuleError("NPWP_REQUIRED", message, "npwpNumber");
   }
   const maxMonths = product.maxAgeAtMaturityMonth;
   const tenor = context.tenorProposed;
   if (maxMonths !== null && tenor !== null && ageInMonths(dateOfBirth, today) + tenor > maxMonths) {
     const message = APPLICATION_SECTION_MESSAGES.ageAtMaturityExceeded(maturityYears(maxMonths));
-    return new DomainError("AGE_AT_MATURITY_EXCEEDED", message, 422);
+    return fieldRuleError("AGE_AT_MATURITY_EXCEEDED", message, "dateOfBirth");
   }
   return null;
 }

@@ -1,4 +1,4 @@
-import type { ProcessStatus, StepContext, StepResult } from "@cikal/contracts";
+import type { ProcessStatus, StepContext, StepResult, StepStatus } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { TASK_QUEUE_PORT, type TaskQueuePort } from "../../../../platform/http/task-queue-port.js";
@@ -14,6 +14,7 @@ import {
   stepStatusFor,
 } from "../domain/step-transitions.js";
 import { ProcessJobs } from "./process-jobs.js";
+import { StepEvents } from "./step-events.js";
 
 /** Satu attempt langkah yang hasilnya sedang dicatat. */
 export interface StepRun {
@@ -39,6 +40,7 @@ export class StepResults {
     private readonly applications: ApplicationProcess,
     private readonly jobs: ProcessJobs,
     @Inject(TASK_QUEUE_PORT) private readonly tasks: TaskQueuePort,
+    private readonly events: StepEvents,
   ) {}
 
   /**
@@ -60,10 +62,21 @@ export class StepResults {
       result.type === "ERROR" && !manualRetry ? automaticRetryDelaySeconds(result, run.step.attempt) : null;
     await this.steps.update(tx, run.step.id, { status, ...stepChanges(run.step, result, actorUserId, new Date()) });
     await this.moveProcess(tx, run.process, processStatusAfter(result, retryDelay !== null));
+    await this.publishEvent(tx, run, status, result);
     if (result.type === "ERROR" && manualRetry) return;
     await this.followUp(tx, run, result, actorUserId, retryDelay);
-    // Event StepCompleted, StepFailed, StepSkipped (technical-specs 12 §12.3) ditulis ke outbox platform yang
-    // dibangun kartu BE-S3-03 bersama event pertama, ApplicationSubmitted (api-specs 12 §12.8 langkah 6).
+  }
+
+  /** StepCompleted atau StepFailed; status menunggu belum berakhir sehingga tanpa event (technical-specs 12 §12.3). */
+  private async publishEvent(tx: Tx, run: StepRun, status: StepStatus, result: StepResult): Promise<void> {
+    const eventType = status === "COMPLETED" ? "StepCompleted" : status === "ERROR" ? "StepFailed" : null;
+    if (!eventType) return;
+    await this.events.publish(tx, run.process, eventType, {
+      stepCode: run.step.stepCode,
+      attempt: run.step.attempt,
+      outcomeCode: "outcomeCode" in result ? result.outcomeCode : null,
+      skipReason: null,
+    });
   }
 
   private async moveProcess(tx: Tx, process: ProcessRow, to: ProcessStatus): Promise<void> {

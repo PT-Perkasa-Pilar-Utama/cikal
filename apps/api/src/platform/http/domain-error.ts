@@ -4,6 +4,8 @@ export interface ErrorDetail {
   field: string;
   code: string;
   message: string;
+  /** Section form pengajuan yang ditandai error di stepper (api-specs 12 §12.8 langkah 2). */
+  section?: string;
 }
 
 /**

@@ -155,6 +155,21 @@ export class ApplicationsRepository {
       .where(eq(applications.id, id));
   }
 
+  /** Draft dikirim: `ON_PROGRESS`, waktu dan pengirim dicatat, catatan pengembalian dihapus (api-specs 12 §12.8). */
+  async markSubmitted(tx: Tx, id: string, userId: string, at: Date): Promise<void> {
+    await tx
+      .update(applications)
+      .set({
+        status: "ON_PROGRESS",
+        submittedAt: at,
+        submittedBy: userId,
+        returnNote: null,
+        updatedAt: at,
+        updatedBy: userId,
+      })
+      .where(eq(applications.id, id));
+  }
+
   async listDrafts(
     tx: Tx,
     filter: DraftFilter,

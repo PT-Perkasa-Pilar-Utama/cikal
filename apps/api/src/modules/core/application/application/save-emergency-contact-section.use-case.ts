@@ -3,10 +3,9 @@ import { Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { ApplicationEmergencyContactsRepository } from "../db/application-emergency-contacts.repository.js";
-import { ApplicationPersonalsRepository } from "../db/application-personals.repository.js";
 import { addressColumns } from "../domain/address-fields.js";
-import { emergencyContactSectionError } from "../domain/emergency-contact-section-rules.js";
 import { DraftSections } from "./draft-sections.js";
+import { StrictSections } from "./strict-sections.js";
 
 /** Simpan section Emergency Contact (api-specs 12 §12.3; AC-48.01 s.d. AC-48.04). */
 @Injectable()
@@ -14,7 +13,7 @@ export class SaveEmergencyContactSectionUseCase {
   constructor(
     private readonly db: TenantTx,
     private readonly sections: DraftSections,
-    private readonly personals: ApplicationPersonalsRepository,
+    private readonly rules: StrictSections,
     private readonly contacts: ApplicationEmergencyContactsRepository,
   ) {}
 
@@ -26,11 +25,8 @@ export class SaveEmergencyContactSectionUseCase {
   ): Promise<SectionSaveResponse> {
     return this.db.withTenantTx(ctx, async (tx) => {
       const draft = await this.sections.lock(tx, ctx, id);
-      if (strict) {
-        const personal = await this.personals.findByApplication(tx, draft.id);
-        const error = emergencyContactSectionError(input, personal?.mobileNumber ?? null);
-        if (error) throw error;
-      }
+      const error = strict ? await this.rules.emergencyContactError(tx, draft, input) : null;
+      if (error) throw error;
       await this.contacts.upsert(
         tx,
         { applicationId: draft.id, tenantId: ctx.tenantId },

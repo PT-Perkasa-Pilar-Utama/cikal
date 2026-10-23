@@ -2,7 +2,7 @@ import { APPLICATION_SECTION_MESSAGES, type ApplicationSectionInput } from "@cik
 import { Decimal } from "decimal.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { formatAmount } from "./amount.js";
-import { requiredFieldsError } from "./required-fields.js";
+import { fieldRuleError, requiredFieldsError } from "./section-errors.js";
 
 /** Batas plafon dan tenor produk (AC-39.03). */
 export interface ProductLimits {
@@ -37,12 +37,12 @@ export function applicationLimitError(
       formatAmount(product.minPlafond),
       formatAmount(product.maxPlafond),
     );
-    return new DomainError("LIMIT_OUT_OF_RANGE", message, 422);
+    return fieldRuleError("LIMIT_OUT_OF_RANGE", message, "requestedLimit");
   }
   const tenor = input.tenorProposed ?? product.minTenor;
   if (tenor < product.minTenor || tenor > product.maxTenor) {
     const message = APPLICATION_SECTION_MESSAGES.tenorOutOfRange(product.minTenor, product.maxTenor);
-    return new DomainError("TENOR_OUT_OF_RANGE", message, 422);
+    return fieldRuleError("TENOR_OUT_OF_RANGE", message, "tenorProposed");
   }
   return null;
 }

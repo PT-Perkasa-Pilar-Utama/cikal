@@ -2,6 +2,7 @@ import {
   type ApplicationDraftListResponse,
   type ApplicationDraftResponse,
   type ApplicationFormResponse,
+  type ApplicationSubmitResponse,
   applicationDraftCreateRequestSchema,
   applicationDraftListQuerySchema,
 } from "@cikal/contracts";
@@ -10,20 +11,23 @@ import { createZodDto } from "nestjs-zod";
 import { Requires } from "../../../../platform/http/access.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { CurrentContext } from "../../../../platform/http/current-context.js";
+import { IdempotencyRequired } from "../../../../platform/http/idempotency.interceptor.js";
 import { GetDraftFormUseCase } from "../application/get-draft-form.use-case.js";
 import { ListDraftsUseCase } from "../application/list-drafts.use-case.js";
 import { SaveDraftUseCase } from "../application/save-draft.use-case.js";
+import { SubmitApplicationUseCase } from "../application/submit-application.use-case.js";
 
 class DraftCreateDto extends createZodDto(applicationDraftCreateRequestSchema) {}
 class DraftListQueryDto extends createZodDto(applicationDraftListQuerySchema) {}
 
-/** Draft pengajuan web (api-specs 12 §12.2, §12.4, §12.5). */
+/** Draft dan submit pengajuan web (api-specs 12 §12.2, §12.4, §12.5, §12.8). */
 @Controller("v1/applications")
 export class ApplicationsController {
   constructor(
     private readonly saves: SaveDraftUseCase,
     private readonly lists: ListDraftsUseCase,
     private readonly forms: GetDraftFormUseCase,
+    private readonly submits: SubmitApplicationUseCase,
   ) {}
 
   @Post()
@@ -49,5 +53,16 @@ export class ApplicationsController {
     @Param("id", ParseUUIDPipe) id: string,
   ): Promise<ApplicationFormResponse> {
     return this.forms.execute(ctx, id);
+  }
+
+  @Post(":id/submit")
+  @HttpCode(200)
+  @Requires("APP-ENTRY", "CREATE")
+  @IdempotencyRequired()
+  submit(
+    @CurrentContext() ctx: RequestContext,
+    @Param("id", ParseUUIDPipe) id: string,
+  ): Promise<ApplicationSubmitResponse> {
+    return this.submits.execute(ctx, id);
   }
 }

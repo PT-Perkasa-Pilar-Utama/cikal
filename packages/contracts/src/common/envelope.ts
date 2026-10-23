@@ -35,6 +35,8 @@ export const errorDetailSchema = z.object({
   field: z.string(),
   code: z.string(),
   message: z.string(),
+  /** Section form pengajuan yang ditandai error di stepper (api-specs 12 §12.8 langkah 2). */
+  section: z.string().optional(),
 });
 
 /** Format error seragam API-04 (api-specs 01 §1.5). */

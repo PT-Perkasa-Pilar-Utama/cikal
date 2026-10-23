@@ -3,6 +3,7 @@ import { dataEnvelope } from "../common/envelope.js";
 import { businessDate, id, money, timestamp } from "../common/scalars.js";
 import { productCategorySchema } from "../product/products.schema.js";
 import { applicationStatusSchema } from "./application.schema.js";
+import { documentCompletenessSchema } from "./documents.schema.js";
 import { formSectionSchema } from "./drafts.schema.js";
 
 const nullableText = z.string().nullable();
@@ -94,8 +95,7 @@ const emergencyContactSectionSchema = z.object({
 
 /**
  * Respons `GET /applications/{id}/form` (api-specs 12 §12.5). Section yang belum disimpan bernilai `null`.
- * `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan dari pekerjaan dan status kawin;
- * jumlahnya diisi kartu BE-S3-03.
+ * `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan dari pekerjaan dan status kawin.
  */
 export const applicationFormResponseSchema = dataEnvelope(
   z.object({
@@ -110,9 +110,7 @@ export const applicationFormResponseSchema = dataEnvelope(
       occupation: occupationSectionSchema.nullable(),
       "emergency-contact": emergencyContactSectionSchema.nullable(),
     }),
-    documentCompleteness: z
-      .object({ uploadedMandatory: z.number().int().min(0), requiredMandatory: z.number().int().min(0) })
-      .nullable(),
+    documentCompleteness: documentCompletenessSchema.nullable(),
     returnNote: z.string().nullable(),
   }),
 );

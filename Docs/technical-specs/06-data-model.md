@@ -56,6 +56,7 @@ erDiagram
 | column | type | nullable | default | key | notes |
 |---|---|---|---|---|---|
 | id | uuid | no | | PK | |
+| tenant_id | uuid | no | | | transaksi worker saat mengirim; tanpa FK karena platform dimigrasi sebelum tenancy |
 | event_type | text | no | | | `ApplicationSubmitted` |
 | aggregate_id | uuid | no | | | id pengajuan atau data master |
 | payload | jsonb | no | | | tanpa field sensitif |
@@ -477,7 +478,7 @@ Indeks `pg_trgm` pada `loan_id` dan nama (lewat `application_personals.full_name
 | emergency_contacts.contact_name, relation_to_applicant | text | yes (draft) | |
 | emergency_contacts.mobile_number | text | yes (draft) | `08`, 10 s.d. 13 digit, beda dari pemohon |
 | emergency_contacts.home_phone_number, alt_phone_number, address, wilayah | text | yes | |
-| documents.document_type | text | no | dari checklist |
+| documents.document_type | text | no | dari checklist; UQ(application_id, document_type) |
 | documents.file_id | uuid | yes | FK document.document_files |
 | documents.verification_status | text | no | `PENDING`, `MATCH`, `NOT_MATCH` |
 | documents.verification_remarks | text | yes | |

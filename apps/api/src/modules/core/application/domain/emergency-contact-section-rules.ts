@@ -1,6 +1,6 @@
 import { APPLICATION_SECTION_MESSAGES, type EmergencyContactSectionInput } from "@cikal/contracts";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { requiredFieldsError } from "./required-fields.js";
+import { fieldRuleError, requiredFieldsError } from "./section-errors.js";
 
 /**
  * Aturan section Emergency Contact mode strict: field wajib, lalu nomor kontak berbeda dari nomor pemohon
@@ -19,7 +19,7 @@ export function emergencyContactSectionError(
   if (required) return required;
   if (input.mobileNumber === applicantMobileNumber) {
     const message = APPLICATION_SECTION_MESSAGES.emergencyContactSameNumber;
-    return new DomainError("EMERGENCY_CONTACT_SAME_NUMBER", message, 422);
+    return fieldRuleError("EMERGENCY_CONTACT_SAME_NUMBER", message, "mobileNumber");
   }
   return null;
 }
