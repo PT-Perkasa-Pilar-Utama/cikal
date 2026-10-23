@@ -414,6 +414,7 @@ SMTP_PASSWORD_FILE=/run/secrets/smtp_password
 SMTP_FROM=no-reply@example.id
 
 # Integrasi
+REGION_API_URL=https://oksara.senar.id
 REGION_API_KEY_FILE=/run/secrets/oksara_key
 ALLOW_SIMULATION_ADAPTERS=true
 WORKER_CONCURRENCY=5
