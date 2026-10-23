@@ -52,3 +52,4 @@ Spesifikasi teknis Cikal (rebuild LOS). Diturunkan dari `Docs/business/` (user s
 | ADR-002 | Stack: Node.js 22, TypeScript, NestJS 11 + Fastify, Drizzle, Zod, React 19 SPA, PostgreSQL 17, pg-boss | `04-tech-stack.md` |
 | ADR-003 | Isolasi tenant: `tenant_id` + Row-Level Security | `06-data-model.md` 6.1, `07-security.md` 7.3 |
 | ADR-004 | Mesin rumus: jsep + evaluator daftar putih + decimal.js | `05-module-definitions.md` 5.16 |
+| ADR-005 | File di object storage dienkripsi oleh storage (SeaweedFS `-filer.encryptVolumeData` atau default encryption penyedia), tanpa enkripsi isi file di aplikasi, agar URL bertanda tangan tetap bisa menyajikan file (issue #103) | `07-security.md` 7.7 |

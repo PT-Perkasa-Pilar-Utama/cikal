@@ -115,7 +115,7 @@ IP `10.10.0.10` dan `10.10.0.20` adalah contoh. Ganti dengan IP privat asli di `
 | `migrate` | `ghcr.io/pt-perkasa-pilar-utama/cikal-api` | Tunggal / aplikasi | tidak ada | Entrypoint runner `platform/migrate`; sekali jalan; `api` dan `worker` menunggu selesai (`service_completed_successfully`) |
 | `gotenberg` | `gotenberg/gotenberg:8.20.1` | Tunggal / aplikasi | internal 3000 | Konversi PDF |
 | `db` | Tunggal: `postgres:17.6-alpine`; production: `ghcr.io/pt-perkasa-pilar-utama/cikal-postgres:17.6` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:5432` | Role `cikal_owner` (pemilik skema) dan `cikal_app` (tanpa `BYPASSRLS`) dibuat skrip `initdb` |
-| `storage` | `chrislusf/seaweedfs:3.97` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:9000` | S3-compatible, Apache 2.0 |
+| `storage` | `chrislusf/seaweedfs:3.97` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:9000` | S3-compatible, Apache 2.0; `-filer.encryptVolumeData` wajib (tech 07 §7.7, ADR-005) |
 | `storage-init` | `chrislusf/seaweedfs:3.97` | Tunggal / data | tidak ada | Membuat bucket `${S3_BUCKET}`, lalu berhenti |
 | `mailpit` | `axllent/mailpit:v1.27` | SIT | `127.0.0.1:8025` | Profil compose `mailpit`; email tidak pernah keluar |
 | `certbot` | `certbot/certbot:v3.3.0` | Tunggal / aplikasi | tidak ada | Profil compose `tools`; terbit dan perpanjang sertifikat |
@@ -175,7 +175,7 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | Bagian | Hosting PPU | On-premise client |
 |---|---|---|
 | Sertifikat | Let's Encrypt (3.7) | Sertifikat dari client di-mount ke path yang sama (`/etc/letsencrypt/live/${DOMAIN}/`); langkah certbot dilewati |
-| Object storage | SeaweedFS di compose | `S3_ENDPOINT` ke storage client; service `storage` dan `storage-init` tidak dijalankan |
+| Object storage | SeaweedFS di compose | `S3_ENDPOINT` ke storage client; service `storage` dan `storage-init` tidak dijalankan. Client mengonfirmasi default encryption bucket atau grid aktif sebelum go-live (tech 07 §7.7) |
 | PostgreSQL | Container di VM data | Container di VM data, atau server client (isi `DATABASE_URL`, `DATABASE_MIGRATION_URL`) |
 | SMTP | Relay transaksional PPU | SMTP client |
 | Registry | VM menarik dari GHCR | Bila VM client tanpa internet: `docker save` di laptop TL, salin, `docker load` |

@@ -1,7 +1,7 @@
 # Cikal POC: Task Breakdown
 
-**Version:** 0.3  
-**Date:** 2026-10-22  
+**Version:** 0.4  
+**Date:** 2026-10-23  
 **Author:** Tech Lead  
 **Status:** Draft  
 **Phase:** POC  
@@ -126,8 +126,9 @@ Goal: Sales membuat pengajuan KTA di web dari draft sampai submit, dengan alamat
 | TL-S3-02 | Bangun penyimpanan dokumen | Port S3, metadata DocumentFile, validasi ukuran dan magic bytes, konversi ke PDF lewat Gotenberg, `GET /files/{fileId}/download-url` berumur 5 menit. | AC-47.02 s.d. AC-47.04 | TL | 1d | api 10 §10.1; tech 07 §7.7 |
 | TL-S3-03 | Bangun pembentuk Loan ID | ddMMyyyy + kode produk + 7 digit; counter per produk per company dengan `UPDATE ... RETURNING`; batas counter. | AC-49.01, AC-49.03, AC-49.04 | TL | 1d | api 12 §12.2; tech 06 §6.9 |
 | TL-S3-04 | Bangun API dan layar checklist dokumen | `POST/GET/PUT /document-checklists` lewat checker-maker; layar daftar, form centang dokumen, Pending memakai komponen generik. Satu pemilik, wiring di kartu ini. Exit: uji Playwright checklist disetujui lalu tampil di step Document. | AC-25.01 s.d. AC-25.03 | TL | 1d | api 08 §8.11, §8.12 |
+| TL-S3-05 | Bangun layanan kunci enkripsi tenant | Tabel `platform.tenant_keys`; kunci utama dari `MASTER_KEY_FILE`; data key `ENCRYPTION` dan `BLIND_INDEX` per company dibungkus kunci utama, dibuat saat company dibuat dan di seed; enkripsi dan dekripsi field AES-256-GCM dengan `key_version`; blind index HMAC-SHA256. Dikerjakan sebelum BE-S3-02. `platform.secrets` dan job re-enkripsi rotasi di luar kartu ini. | - | TL | 1d | tech 06 §6.3, DM-08; tech 07 §7.4; tech 11 |
 | BE-S3-01 | Bangun API draft pengajuan | `POST /applications`, `GET /applications/drafts`, `GET /applications/{id}/form`; syarat minimal draft; draft hanya terlihat pemiliknya; lanjutkan dari step terakhir. | AC-49.02, AC-49.05, AC-49.06 | FS1 | 1.5d | api 12 §12.2, §12.4, §12.5 |
-| BE-S3-02 | Bangun validasi section pengajuan | `PUT /applications/{id}/sections/{section}` mode strict dan draft; `GET /parameters/{paramType}/options`, `GET /insurances`; aturan Application, Personal, Occupation (Pension, KUR), Emergency Contact; persetujuan pemohon dicatat. | AC-39.01 s.d. AC-39.03, AC-40.01 s.d. AC-40.10, AC-44.01 s.d. AC-44.05, AC-48.01 s.d. AC-48.04 | FS1 | 2d | api 12 §12.1, §12.3, api 06 §6.1, §6.2 |
+| BE-S3-02 | Bangun validasi section pengajuan | `PUT /applications/{id}/sections/{section}` mode strict dan draft; `GET /parameters/{paramType}/options`, `GET /insurances`; aturan Application, Personal, Occupation (Pension, KUR), Emergency Contact; persetujuan pemohon dicatat; NIK dan field DM-08 disimpan lewat layanan kunci TL-S3-05. | AC-39.01 s.d. AC-39.03, AC-40.01 s.d. AC-40.10, AC-44.01 s.d. AC-44.05, AC-48.01 s.d. AC-48.04 | FS1 | 2d | api 12 §12.1, §12.3, api 06 §6.1, §6.2 |
 | BE-S3-03 | Bangun dokumen pengajuan dan submit | `GET /applications/{id}/documents`, `PUT /applications/{id}/documents/{documentType}`, `POST /applications/{id}/submit` (Idempotency-Key wajib); kelengkapan dokumen wajib; urutan step; kunci data; mulai orchestrator dengan langkah pertama sesuai rute. | AC-50.01 s.d. AC-50.04, AC-50.06, AC-50.07, AC-25.04, AC-25.05, AC-47.01, AC-47.05, AC-47.06 | FS1 | 1.5d | api 12 §12.6 s.d. §12.8 |
 | BE-S3-04 | Bangun notifikasi email | `EmailPort` (SMTP, Mailpit di dev, memori di test), template `APP_RECEIVED` dan `APP_DISBURSED`, handler outbox `ApplicationSubmitted` dan `DisbursementCompleted`, log SENT/FAILED/SKIPPED. | AC-50.05 | FS1 | 0.5d | api 18; tech 05 §5.8 |
 
@@ -158,7 +159,7 @@ Langkah Verification Document dimatikan di rute uji sprint ini dan dinyalakan di
 | TL-S4-03 | Bangun adapter simulasi Dukcapil, SLIK, dan reputasi IP | Adapter simulasi per port dengan respons per NIK dari data seed dan simulasi timeout; uji kontrak adapter bersama. | AC-61.02 | TL | 1d | tech 13 §13.2, §13.7 |
 | TL-S4-04 | Bangun API Decision Matrix dan simulasi | `GET /decision-matrix`, `PUT` dan `POST /decision-matrix/rows` lewat checker-maker, `POST /decision-matrix/simulate` dengan matrix aktif atau pending. Dikerjakan sebelum FE-S4-03. | AC-36.01, AC-36.02, AC-36.04 | TL | 0.5d | api 24 §24.2, §24.3 |
 | TL-S4-05 | Bangun API dan layar simulasi angsuran | `POST /calculations/installment-simulation` dan layar Calculate dengan tabel jadwal. Satu pemilik, wiring di kartu ini. Exit: uji Playwright baris TRM_INS_001 dan TRM_INS_002. | AC-51.01, AC-51.03, AC-51.04 | TL | 0.5d | api 09 §9.1 |
-| BE-S4-01 | Bangun modul Dedup | Exact lewat blind index dan fuzzy per DedupFieldSetting, Dedup Matrix hasil seed, NIK kosong = Skip, Duplicate In-Flight; hasil Review menjadi Error "Manual review is not available in POC"; `GET /applications/{id}/dedup`. | AC-59.01, AC-59.02 | FS1 | 2d | api 19; tech 06 §6.11 |
+| BE-S4-01 | Bangun modul Dedup | Exact lewat blind index (TL-S3-05) dan fuzzy per DedupFieldSetting, Dedup Matrix hasil seed, NIK kosong = Skip, Duplicate In-Flight; hasil Review menjadi Error "Manual review is not available in POC"; `GET /applications/{id}/dedup`. | AC-59.01, AC-59.02 | FS1 | 2d | api 19; tech 06 §6.11 |
 | BE-S4-02 | Bangun modul Dukcapil | Tanggal dan tempat lahir harus sama; skor berbobot; ambang Passed dan Review inklusif; Review menjadi Error POC; Failed mengakhiri pengajuan; `GET /applications/{id}/dukcapil`. | AC-61.01, AC-61.02 | FS1 | 1d | api 20 |
 | BE-S4-03 | Bangun modul Fraud | Blacklist; FraudVelocityRule default (nama lebih dari 3 per hari = High Fraud Potential + blacklist); reputasi IP simulasi (Suspicious menjadi Error POC); tanpa IP = Not applicable; `GET /applications/{id}/fraud`. | AC-65.01, AC-65.02 | FS1 | 1.5d | api 21 |
 | BE-S4-04 | Bangun modul SLIK, RAC, dan Scoring | Credit Bureau (adapter simulasi SYNC) dengan CreditBureauOutcomeMapping default dan agregasi kolektibilitas terburuk; eksekusi model RAC dan Scoring hasil seed; `GET /applications/{id}/credit-bureau`, `GET /applications/{id}/scoring`. | AC-68.01, AC-68.02, AC-67.01 s.d. AC-67.04 | FS1 | 2d | api 22 §22.6, api 23 §23.1, §23.3 |
@@ -252,12 +253,12 @@ Goal: Pengajuan yang disetujui melewati Validity Check, Print Akad dengan nomor 
 | ------ | ----- | -------- | -------- | ------ | ------ |
 | S1 | Fondasi | 7 | 4 | 10.5d | 4.5d |
 | S2 | Rute dan orchestrator | 5 | 4 | 10d | 4.5d |
-| S3 | Pengajuan web | 8 | 3 | 10.5d | 4.5d |
+| S3 | Pengajuan web | 9 | 3 | 11.5d | 4.5d |
 | S4 | Penilaian otomatis | 9 | 3 | 11.5d | 3.5d |
 | S5 | Keputusan manusia | 7 | 6 | 8.5d | 6d |
 | S6 | Pasca-approval dan paket on-premise | 8 | 5 | 10d | 5d |
 
-Kolom BE termasuk kartu `TL-`. Total semua kartu: 89d.
+Kolom BE termasuk kartu `TL-`. Total semua kartu: 90d.
 
 ## Beban per orang
 
@@ -265,8 +266,8 @@ Kolom BE termasuk kartu `TL-`. Total semua kartu: 89d.
 |---|---|---|---|
 | S1 | 10d | 5d | Ditambah Role Access dan endpoint operasional. |
 | S2 | 9.5d | 5d | TL penuh: orchestrator dan lisensi sama-sama kritis; review TL di sprint ini dikurangi. |
-| S3 | 10d | 5d | Ditambah checklist dokumen dan notifikasi email. |
+| S3 | 10d | 6d | Ditambah checklist dokumen dan notifikasi email. TL lebih 1d karena TL-S3-05 (layanan kunci enkripsi, issue #103); diambil dari porsi review TL. |
 | S4 | 10d | 5d | Ditambah Decision Matrix dan simulasi angsuran; kandidat tunda pertama bila tergelincir. |
 | S5 | 9.5d | 5d | Ditambah Approval Hierarchy dan perubahan suku bunga Approver. |
 | S6 | 10d | 5d | Ditambah layar format nomor dan API audit; stabilisasi sebelum demo memakai cadangan. |
-| Total | 59d | 30d | Kapasitas 60d dan 30d; cadangan 1d. |
+| Total | 59d | 31d | Kapasitas 60d dan 30d; cadangan FS1 1d, TL lebih 1d di S3. |
