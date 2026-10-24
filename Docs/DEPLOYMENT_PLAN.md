@@ -115,7 +115,7 @@ IP `10.10.0.10` dan `10.10.0.20` adalah contoh. Ganti dengan IP privat asli di `
 | `migrate` | `ghcr.io/pt-perkasa-pilar-utama/cikal-api` | Tunggal / aplikasi | tidak ada | Entrypoint runner `platform/migrate`; sekali jalan; `api` dan `worker` menunggu selesai (`service_completed_successfully`) |
 | `gotenberg` | `gotenberg/gotenberg:8.20.1` | Tunggal / aplikasi | internal 3000 | Konversi PDF |
 | `db` | Tunggal: `postgres:17.6-alpine`; production: `ghcr.io/pt-perkasa-pilar-utama/cikal-postgres:17.6` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:5432` | Role `cikal_owner` (pemilik skema) dan `cikal_app` (tanpa `BYPASSRLS`) dibuat skrip `initdb` |
-| `storage` | `chrislusf/seaweedfs:3.97` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:9000` | S3-compatible, Apache 2.0; `-filer.encryptVolumeData` wajib (tech 07 §7.7, ADR-005) |
+| `storage` | `chrislusf/seaweedfs:3.97` | Tunggal / data | Tunggal: tidak dipublikasi; data: `10.10.0.20:9000` | S3-compatible, Apache 2.0; `-filer.encryptVolumeData` wajib (tech 07 §7.7, ADR-005). Browser menjangkaunya hanya lewat server block `files.${DOMAIN}` di `nginx` untuk URL unduhan bertanda tangan |
 | `storage-init` | `chrislusf/seaweedfs:3.97` | Tunggal / data | tidak ada | Membuat bucket `${S3_BUCKET}`, lalu berhenti |
 | `mailpit` | `axllent/mailpit:v1.27` | SIT | `127.0.0.1:8025` | Profil compose `mailpit`; email tidak pernah keluar |
 | `certbot` | `certbot/certbot:v3.3.0` | Tunggal / aplikasi | tidak ada | Profil compose `tools`; terbit dan perpanjang sertifikat |
@@ -162,7 +162,7 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | `deploy/compose/docker-compose.single.yml`, `docker-compose.app.yml`, `docker-compose.data.yml` | Service di 2.2, log rotation, healthcheck | TL-S6-01 | Belum ada |
 | `deploy/compose/env/{sit,uat,production-app,production-data}.env.example` | Isi 3.5 | TL-S6-01 | Belum ada |
 | `deploy/compose/initdb/10-roles.sh` | Membuat `cikal_owner` dan `cikal_app` dari file secret | TL-S1-02 | Ada |
-| `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan | TL-S6-01 | Belum ada |
+| `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan; server block `files.${DOMAIN}` ke storage yang meneruskan header `Host` apa adanya, dan CSP aplikasi mengizinkan host itu untuk pratinjau dokumen (issue #102) | TL-S6-01 | Belum ada |
 | `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
 | Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
 | `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
@@ -395,6 +395,7 @@ DATABASE_POOL_MAX=20
 
 # Object storage
 S3_ENDPOINT=http://storage:9000
+S3_PUBLIC_ENDPOINT=https://files.cikal-sit.example.id   # host unduhan dokumen di browser (3.7)
 S3_REGION=us-east-1
 S3_BUCKET=cikal-sit
 S3_FORCE_PATH_STYLE=true
@@ -445,6 +446,7 @@ Nilai yang berbeda per lingkungan:
 | `APP_ENV` | `sit` | `uat` | `production` |
 | Host di `DATABASE_URL`, `DATABASE_MIGRATION_URL` | `db` | `db` | `10.10.0.20` |
 | `S3_ENDPOINT` | `http://storage:9000` | `http://storage:9000` | `http://10.10.0.20:9000` |
+| `S3_PUBLIC_ENDPOINT` | `https://files.cikal-sit.example.id` | `https://files.cikal-uat.example.id` | `https://files.cikal.example.id` |
 | `S3_BUCKET` | `cikal-sit` | `cikal-uat` | `cikal-prod` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` | `mailpit`, `1025`, kosong | relay, `587`, akun relay | relay, `587`, akun relay |
 | `ALLOW_SIMULATION_ADAPTERS` | `true` | `true` | `false` |
@@ -528,7 +530,7 @@ docker compose exec db pgbackrest --stanza=cikal --type=full backup
 
 ### 3.7 Reverse proxy dan TLS
 
-DNS record A untuk `$DOMAIN` harus sudah mengarah ke IP publik VM tunggal atau VM aplikasi. Penerbitan sertifikat berarti menyetujui syarat layanan Let's Encrypt atas nama PPU.
+DNS record A untuk `$DOMAIN` dan `files.$DOMAIN` harus sudah mengarah ke IP publik VM tunggal atau VM aplikasi. `files.$DOMAIN` adalah host `S3_PUBLIC_ENDPOINT` untuk URL unduhan dokumen (3.5). Penerbitan sertifikat berarti menyetujui syarat layanan Let's Encrypt atas nama PPU.
 
 ```bash
 cd /opt/cikal && set -a && . ./.env && set +a
@@ -538,7 +540,7 @@ curl -fsS "http://$DOMAIN/api/health/live"
 
 # 2. Terbitkan sertifikat lewat webroot yang dibagi dengan nginx
 docker compose run --rm certbot certonly --webroot -w /var/www/certbot \
-  -d "$DOMAIN" --email "$ACME_EMAIL" --agree-tos --no-eff-email
+  -d "$DOMAIN" -d "files.$DOMAIN" --email "$ACME_EMAIL" --agree-tos --no-eff-email
 
 # 3. Parameter Diffie-Hellman
 openssl dhparam -out nginx/dhparam.pem 2048
@@ -554,6 +556,8 @@ curl -fsS "https://$DOMAIN/api/health/live"
 curl -sI "http://$DOMAIN/" | grep -i '^location: https://'
 curl -sI "https://$DOMAIN/" | grep -i -E '^(strict-transport-security|x-content-type-options|content-security-policy|referrer-policy):'
 echo | openssl s_client -connect "$DOMAIN:443" -servername "$DOMAIN" 2>/dev/null | openssl x509 -noout -subject -enddate
+# 403 berarti SeaweedFS menjawab lewat files.$DOMAIN dan bucket tetap privat
+curl -s -o /dev/null -w '%{http_code}\n' "https://files.$DOMAIN/$S3_BUCKET/"
 ```
 
 Perpanjangan otomatis. Tambahkan lewat `crontab -e` user `cikal`:
