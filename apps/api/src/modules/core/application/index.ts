@@ -6,6 +6,7 @@ export {
   applicationEventPayloadSchema,
   DISBURSEMENT_COMPLETED_EVENT,
 } from "./application/application-events.js";
+export { type ApplicationFacts, ApplicationFactsReader } from "./application/application-facts.js";
 export {
   type ApplicantIdentity,
   ApplicationIdentities,
