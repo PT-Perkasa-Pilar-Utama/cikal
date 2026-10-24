@@ -8,7 +8,8 @@ export type SystemParameterKey =
   | "REQUIRE_CONSENT_FOR_EXTERNAL_CHECK"
   | "SELF_EMPLOYED_ONLY"
   | "SELF_EMPLOYED_OCCUPATIONS"
-  | "EMPLOYED_INCOME_SOURCES";
+  | "EMPLOYED_INCOME_SOURCES"
+  | "DUE_DATE_END_OF_MONTH";
 
 /**
  * `param(key, productId?)` Master Data (technical-specs 05 §5.4) untuk modul lain tanpa impor modul masterdata,
