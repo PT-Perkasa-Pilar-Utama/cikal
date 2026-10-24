@@ -1,7 +1,8 @@
-import type { DecisionOutcome, MatrixCombination } from "@cikal/contracts";
+import type { DecisionOutcome, MatrixCombination, ModuleOutcomes } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { check, integer, pgSchema, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { check, index, integer, jsonb, pgSchema, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
+import { applications } from "../../../core/application/index.js";
 import { companies } from "../../../core/tenancy/index.js";
 
 export const m11Decision = pgSchema("m11_decision");
@@ -60,6 +61,36 @@ export const decisionMatrix = m11Decision.table(
     valueCheck("scoring_outcome"),
     valueCheck("credit_bureau_outcome"),
     valueCheck("decision_outcome"),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * DECISION_RESULTS, technical-specs 06 §6.11 M11: satu keputusan per ProcessInstance. `matrix_row_priority` menyimpan
+ * prioritas saat keputusan dibuat, karena prioritas baris bisa bergeser oleh perubahan matrix sesudahnya.
+ */
+export const decisionResults = m11Decision.table(
+  "decision_results",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => applications.id),
+    processInstanceId: uuid("process_instance_id").notNull(),
+    outcomes: jsonb("outcomes").$type<ModuleOutcomes>().notNull(),
+    decisionOutcome: text("decision_outcome").$type<DecisionOutcome>().notNull(),
+    matrixRowId: uuid("matrix_row_id").references(() => decisionMatrix.id),
+    matrixRowPriority: integer("matrix_row_priority"),
+    description: text("description"),
+    ...auditColumns(),
+  },
+  (table) => [
+    uniqueIndex("decision_results_process_unique").on(table.processInstanceId),
+    index("decision_results_application_idx").on(table.applicationId),
+    check("decision_results_decision_outcome_check", sql`${table.decisionOutcome} in ('GO', 'NOTGO')`),
     tenantIsolation(),
   ],
 );

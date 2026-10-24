@@ -21,3 +21,8 @@ export function requireAllOutcomes(input: Partial<ModuleOutcomes>): ModuleOutcom
     missing.map((field) => ({ field, code: "OUTCOME_REQUIRED", message })),
   );
 }
+
+/** `404 APPLICATION_NOT_FOUND` (api-specs 24 §24.4). */
+export function applicationNotFound(): DomainError {
+  return new DomainError("APPLICATION_NOT_FOUND", "Application not found", 404);
+}
