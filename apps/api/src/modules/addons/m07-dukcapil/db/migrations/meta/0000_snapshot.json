@@ -1,0 +1,384 @@
+{
+  "id": "6e52bcc6-dcc7-42af-98f4-812c2b8c843d",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m07_dukcapil.dukcapil_results": {
+      "name": "dukcapil_results",
+      "schema": "m07_dukcapil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "record_found": {
+          "name": "record_found",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_code": {
+          "name": "provider_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provider_reference": {
+          "name": "provider_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dob_status": {
+          "name": "dob_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pob_status": {
+          "name": "pob_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "full_name_score": {
+          "name": "full_name_score",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mother_name_score": {
+          "name": "mother_name_score",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "final_score": {
+          "name": "final_score",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rule": {
+          "name": "rule",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_response_enc": {
+          "name": "raw_response_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_response_key_version": {
+          "name": "raw_response_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ran_at": {
+          "name": "ran_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dukcapil_results_process_unique": {
+          "name": "dukcapil_results_process_unique",
+          "columns": [
+            {
+              "expression": "process_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dukcapil_results_application_idx": {
+          "name": "dukcapil_results_application_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dukcapil_results_tenant_id_companies_id_fk": {
+          "name": "dukcapil_results_tenant_id_companies_id_fk",
+          "tableFrom": "dukcapil_results",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dukcapil_results_application_id_applications_id_fk": {
+          "name": "dukcapil_results_application_id_applications_id_fk",
+          "tableFrom": "dukcapil_results",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dukcapil_results_outcome_check": {
+          "name": "dukcapil_results_outcome_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_results\".\"outcome\" in ('PASSED', 'REVIEW', 'FAILED', 'SKIP')"
+        },
+        "dukcapil_results_dob_status_check": {
+          "name": "dukcapil_results_dob_status_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_results\".\"dob_status\" in ('MATCH', 'NOT_MATCH')"
+        },
+        "dukcapil_results_pob_status_check": {
+          "name": "dukcapil_results_pob_status_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_results\".\"pob_status\" in ('MATCH', 'NOT_MATCH')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m07_dukcapil.dukcapil_rules": {
+      "name": "dukcapil_rules",
+      "schema": "m07_dukcapil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_weight": {
+          "name": "name_weight",
+          "type": "numeric(9, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mother_name_weight": {
+          "name": "mother_name_weight",
+          "type": "numeric(9, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "passed_threshold": {
+          "name": "passed_threshold",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "review_threshold": {
+          "name": "review_threshold",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "not_found_outcome": {
+          "name": "not_found_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'REVIEW'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dukcapil_rules_tenant_unique": {
+          "name": "dukcapil_rules_tenant_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dukcapil_rules_tenant_id_companies_id_fk": {
+          "name": "dukcapil_rules_tenant_id_companies_id_fk",
+          "tableFrom": "dukcapil_rules",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dukcapil_rules_weights_check": {
+          "name": "dukcapil_rules_weights_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_rules\".\"name_weight\" + \"m07_dukcapil\".\"dukcapil_rules\".\"mother_name_weight\" = 100"
+        },
+        "dukcapil_rules_thresholds_check": {
+          "name": "dukcapil_rules_thresholds_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_rules\".\"review_threshold\" < \"m07_dukcapil\".\"dukcapil_rules\".\"passed_threshold\""
+        },
+        "dukcapil_rules_not_found_outcome_check": {
+          "name": "dukcapil_rules_not_found_outcome_check",
+          "value": "\"m07_dukcapil\".\"dukcapil_rules\".\"not_found_outcome\" in ('REVIEW', 'FAILED')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m07_dukcapil": "m07_dukcapil"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
