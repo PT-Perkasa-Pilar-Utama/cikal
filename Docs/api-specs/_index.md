@@ -139,7 +139,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `POST /calculations/installment-simulation` | 09 §9.1 | POC | TODO |
+| `POST /calculations/installment-simulation` | 09 §9.1 | POC | OK |
 | `GET /formula-variables` | 09 §9.2 | POC | TODO |
 | Formulas, versions, validate, tests, holidays | 09 §9.3 | Backlog | TODO |
 

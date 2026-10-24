@@ -25,7 +25,7 @@ Simulasi angsuran, mesin rumus, dan kalender libur. Modul pemilik: CORE Calculat
 **Behavior**
 
 1. `tenor` kosong: `400 VALIDATION_FAILED` dengan detail "Tenor is required" (AC-51.03).
-2. `HYBRID` dengan `tenorFixed >= tenor`: `422 INVALID_FIXED_TENOR` (TRM_INS_007, [Deferred]).
+2. `FLOATING`, `HYBRID`, `CAPPED`: `501 NOT_IMPLEMENTED` selama baris MRTM-nya [Deferred] (TRM_INS_003 s.d. 007). Saat dibangun, `HYBRID` dengan `tenorFixed >= tenor` menjadi `422 INVALID_FIXED_TENOR` (TRM_INS_007).
 3. Hitung lewat `calculation.schedule` dengan rumus `INSTALLMENT_FLAT` atau `INSTALLMENT_EFFECTIVE` versi ACTIVE (FM-04). Pembulatan per rumus (FM-07); selisih pembulatan pokok ditaruh di angsuran terakhir sehingga sisa pinjaman baris terakhir 0 (RM-19, TRM_INS_001).
 4. Error evaluasi rumus: `422 FORMULA_ERROR` tanpa nilai pengganti (FM-09).
 5. Tidak menyimpan data; eksekusi dicatat di `formula_execution_logs` (FM-08).
@@ -53,7 +53,8 @@ Simulasi angsuran, mesin rumus, dan kalender libur. Modul pemilik: CORE Calculat
 | code | status | condition |
 |---|---|---|
 | `VALIDATION_FAILED` | 400 | "Tenor is required" dan field wajib lain (AC-51.03) |
-| `INVALID_FIXED_TENOR` | 422 | "Fixed tenor must be less than total tenor" (TRM_INS_007) |
+| `NOT_IMPLEMENTED` | 501 | `FLOATING`, `HYBRID`, `CAPPED` selama [Deferred] |
+| `INVALID_FIXED_TENOR` | 422 | "Fixed tenor must be less than total tenor" (TRM_INS_007, [Deferred]) |
 | `FORMULA_ERROR` | 422 | Rumus gagal dievaluasi; `details` berisi kode rumus |
 
 **Traceability:** US-51; AC-51.01, AC-51.02 (TRM_INS_001, TRM_INS_002; TRM_INS_003 s.d. 007 [Deferred]), AC-51.03, AC-51.04.
