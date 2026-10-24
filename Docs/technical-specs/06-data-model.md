@@ -419,6 +419,7 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | id | uuid | no | | PK | |
 | loan_id | text | no | | UQ(tenant_id, loan_id) | `20102026KTA0000013` |
 | channel | text | no | | | `WEB`, `MOBILE`, `API`, `UPLOAD` |
+| client_ip_address | inet | yes | | | IP asal pembuatan draft kanal WEB dan MOBILE; kosong untuk Upload dan API (cek IP Fraud Not applicable, AC-65.02) |
 | application_type, customer_type, segment, purpose_of_loan | text | yes | | | `param_id` |
 | product_category | text | no | | | dari produk |
 | product_id | uuid | no | | FK product.products | |
@@ -642,10 +643,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | fraud_velocity_rules.is_active | boolean | no | |
 | fraud_results.outcome, is_blacklisted, ip_category, ip_provider_code | | no / yes | |
 | fraud_results.ip_address | inet | yes | |
-| fraud_results.velocity_hits | jsonb | yes | |
+| fraud_results.velocity_hits | jsonb | no | default `[]` |
+| fraud_results.application_id, process_instance_id, ip_status, matrix_row_id, matrix_row_priority, ran_at | | no / yes | satu hasil per ProcessInstance; `ip_status` `NORMAL`, `VPN_PROXY`, `LOCATION_MISMATCH`, `NOT_APPLICABLE` |
+| fraud_matrix.name_condition, ip_condition | text | no | `NORMAL`, `EXCEEDED`, `ANY` / status IP atau `ANY` |
 | blacklists.full_name | text | yes | |
 | blacklists.id_card_number_enc, id_card_number_bidx | bytea | yes | |
-| blacklists.ip_address | inet | yes | |
+| blacklists.ip_address | inet | yes | disimpan tetapi belum dicocokkan sampai ada kanal self-service (grooming v2 R-02); pencocokan lewat `id_card_number_bidx` |
+| blacklists.id_card_number_key_version | int | yes | versi kunci `id_card_number_enc` |
 | blacklists.reason, source_application_id, added_by, added_at | | no | |
 | fraud_reviews.fraud_result_id, decision, notes, reviewer_user_id | | no | `CLEAR`, `REJECT_AND_BLACKLIST` |
 
