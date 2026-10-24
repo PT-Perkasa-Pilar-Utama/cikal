@@ -28,6 +28,7 @@ export const envSchema = z
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
     MASTER_KEY_FILE: z.string().min(1),
     S3_ENDPOINT: z.url(),
+    S3_PUBLIC_ENDPOINT: z.url().optional(),
     S3_REGION: z.string().min(1),
     S3_BUCKET: z.string().min(1),
     S3_ACCESS_KEY_FILE: z.string().min(1),
@@ -102,7 +103,13 @@ export interface AppConfig {
   /** `migrationUrl`: role pemilik skema untuk runner migrasi dan reset (technical-specs 06 §6.12 MS-03). */
   database: { url: string; migrationUrl: string | null; poolMax: number };
   storage: {
+    /** Endpoint internal untuk api dan worker, contoh `http://storage:9000`. */
     endpoint: string;
+    /**
+     * Endpoint yang dijangkau browser untuk URL unduhan bertanda tangan, contoh `https://files.${DOMAIN}` (issue #102).
+     * Tanda tangan SigV4 memuat host, jadi proxy di depannya meneruskan header Host apa adanya.
+     */
+    publicEndpoint: string;
     region: string;
     bucket: string;
     accessKey: string;
@@ -175,6 +182,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     },
     storage: {
       endpoint: env.S3_ENDPOINT,
+      publicEndpoint: env.S3_PUBLIC_ENDPOINT ?? env.S3_ENDPOINT,
       region: env.S3_REGION,
       bucket: env.S3_BUCKET,
       accessKey: readSecret(env.S3_ACCESS_KEY_FILE),

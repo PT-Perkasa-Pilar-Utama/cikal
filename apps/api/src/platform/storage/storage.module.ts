@@ -12,10 +12,12 @@ import { APP_CONFIG, type AppConfig } from "../config/config.js";
 import { DomainError } from "../http/domain-error.js";
 
 export const S3_CLIENT = Symbol("S3_CLIENT");
+/** Klien yang hanya menandatangani URL unduhan dengan endpoint publik; tidak pernah mengirim request. */
+export const S3_SIGNING_CLIENT = Symbol("S3_SIGNING_CLIENT");
 
-export function createS3Client(storage: AppConfig["storage"]): S3Client {
+export function createS3Client(storage: AppConfig["storage"], endpoint = storage.endpoint): S3Client {
   return new S3Client({
-    endpoint: storage.endpoint,
+    endpoint,
     region: storage.region,
     forcePathStyle: storage.forcePathStyle,
     credentials: { accessKeyId: storage.accessKey, secretAccessKey: storage.secretKey },
@@ -47,6 +49,7 @@ export interface SignedDownload {
 export class StorageService {
   constructor(
     @Inject(S3_CLIENT) private readonly client: S3Client,
+    @Inject(S3_SIGNING_CLIENT) private readonly signer: S3Client,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -67,7 +70,10 @@ export class StorageService {
     });
   }
 
-  /** URL GET yang ditandatangani lokal tanpa memanggil storage, sehingga file tidak lewat origin aplikasi. */
+  /**
+   * URL GET yang ditandatangani lokal tanpa memanggil storage, sehingga file tidak lewat origin aplikasi. Host URL
+   * adalah endpoint publik yang dijangkau browser (issue #102).
+   */
   signedGetUrl(key: string, download: SignedDownload): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.config.storage.bucket,
@@ -75,7 +81,7 @@ export class StorageService {
       ResponseContentType: download.contentType,
       ResponseContentDisposition: download.contentDisposition,
     });
-    return getSignedUrl(this.client, command, { expiresIn: download.expiresInSeconds });
+    return getSignedUrl(this.signer, command, { expiresIn: download.expiresInSeconds });
   }
 
   emptyBucket(): Promise<number> {
@@ -87,6 +93,11 @@ export class StorageService {
 @Module({
   providers: [
     { provide: S3_CLIENT, inject: [APP_CONFIG], useFactory: (config: AppConfig) => createS3Client(config.storage) },
+    {
+      provide: S3_SIGNING_CLIENT,
+      inject: [APP_CONFIG],
+      useFactory: (config: AppConfig) => createS3Client(config.storage, config.storage.publicEndpoint),
+    },
     StorageService,
   ],
   exports: [StorageService],

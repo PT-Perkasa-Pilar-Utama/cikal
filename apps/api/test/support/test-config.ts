@@ -19,6 +19,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     database: { url: "postgres://cikal:cikal@127.0.0.1:1/cikal", migrationUrl: null, poolMax: 2 },
     storage: {
       endpoint: "http://127.0.0.1:1",
+      publicEndpoint: "http://127.0.0.1:1",
       region: "us-east-1",
       bucket: "cikal-test",
       accessKey: "test",

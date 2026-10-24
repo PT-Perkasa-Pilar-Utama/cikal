@@ -35,8 +35,10 @@ export async function startStorage(): Promise<TestStorage> {
     .withExposedPorts(S3_PORT)
     .withWaitStrategy(Wait.forListeningPorts())
     .start();
+  const endpoint = `http://${container.getHost()}:${container.getMappedPort(S3_PORT)}`;
   const config: AppConfig["storage"] = {
-    endpoint: `http://${container.getHost()}:${container.getMappedPort(S3_PORT)}`,
+    endpoint,
+    publicEndpoint: endpoint,
     region: "us-east-1",
     bucket: BUCKET,
     accessKey: ACCESS_KEY,
