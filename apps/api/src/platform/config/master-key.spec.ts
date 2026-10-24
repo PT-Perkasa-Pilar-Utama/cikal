@@ -17,6 +17,9 @@ const env = {
   S3_SECRET_KEY_FILE: secret,
   MONITORING_TOKEN_FILE: secret,
   ALLOW_SIMULATION_ADAPTERS: "true",
+  SMTP_HOST: "localhost",
+  SMTP_PORT: "1025",
+  SMTP_FROM: "no-reply@example.id",
 };
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 

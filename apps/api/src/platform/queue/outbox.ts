@@ -13,8 +13,13 @@ export interface OutboxEvent {
   payload: Record<string, unknown>;
 }
 
+/** Event yang dikirim ke penerima; `id` tetap sama saat event dikirim ulang. */
+export interface DispatchedEvent extends OutboxEvent {
+  id: string;
+}
+
 /** Penerima event; dipanggil di transaksi worker dan bisa menerima event yang sama lebih dari sekali. */
-export type OutboxHandler = (tx: Tx, event: OutboxEvent) => Promise<void>;
+export type OutboxHandler = (tx: Tx, event: DispatchedEvent) => Promise<void>;
 
 /**
  * Outbox (technical-specs 05 §5.0.1 `publish`): event ditulis di transaksi aksi bersama job pengirimnya, lalu worker
@@ -52,7 +57,8 @@ export class Outbox implements OnModuleInit {
       await this.db.withSystemTx(job.tenantId, async (tx) => {
         const row = await this.events.lock(tx, job.eventId);
         if (!row || row.publishedAt) return;
-        const event: OutboxEvent = {
+        const event: DispatchedEvent = {
+          id: row.id,
           tenantId: row.tenantId,
           eventType: row.eventType,
           aggregateId: row.aggregateId,

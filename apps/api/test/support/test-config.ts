@@ -31,6 +31,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     resetApi: null,
     allowSimulationAdapters: true,
     regionApi: { url: "http://127.0.0.1:1", apiKey: null },
+    smtp: null,
     worker: { concurrency: 1 },
     licensePublicKey: testLicenseKeys.publicKey,
     ...overrides,

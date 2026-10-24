@@ -43,6 +43,11 @@ export const envSchema = z
     SEED_USER_PASSWORD_FILE: z.string().min(1).optional(),
     REGION_API_URL: z.url().default("https://oksara.senar.id"),
     REGION_API_KEY_FILE: z.string().min(1).optional(),
+    SMTP_HOST: z.string().min(1),
+    SMTP_PORT: z.coerce.number().int().positive(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD_FILE: z.string().optional(),
+    SMTP_FROM: z.email(),
     WORKER_CONCURRENCY: z.coerce.number().int().positive().default(5),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
   })
@@ -74,6 +79,9 @@ export const envSchema = z
         path: ["SEED_USER_PASSWORD_FILE"],
         message: "is required when ENABLE_RESET_API=true",
       });
+    }
+    if (env.SMTP_USER && !env.SMTP_PASSWORD_FILE) {
+      ctx.addIssue({ code: "custom", path: ["SMTP_PASSWORD_FILE"], message: "is required when SMTP_USER is set" });
     }
     if (env.ENABLE_RESET_API && !env.DATABASE_MIGRATION_URL) {
       ctx.addIssue({
@@ -118,6 +126,11 @@ export interface AppConfig {
    * boleh bila `allowSimulationAdapters`.
    */
   regionApi: { url: string; apiKey: string | null };
+  /**
+   * Relay SMTP email nasabah (technical-specs 11 §11.2); Mailpit di dev, tanpa akun. `null` hanya di konfigurasi uji,
+   * yang memakai adapter email memori (technical-specs 04, tabel adapter per lingkungan).
+   */
+  smtp: SmtpConfig | null;
   /** Konsumen pg-boss per antrean di proses worker. */
   worker: { concurrency: number };
   /**
@@ -125,6 +138,14 @@ export interface AppConfig {
    * oleh `tools/package-builder`, tidak pernah dibaca dari env; uji menggantinya dengan kunci uji.
    */
   licensePublicKey: string;
+}
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  /** `null`: relay tanpa autentikasi, contoh Mailpit. */
+  auth: { user: string; password: string } | null;
+  from: string;
 }
 
 const RESET_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["dev", "test", "sit", "uat"]);
@@ -175,6 +196,15 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     regionApi: {
       url: env.REGION_API_URL,
       apiKey: env.REGION_API_KEY_FILE ? readSecret(env.REGION_API_KEY_FILE) : null,
+    },
+    smtp: {
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      auth:
+        env.SMTP_USER && env.SMTP_PASSWORD_FILE
+          ? { user: env.SMTP_USER, password: readSecret(env.SMTP_PASSWORD_FILE) }
+          : null,
+      from: env.SMTP_FROM,
     },
     worker: { concurrency: env.WORKER_CONCURRENCY },
     licensePublicKey: licensePublicKeyPem,

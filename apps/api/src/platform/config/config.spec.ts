@@ -11,6 +11,9 @@ const BASE_ENV = {
   MONITORING_TOKEN_FILE: "/run/secrets/monitoring_token",
   REGION_API_KEY_FILE: "/run/secrets/oksara_key",
   MASTER_KEY_FILE: "/run/secrets/cikal_master_key",
+  SMTP_HOST: "localhost",
+  SMTP_PORT: "1025",
+  SMTP_FROM: "no-reply@example.id",
 };
 
 it("TL-S3-05 refuses startup without MASTER_KEY_FILE", () => {
@@ -18,6 +21,14 @@ it("TL-S3-05 refuses startup without MASTER_KEY_FILE", () => {
   const result = envSchema.safeParse({ ...withoutKey, APP_ENV: "dev" });
   expect(result.success).toBe(false);
   expect(result.error?.issues).toContainEqual(expect.objectContaining({ path: ["MASTER_KEY_FILE"] }));
+});
+
+it("requires SMTP_PASSWORD_FILE when SMTP_USER is set (technical-specs 11 §11.2)", () => {
+  const result = envSchema.safeParse({ ...BASE_ENV, APP_ENV: "uat", SMTP_USER: "cikal" });
+
+  expect(result.error?.issues).toEqual([
+    expect.objectContaining({ path: ["SMTP_PASSWORD_FILE"], message: "is required when SMTP_USER is set" }),
+  ]);
 });
 
 describe("envSchema ALLOW_SIMULATION_ADAPTERS", () => {
