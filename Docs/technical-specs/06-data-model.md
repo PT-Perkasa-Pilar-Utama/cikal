@@ -604,11 +604,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | dedup_results.outcome | text | no | termasuk `DUPLICATE_IN_FLIGHT` (grooming v1 N-06) |
 | dedup_results.matched_application_id | uuid | yes | FK application.applications |
 | dedup_results.ran_at | timestamptz | no | |
+| dedup_results.matrix_row_id, matrix_row_priority | uuid, int | yes | baris dan prioritasnya saat langkah berjalan |
 | dedup_candidates.dedup_result_id, candidate_application_id | uuid | no | |
 | dedup_candidates.nik_result, dob_result, pob_result | text | no | |
 | dedup_candidates.name_score, mother_name_score | numeric(5,4) | no | |
+| dedup_candidates.candidate_loan_id, candidate_status | text | no | Loan ID dan status kandidat saat langkah berjalan (XM-02) |
 | dedup_reviews.dedup_result_id, reviewer_user_id | uuid | no | |
-| dedup_reviews.final_outcome | text | no | `MATCH`, `UNMATCH`, `DUPLICATE_FINISH` |
+| dedup_reviews.final_outcome | text | no | `MATCH`, `UNMATCH`, `DUPLICATE_FINISH`; tabel `dedup_reviews` dibuat bersama layar review US-60 |
 
 ### M07 Dukcapil (`m07_dukcapil`)
 | table.column | type | nullable | notes |
