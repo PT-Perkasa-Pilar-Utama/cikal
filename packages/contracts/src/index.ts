@@ -13,6 +13,7 @@ export * from "./decision/index.js";
 export * from "./dedup/index.js";
 export * from "./document/index.js";
 export * from "./dukcapil/index.js";
+export * from "./fraud/index.js";
 export * from "./health/index.js";
 export * from "./integration/index.js";
 export * from "./masterdata/index.js";

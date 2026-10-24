@@ -45,6 +45,7 @@ export class SaveDraftUseCase {
         tenantId: ctx.tenantId,
         loanId,
         channel: "WEB",
+        clientIpAddress: ctx.ipAddress,
         productCategory: product.productCategory,
         productId: product.id,
         applicationType: minimum.applicationType,

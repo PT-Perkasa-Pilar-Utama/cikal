@@ -1,6 +1,6 @@
 import type { ApplicationStatus, FormSection, ProductCategory, StepCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, numeric, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { bigint, check, index, inet, integer, numeric, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { users } from "../../identity/index.js";
 import { insurances } from "../../masterdata/index.js";
@@ -74,6 +74,8 @@ export const applications = application.table(
       .references(() => companies.id),
     loanId: text("loan_id").notNull(),
     channel: text("channel").$type<ApplicationChannel>().notNull(),
+    /** IP asal pembuatan draft kanal WEB dan MOBILE untuk cek reputasi IP Fraud; kosong untuk Upload (AC-65.02). */
+    clientIpAddress: inet("client_ip_address"),
     productCategory: text("product_category").$type<ProductCategory>().notNull(),
     productId: uuid("product_id")
       .notNull()

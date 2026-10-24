@@ -57,7 +57,7 @@ Hanya Sales pembuat draft yang bisa membaca dan mengubah form draft (AC-49.06). 
 2. `strict=true`: aturan 12.3 section `application` dijalankan.
 3. Produk harus tersedia untuk pengajuan baru (RT-07): bila tidak, `422 PRODUCT_NOT_AVAILABLE`.
 4. Bentuk Loan ID `ddMMyyyy` + `productCode` + 7 digit counter per produk per company, dengan satu `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` pada `loan_id_counters` (baris counter terkunci sampai transaksi draft selesai; produk pertama kali mulai dari 1; nomor kembali bila draft batal disimpan); tanggal dari zona waktu Asia/Jakarta (TRM_LID_001 s.d. 006). Counter sudah 9.999.999: `422 LOAN_ID_EXHAUSTED`.
-5. Simpan Application `DRAFT`, `channel = WEB`, cabang dari user; NIK disimpan terenkripsi dan blind index.
+5. Simpan Application `DRAFT`, `channel = WEB`, cabang dari user, dan IP asal request di `client_ip_address` untuk cek reputasi IP Fraud (api-specs 21 §21.1); NIK disimpan terenkripsi dan blind index.
 
 **Output 201**
 
