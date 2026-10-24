@@ -2,7 +2,7 @@ import type { ChangeRequestAccepted, ChangeRequestEntityType } from "@cikal/cont
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import type { Actor } from "../../../../platform/http/access-port.js";
-import { ChangeRequestsRepository } from "../db/change-requests.repository.js";
+import { ChangeRequestsRepository, type OpenRequest } from "../db/change-requests.repository.js";
 import { CHANGE_REQUEST_MESSAGES } from "../domain/review-policy.js";
 import { ChangeRequestRegistry, type EntityHandler } from "./change-request-registry.js";
 import { SubmitChangeRequest, type SubmitInput } from "./submit-change-request.js";
@@ -27,6 +27,8 @@ export interface ChangeRequestPort {
    * `fields`, contoh kode produk baru (AC-20.03) atau pasangan role dan menu (api-specs 03 §3.4).
    */
   hasProposed(tx: Tx, entityType: ChangeRequestEntityType, fields: Record<string, string>): Promise<boolean>;
+  /** Permintaan terbuka satu jenis entity beserta `newData`, contoh simulasi Decision Matrix PENDING (api-specs 24 §24.3). */
+  openRequests(tx: Tx, entityType: ChangeRequestEntityType): Promise<OpenRequest[]>;
 }
 
 /** Implementasi `ChangeRequestPort` di modul Change Request. */
@@ -56,5 +58,8 @@ export class ChangeRequestService implements ChangeRequestPort {
 
   hasProposed(tx: Tx, entityType: ChangeRequestEntityType, fields: Record<string, string>): Promise<boolean> {
     return this.requests.hasOpenWithFields(tx, entityType, fields);
+  }
+  openRequests(tx: Tx, entityType: ChangeRequestEntityType): Promise<OpenRequest[]> {
+    return this.requests.listOpen(tx, entityType);
   }
 }

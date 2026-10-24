@@ -2,13 +2,21 @@ import type { ChangeRequestEntityType, ChangeRequestStatus } from "@cikal/contra
 import { Injectable } from "@nestjs/common";
 import { and, asc, count, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
-import { changeRequests, openStatusList } from "./schema.js";
+import { changeRequests, type JsonRecord, openStatusList } from "./schema.js";
 
 export type ChangeRequestRow = typeof changeRequests.$inferSelect;
 export type NewChangeRequest = Pick<
   typeof changeRequests.$inferInsert,
   "id" | "tenantId" | "entityType" | "entityId" | "action" | "oldData" | "newData" | "packageSize" | "submittedBy"
 >;
+
+/** Isi permintaan terbuka; `entityId` kosong untuk data baru. */
+export interface OpenRequest {
+  /** Id ChangeRequest. */
+  id: string;
+  entityId: string | null;
+  newData: JsonRecord;
+}
 
 export interface ChangeRequestFilter {
   entityTypes: readonly ChangeRequestEntityType[];
@@ -106,6 +114,15 @@ export class ChangeRequestsRepository {
       )
       .limit(1);
     return row !== undefined;
+  }
+
+  /** Permintaan terbuka satu jenis entity, urut waktu diajukan, untuk menguji perubahan sebelum disetujui. */
+  async listOpen(tx: Tx, entityType: ChangeRequestEntityType): Promise<OpenRequest[]> {
+    return tx
+      .select({ id: changeRequests.id, entityId: changeRequests.entityId, newData: changeRequests.newData })
+      .from(changeRequests)
+      .where(and(eq(changeRequests.entityType, entityType), sql`${changeRequests.status} in (${openStatusList})`))
+      .orderBy(asc(changeRequests.createdAt));
   }
 
   async markReviewed(
