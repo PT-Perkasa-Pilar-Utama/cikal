@@ -43,3 +43,11 @@ export function currentStep<T extends StepState>(latest: readonly T[]): T | null
 export function inStepOrder<T extends Pick<StepState, "stepCode">>(steps: readonly T[]): T[] {
   return [...steps].sort((a, b) => stepCodes.indexOf(a.stepCode) - stepCodes.indexOf(b.stepCode));
 }
+
+/** DUKCAPIL dilewati bila DEDUP selesai `MATCH`: pemohon sudah dikenal (technical-specs 12 §12.1, TRM_DDP_001). */
+export function dedupMatchSkipReason(
+  stepCode: StepCode,
+  outcomes: Partial<Record<StepCode, string>>,
+): SkipReason | null {
+  return stepCode === "DUKCAPIL" && outcomes.DEDUP === "MATCH" ? "DEDUP_MATCH" : null;
+}

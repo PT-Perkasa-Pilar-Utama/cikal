@@ -5,6 +5,11 @@ export {
   applicationEventPayloadSchema,
   DISBURSEMENT_COMPLETED_EVENT,
 } from "./application/application-events.js";
+export {
+  type ApplicantIdentity,
+  ApplicationIdentities,
+  type DedupCandidate,
+} from "./application/application-identities.js";
 export { ApplicationProcess, type ProcessApplication } from "./application/application-process.js";
 export { applicationData } from "./application.data.js";
 export { ApplicationModule } from "./application.module.js";

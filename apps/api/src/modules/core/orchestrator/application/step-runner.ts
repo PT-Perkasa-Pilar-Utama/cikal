@@ -7,8 +7,9 @@ import { ProductRoutes } from "../../product/index.js";
 import { Licensing } from "../../tenancy/index.js";
 import type { ProcessRow } from "../db/process-instances.repository.js";
 import { StepExecutionsRepository, type StepRow } from "../db/step-executions.repository.js";
-import { currentStep, routeSkipReason } from "../domain/route-plan.js";
+import { currentStep, dedupMatchSkipReason, routeSkipReason } from "../domain/route-plan.js";
 import { stepContext } from "../domain/step-context.js";
+import { stepOutcomes } from "../domain/step-outcomes.js";
 import { ProcessJobs } from "./process-jobs.js";
 import { StepEvents } from "./step-events.js";
 import { type StepHandler, StepHandlerRegistry } from "./step-handler.js";
@@ -113,6 +114,8 @@ export class StepRunner {
     const licensed = (await this.licensing.state(tx)).modules;
     const reason = routeSkipReason(step.stepCode, route.steps, licensed);
     if (reason) return reason;
+    const matched = dedupMatchSkipReason(step.stepCode, stepOutcomes(await this.steps.listLatest(tx, process.id)));
+    if (matched) return matched;
     if (handler?.isApplicable && !(await handler.isApplicable(tx, ctx))) return "CONDITION_NOT_MET";
     return null;
   }

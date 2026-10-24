@@ -9,6 +9,7 @@ export * from "./common/menu.js";
 export * from "./common/modules.js";
 export * from "./common/scalars.js";
 export * from "./decision/index.js";
+export * from "./dedup/index.js";
 export * from "./document/index.js";
 export * from "./health/index.js";
 export * from "./integration/index.js";

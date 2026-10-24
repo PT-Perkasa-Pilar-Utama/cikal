@@ -3,6 +3,7 @@ import { DocumentModule } from "../document/index.js";
 import { ProductModule } from "../product/index.js";
 import { ApplicationContacts } from "./application/application-contacts.js";
 import { ApplicationFileAccess } from "./application/application-file-access.js";
+import { ApplicationIdentities } from "./application/application-identities.js";
 import { ApplicationProcess } from "./application/application-process.js";
 import { ApplicationSectionChecks } from "./application/application-section-checks.js";
 import { DraftDocuments } from "./application/draft-documents.js";
@@ -20,6 +21,7 @@ import { SavePersonalSectionUseCase } from "./application/save-personal-section.
 import { StrictSections } from "./application/strict-sections.js";
 import { SubmitApplicationUseCase } from "./application/submit-application.use-case.js";
 import { UploadApplicationDocumentUseCase } from "./application/upload-application-document.use-case.js";
+import { ApplicantLookupRepository } from "./db/applicant-lookup.repository.js";
 import { ApplicationAddressesRepository } from "./db/application-addresses.repository.js";
 import { ApplicationDocumentsRepository } from "./db/application-documents.repository.js";
 import { ApplicationEmergencyContactsRepository } from "./db/application-emergency-contacts.repository.js";
@@ -44,6 +46,8 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationDocumentsRepository,
     ApplicationProcess,
     ApplicationContacts,
+    ApplicationIdentities,
+    ApplicantLookupRepository,
     LoanIdCountersRepository,
     LoanIds,
     DraftSections,
@@ -63,6 +67,6 @@ import { ApplicationsController } from "./http/applications.controller.js";
     UploadApplicationDocumentUseCase,
     SubmitApplicationUseCase,
   ],
-  exports: [ApplicationProcess, ApplicationContacts],
+  exports: [ApplicationProcess, ApplicationContacts, ApplicationIdentities],
 })
 export class ApplicationModule {}

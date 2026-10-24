@@ -1,4 +1,4 @@
-import type { StepCode } from "@cikal/contracts";
+import type { StepCode, StepStatus } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { ProcessOutlook } from "./process-outlook.js";
@@ -41,6 +41,16 @@ export class OrchestratorApi {
   /** `outcomeCode` langkah yang selesai dan `SKIP` untuk yang dilewati; dibaca M11 Decision (XM-02, DEP-02). */
   outcomes(tx: Tx, processInstanceId: string): Promise<Partial<Record<StepCode, string>>> {
     return this.outlook.outcomes(tx, processInstanceId);
+  }
+
+  /** Proses dan status langkah untuk endpoint hasil langkah modul; `null` bila proses tidak ada. */
+  stepOf(
+    tx: Tx,
+    applicationId: string,
+    stepCode: StepCode,
+    processInstanceId?: string,
+  ): Promise<{ processInstanceId: string; status: StepStatus } | null> {
+    return this.outlook.stepOf(tx, applicationId, stepCode, processInstanceId);
   }
 
   /** Langkah sesudah `after` menurut rute proses, contoh SIKP atau APPROVAL sesudah DECISION (AC-69.01). */
