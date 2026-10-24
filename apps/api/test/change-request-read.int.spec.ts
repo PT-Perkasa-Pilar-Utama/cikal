@@ -38,9 +38,9 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     registerHandlers(app, [
       recordHandler("SCORING_MODEL", "Scoring Model"),
       recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
-      packageHandler("DECISION_MATRIX", "Decision Matrix"),
+      packageHandler("DOCUMENT_NUMBER_FORMAT", "Document Number Format"),
     ]);
-    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-DECISION"];
+    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-NUMBERING"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -175,13 +175,13 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   it("shows an import package as one row with all its items (AC-12.07)", async () => {
     const items = Array.from({ length: 50 }, (_, index) => ({ name: `PARAM_${index + 1}` }));
     const { changeRequestId } = await submitAs(app, maker, {
-      entityType: "DECISION_MATRIX",
+      entityType: "DOCUMENT_NUMBER_FORMAT",
       entityId: null,
       oldData: null,
       newData: { items },
       packageSize: items.length,
     });
-    const { data } = await listOf(checker, "entityType=DECISION_MATRIX");
+    const { data } = await listOf(checker, "entityType=DOCUMENT_NUMBER_FORMAT");
     expect(data).toEqual([expect.objectContaining({ id: changeRequestId, packageSize: 50 })]);
     expect((await detailOf(checker, changeRequestId)).proposedData).toEqual({ items });
   });

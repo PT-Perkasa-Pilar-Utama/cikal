@@ -11,6 +11,7 @@ import { ListProcessMonitoringUseCase } from "./application/list-process-monitor
 import { ProcessMonitoring } from "./application/monitoring.js";
 import { OrchestratorApi } from "./application/orchestrator-api.js";
 import { ProcessJobs } from "./application/process-jobs.js";
+import { ProcessOutlook } from "./application/process-outlook.js";
 import { RetryStepUseCase } from "./application/retry-step.use-case.js";
 import { StartProcess } from "./application/start-process.js";
 import { StepEvents } from "./application/step-events.js";
@@ -46,6 +47,7 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
     StartProcess,
     AdvanceProcess,
     WaitingSteps,
+    ProcessOutlook,
     OrchestratorApi,
     GetProcessTimelineUseCase,
     ProcessMonitoring,

@@ -9,5 +9,6 @@ export {
 export { SubmitChangeRequest, type SubmitInput } from "./application/submit-change-request.js";
 export { changeRequestData } from "./change-request.data.js";
 export { ChangeRequestModule } from "./change-request.module.js";
+export type { OpenRequest } from "./db/change-requests.repository.js";
 /** Hanya untuk foreign key `change_request_id` modul lain (XM-05); modul lain tidak membaca tabel ini (XM-02). */
 export { changeRequests, type JsonRecord } from "./db/schema.js";

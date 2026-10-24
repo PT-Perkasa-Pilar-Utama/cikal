@@ -1,0 +1,420 @@
+{
+  "id": "f069cc8a-1daf-489c-aab0-c5f8bc75549d",
+  "prevId": "7287a8f5-0d26-4380-ad45-520a34bd7d84",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m11_decision.decision_matrix": {
+      "name": "decision_matrix",
+      "schema": "m11_decision",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dedup_outcome": {
+          "name": "dedup_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dukcapil_outcome": {
+          "name": "dukcapil_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fraud_outcome": {
+          "name": "fraud_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rac_outcome": {
+          "name": "rac_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scoring_outcome": {
+          "name": "scoring_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "credit_bureau_outcome": {
+          "name": "credit_bureau_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decision_outcome": {
+          "name": "decision_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "decision_matrix_combination_unique": {
+          "name": "decision_matrix_combination_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dedup_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dukcapil_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fraud_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "rac_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "scoring_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "credit_bureau_outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "decision_matrix_tenant_id_companies_id_fk": {
+          "name": "decision_matrix_tenant_id_companies_id_fk",
+          "tableFrom": "decision_matrix",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "decision_matrix_priority_check": {
+          "name": "decision_matrix_priority_check",
+          "value": "\"m11_decision\".\"decision_matrix\".\"priority\" >= 1"
+        },
+        "decision_matrix_dedup_outcome_check": {
+          "name": "decision_matrix_dedup_outcome_check",
+          "value": "\"dedup_outcome\" in ('MATCH', 'UNMATCH', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_dukcapil_outcome_check": {
+          "name": "decision_matrix_dukcapil_outcome_check",
+          "value": "\"dukcapil_outcome\" in ('PASSED', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_fraud_outcome_check": {
+          "name": "decision_matrix_fraud_outcome_check",
+          "value": "\"fraud_outcome\" in ('CLEAN', 'SUSPICIOUS_CLEARED', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_rac_outcome_check": {
+          "name": "decision_matrix_rac_outcome_check",
+          "value": "\"rac_outcome\" in ('PASS', 'FAIL', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_scoring_outcome_check": {
+          "name": "decision_matrix_scoring_outcome_check",
+          "value": "\"scoring_outcome\" in ('PASS', 'REVIEW', 'FAIL', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_credit_bureau_outcome_check": {
+          "name": "decision_matrix_credit_bureau_outcome_check",
+          "value": "\"credit_bureau_outcome\" in ('COLLECT_1', 'COLLECT_2', 'COLLECT_3', 'COLLECT_4', 'COLLECT_5', 'NO_HISTORY', 'SKIP', 'ANY')"
+        },
+        "decision_matrix_decision_outcome_check": {
+          "name": "decision_matrix_decision_outcome_check",
+          "value": "\"decision_outcome\" in ('GO', 'NOTGO')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m11_decision.decision_results": {
+      "name": "decision_results",
+      "schema": "m11_decision",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcomes": {
+          "name": "outcomes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decision_outcome": {
+          "name": "decision_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "matrix_row_id": {
+          "name": "matrix_row_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "matrix_row_priority": {
+          "name": "matrix_row_priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "decision_results_process_unique": {
+          "name": "decision_results_process_unique",
+          "columns": [
+            {
+              "expression": "process_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "decision_results_application_idx": {
+          "name": "decision_results_application_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "decision_results_tenant_id_companies_id_fk": {
+          "name": "decision_results_tenant_id_companies_id_fk",
+          "tableFrom": "decision_results",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "decision_results_application_id_applications_id_fk": {
+          "name": "decision_results_application_id_applications_id_fk",
+          "tableFrom": "decision_results",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "decision_results_matrix_row_id_decision_matrix_id_fk": {
+          "name": "decision_results_matrix_row_id_decision_matrix_id_fk",
+          "tableFrom": "decision_results",
+          "tableTo": "decision_matrix",
+          "schemaTo": "m11_decision",
+          "columnsFrom": [
+            "matrix_row_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "decision_results_decision_outcome_check": {
+          "name": "decision_results_decision_outcome_check",
+          "value": "\"m11_decision\".\"decision_results\".\"decision_outcome\" in ('GO', 'NOTGO')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m11_decision": "m11_decision"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
