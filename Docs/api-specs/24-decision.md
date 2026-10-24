@@ -29,11 +29,11 @@ Hasil yang menghentikan proses sebelum DECISION (Dukcapil Failed, High Fraud Pot
 | `PUT /decision-matrix/rows/{id}` | body: enam kolom hasil, `decisionOutcome`, `priority` (int >= 1), `description?` |
 | `POST /decision-matrix/rows` | body sama dengan `PUT` |
 
-**Behavior:** Kombinasi enam kolom yang sama persis dengan baris lain: `409 MATRIX_ROW_EXISTS`. Prioritas dipakai bersama: baris lain dengan prioritas sama digeser saat disetujui. Perubahan lewat ChangeRequest `DECISION_MATRIX` dan tampil di "Pending Decision Matrix" (AC-36.01).
+**Behavior:** Kombinasi enam kolom yang sama persis dengan baris lain, atau dengan pengajuan lain yang masih terbuka: `409 MATRIX_ROW_EXISTS`. Prioritas dipakai bersama: bila prioritas baris yang disetujui sudah dipakai, baris dengan prioritas sama atau lebih besar digeser satu. Perubahan lewat ChangeRequest `DECISION_MATRIX` dan tampil di "Pending Decision Matrix" dengan nama `Priority <n>: <kolom selain [ANY]> = <keputusan>`, contoh `Priority 5: Scoring Pass, SLIK Collect 2 = Go` (AC-36.01). Baris yang sedang diajukan: `409 PENDING_CHANGE_REQUEST`; id tak dikenal: `404 NOT_FOUND`. Matrix awal company 001 berasal dari seed `dev` M11.
 
 **Output:** `GET` 200 berisi baris `{ id, priority, dedupOutcome, dukcapilOutcome, fraudOutcome, racOutcome, scoringOutcome, creditBureauOutcome, decisionOutcome, description, hasPendingChange }`; `PUT`/`POST` 202 dengan `message` "Data submitted for approval" (AC-36.01).
 
-**Errors:** `MATRIX_ROW_EXISTS` 409 "This combination already exists" (teks usulan engineering), `PENDING_CHANGE_REQUEST` 409.
+**Errors:** `MATRIX_ROW_EXISTS` 409 "This combination already exists" (teks usulan engineering), `PENDING_CHANGE_REQUEST` 409, `NOT_FOUND` 404.
 
 **Traceability:** US-36; AC-36.01, AC-36.05.
 
@@ -42,7 +42,7 @@ Hasil yang menghentikan proses sebelum DECISION (Dukcapil Failed, High Fraud Pot
 **Purpose:** Menyimulasikan keputusan untuk satu kombinasi hasil (tombol "Simulate" lalu "Run").  
 **Access:** `MST-DECISION` VIEW.
 
-**Input (body):** enam kolom hasil 24.1, semuanya wajib, tanpa `ANY`. `useMatrix` (`ACTIVE` default, atau `PENDING` untuk menguji perubahan yang menunggu persetujuan).
+**Input (body):** enam kolom hasil 24.1, semuanya wajib, tanpa `ANY`. `useMatrix` (`ACTIVE` default, atau `PENDING` untuk menguji perubahan yang menunggu persetujuan). `PENDING` menerapkan semua pengajuan `DECISION_MATRIX` terbuka di atas matrix aktif, urut waktu diajukan, dengan aturan geser prioritas yang sama; baris baru yang belum disetujui memakai id ChangeRequest-nya di `matchedRow.id`.
 
 **Behavior**
 
