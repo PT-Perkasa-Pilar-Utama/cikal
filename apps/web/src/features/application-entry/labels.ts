@@ -43,5 +43,8 @@ export const ORDER_LABELS = {
 /** Teks konfirmasi tombol "Back" (AC-39.04). */
 export const UNSAVED_DATA_CONFIRMATION = "Unsaved data will be lost. Continue?";
 
+/** Teks konfirmasi tombol "Submit" (AC-50.01). */
+export const SUBMIT_CONFIRMATION = "Submit this application?";
+
 /** Label checkbox persetujuan pemohon (AC-40.08). */
 export const CONSENT_LABEL = "Applicant consents to credit checking and personal data processing";

@@ -1,10 +1,15 @@
 import {
   type ApplicationDraftCreateRequest,
   type ApplicationSectionInput,
+  applicationDocumentsResponseSchema,
   applicationDraftListResponseSchema,
   applicationDraftResponseSchema,
+  applicationSubmitResponseSchema,
   availableProductsResponseSchema,
+  documentUploadResponseSchema,
+  type EmergencyContactSectionInput,
   insuranceListResponseSchema,
+  type OccupationSectionInput,
   type ParamType,
   type PersonalSectionInput,
   type ProductCategory,
@@ -18,6 +23,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/api/client";
 
 const DRAFTS_KEY = "application-drafts";
+const DOCUMENTS_KEY = "application-documents";
 
 /** `GET /api/v1/applications/drafts` untuk "Application List" (api-specs 12 §12.4). */
 export function useDrafts(page: number, q: string) {
@@ -101,18 +107,71 @@ export function useCreateDraft() {
   });
 }
 
-type SectionSave =
-  | { id: string; section: Extract<SavableSection, "application">; body: ApplicationSectionInput }
-  | { id: string; section: Extract<SavableSection, "personal">; body: PersonalSectionInput };
+/** Body tiap section yang bisa disimpan (api-specs 12 §12.3). */
+interface SectionBodies {
+  application: ApplicationSectionInput;
+  personal: PersonalSectionInput;
+  occupation: OccupationSectionInput;
+  "emergency-contact": EmergencyContactSectionInput;
+}
 
-/** `PUT /api/v1/applications/{id}/sections/{section}?strict=true` untuk tombol "Next" (api-specs 12 §12.3). */
+export type SectionSave = {
+  [S in SavableSection]: { id: string; section: S; body: SectionBodies[S]; strict: boolean };
+}[SavableSection];
+
+/**
+ * `PUT /api/v1/applications/{id}/sections/{section}`: `strict=true` untuk "Next" dan "Submit", `strict=false` untuk
+ * "Save as Draft" (api-specs 12 §12.3).
+ */
 export function useSaveSection() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, section, body }: SectionSave) =>
-      apiRequest(sectionSaveResponseSchema, `/v1/applications/${id}/sections/${section}?strict=true`, {
+    mutationFn: ({ id, section, body, strict }: SectionSave) =>
+      apiRequest(sectionSaveResponseSchema, `/v1/applications/${id}/sections/${section}?strict=${strict}`, {
         method: "PUT",
         body: JSON.stringify(body),
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [DRAFTS_KEY] }),
+  });
+}
+
+/** Slot unggah step "Document" dari checklist pengajuan (api-specs 12 §12.6). */
+export function useApplicationDocuments(id: string) {
+  return useQuery({
+    queryKey: [DOCUMENTS_KEY, id],
+    queryFn: async () =>
+      (await apiRequest(applicationDocumentsResponseSchema, `/v1/applications/${id}/documents`)).data,
+  });
+}
+
+/** `PUT /api/v1/applications/{id}/documents/{documentType}`: unggah atau ganti file satu slot (api-specs 12 §12.7). */
+export function useUploadDocument(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentType, file }: { documentType: string; file: File }) => {
+      const body = new FormData();
+      body.append("file", file);
+      return apiRequest(
+        documentUploadResponseSchema,
+        `/v1/applications/${id}/documents/${encodeURIComponent(documentType)}`,
+        { method: "PUT", body },
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY, id] }),
+  });
+}
+
+/**
+ * `POST /api/v1/applications/{id}/submit` dengan `Idempotency-Key` wajib (api-specs 12 §12.8). Kunci dibuat sekali per
+ * konfirmasi, jadi klik ganda mendapat respons pertama (AC-50.07).
+ */
+export function useSubmitApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, idempotencyKey }: { id: string; idempotencyKey: Record<string, string> }) =>
+      apiRequest(applicationSubmitResponseSchema, `/v1/applications/${id}/submit`, {
+        method: "POST",
+        headers: idempotencyKey,
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [DRAFTS_KEY] }),
   });

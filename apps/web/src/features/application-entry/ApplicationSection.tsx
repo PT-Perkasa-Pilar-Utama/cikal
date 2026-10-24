@@ -1,7 +1,5 @@
 import { type ProductCategory, productCategorySchema } from "@cikal/contracts";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { type FormEvent, useState } from "react";
-import { Button } from "../../components/ui/Button";
+import { type FormEvent, useRef, useState } from "react";
 import { FeedbackMessage } from "../../components/ui/FeedbackMessage";
 import { SelectField } from "../../components/ui/SelectField";
 import { TextField } from "../../components/ui/TextField";
@@ -9,18 +7,12 @@ import { formatMoney, formatPercent, isMoneyValue } from "../../lib/format";
 import { useAvailableProducts, useInsurances } from "./api";
 import { type ApplicationStepValues, readApplicationStep } from "./application-step-values";
 import { FieldGroup, ParameterSelect } from "./FieldGroup";
-import type { FormErrors } from "./field-errors";
 import { ORDER_LABELS, PRODUCT_CATEGORY_LABELS } from "./labels";
+import { type SectionProps, StepActions } from "./StepActions";
 
-interface ApplicationSectionProps {
-  /** Isi yang sudah disimpan dengan "Next", untuk kembali ke step ini. */
-  saved?: ApplicationStepValues;
+interface ApplicationSectionProps extends SectionProps<ApplicationStepValues> {
   /** Setelah draft terbentuk, identitas pemohon diubah di step Personal. */
   identityLocked: boolean;
-  onNext: (values: ApplicationStepValues) => void;
-  onBack: () => void;
-  submitting: boolean;
-  errors: FormErrors;
 }
 
 const CATEGORY_OPTIONS = Object.entries(PRODUCT_CATEGORY_LABELS).map(([value, label]) => ({ value, label }));
@@ -37,10 +29,13 @@ export function ApplicationSection({
   saved,
   identityLocked,
   onNext,
+  onSaveDraft,
   onBack,
   submitting,
   errors,
+  last,
 }: ApplicationSectionProps) {
+  const form = useRef<HTMLFormElement>(null);
   const application = saved?.application;
   const [category, setCategory] = useState<ProductCategory | undefined>(application?.productCategory);
   const [productId, setProductId] = useState(application?.productId ?? "");
@@ -54,6 +49,10 @@ export function ApplicationSection({
     onNext(readApplicationStep(event.currentTarget));
   }
 
+  function saveDraft() {
+    if (form.current) onSaveDraft(readApplicationStep(form.current));
+  }
+
   const error = (name: string) => errors.fields[name];
   const defaults = (name: keyof NonNullable<typeof application>) => {
     const value = application?.[name];
@@ -62,7 +61,7 @@ export function ApplicationSection({
   const limit = application?.requestedLimit;
 
   return (
-    <form aria-label="Application" noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form ref={form} aria-label="Application" noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
       {errors.message && <FeedbackMessage type="error">{errors.message}</FeedbackMessage>}
       <FieldGroup title="Application Info">
         <ParameterSelect
@@ -188,16 +187,7 @@ export function ApplicationSection({
           />
         ))}
       </FieldGroup>
-      <div className="flex justify-end gap-3">
-        <Button variant="secondary" onClick={onBack}>
-          <ArrowLeft size={20} aria-hidden />
-          Back
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          Next
-          <ArrowRight size={20} aria-hidden />
-        </Button>
-      </div>
+      <StepActions onBack={onBack} onSaveDraft={saveDraft} submitting={submitting} last={last} />
     </form>
   );
 }

@@ -32,6 +32,7 @@ export function TextField({ label, error, icon: Icon, trailing, required, id, ..
         {Icon && <Icon size={16} className="shrink-0 text-neutral-4" aria-hidden />}
         <input
           id={inputId}
+          aria-required={required || undefined}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           className="min-w-0 flex-1 bg-transparent py-2.5 text-neutral-8 outline-none placeholder:text-neutral-4"

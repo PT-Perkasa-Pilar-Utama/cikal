@@ -7,6 +7,8 @@ import {
   clickButton,
   draftCreated,
   entryRoutes,
+  FLOW_TIMEOUT_MS,
+  fieldError,
   fillApplicationStep,
   kta,
   rejected,
@@ -18,15 +20,6 @@ import { renderApp, stubApi } from "../../test/render-app";
 
 const REQUIRED = APPLICATION_SECTION_MESSAGES.required;
 const CREATE_DRAFT = "/api/v1/applications";
-
-const fieldError = (label: string) =>
-  screen
-    .getByLabelText(new RegExp(`^${label}\\*?$`))
-    .closest("div.flex-col")
-    ?.querySelector("p.text-error");
-
-/** Alur lewat SPA utuh mengisi puluhan field; batas waktu dilonggarkan untuk runner CI yang sibuk. */
-const FLOW_TIMEOUT_MS = 15_000;
 
 describe(
   "New Application - Application",

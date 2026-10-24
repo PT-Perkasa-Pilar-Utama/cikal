@@ -13,6 +13,12 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { expect } from "vitest";
 import { type ApiRoutes, type StubResponse, type stubApi } from "./render-app";
 
+/**
+ * Batas waktu spec form pengajuan: alur lewat SPA utuh mengisi puluhan field, dan runner yang sibuk bisa jauh lebih
+ * lambat dari mesin pengembang.
+ */
+export const FLOW_TIMEOUT_MS = 30_000;
+
 /** Sesi Sales: menu Data Entry dengan hak View, Create, dan Update (AC-39, AC-40). */
 export const salesSession: StubResponse = {
   status: 200,
@@ -117,18 +123,19 @@ export function rejected(status: number, code: string, message: string, fields: 
   };
 }
 
-const label = (name: string) => new RegExp(`^${name}\\*?$`);
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const label = (name: string) => new RegExp(`^${escapeRegExp(name)}\\*?$`);
 const scope = (group?: string) => (group ? within(screen.getByRole("group", { name: group })) : screen);
 
 /** Pilih `option`; dropdown dicari ulang karena dipasang ulang saat pilihannya tiba. */
 export async function choose(name: string, option: string, group?: string) {
-  const select = () => scope(group).getByLabelText(label(name));
+  const select = () => scope(group).getByLabelText(label(name), { selector: "select" });
   const value = await waitFor(() => within(select()).getByRole("option", { name: option }));
   fireEvent.change(select(), { target: { value: value.getAttribute("value") } });
 }
 
 export function type(name: string, value: string, group?: string) {
-  fireEvent.change(scope(group).getByLabelText(label(name)), { target: { value } });
+  fireEvent.change(scope(group).getByLabelText(label(name), { selector: "input" }), { target: { value } });
 }
 
 /** Isi step Application sesuai AC-39.01 dengan identitas pemohon AC-40.01. */
@@ -145,6 +152,13 @@ export async function fillApplicationStep(values: { requestedLimit?: string; ten
   type("Full Name", "Rudi Hartono");
   type("Full Name ID", "RUDI HARTONO");
 }
+
+/** Pesan error di bawah field berlabel `name`. */
+export const fieldError = (name: string) =>
+  screen
+    .getByLabelText(label(name), { selector: "input, select" })
+    .closest("div.flex-col")
+    ?.querySelector("p.text-error");
 
 export const clickButton = (name: string) => fireEvent.click(screen.getByRole("button", { name }));
 

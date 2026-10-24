@@ -1,97 +1,28 @@
-import type { FormSection, PersonalSectionInput } from "@cikal/contracts";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { Button } from "../../components/ui/Button";
+import { FeedbackMessage } from "../../components/ui/FeedbackMessage";
 import { ApplicationSection } from "./ApplicationSection";
 import { ApplicationStepper } from "./ApplicationStepper";
-import { useCreateDraft, useSaveSection } from "./api";
-import type { ApplicationStepValues } from "./application-step-values";
-import { BackConfirmation } from "./BackConfirmation";
-import { formErrors } from "./field-errors";
-import { INITIAL_STEPS } from "./labels";
+import { ConfirmationPopup } from "./ConfirmationPopup";
+import { DocumentsSection } from "./DocumentsSection";
+import { EmergencyContactSection } from "./EmergencyContactSection";
+import { SUBMIT_CONFIRMATION, UNSAVED_DATA_CONFIRMATION } from "./labels";
+import { OccupationSection } from "./OccupationSection";
 import { PersonalSection } from "./PersonalSection";
+import { useEntryFlow } from "./use-entry-flow";
 
-interface Draft {
-  id: string;
-  loanId: string;
+interface NewApplicationProps {
+  onExit: () => void;
+  onSubmitted: (message: string) => void;
 }
 
 /**
- * Form "New Application" bertahap (api-specs 12 §12.1). "Next" pertama di step Application membentuk draft dan Loan
- * ID (api-specs 12 §12.2); "Next" berikutnya menyimpan section dengan `strict=true` dan pindah ke `nextSection`.
- * "Back" membuang isi step yang belum disimpan tanpa memanggil API; dari step pertama kembali ke "Application List"
+ * Form "New Application" bertahap (api-specs 12 §12.1): stepper dari `steps[]` dan satu section per step. "Back"
+ * membuang isi step yang belum disimpan tanpa memanggil API; dari step pertama kembali ke "Application List"
  * (AC-39.04).
  */
-export function NewApplication({ onExit }: { onExit: () => void }) {
-  const [draft, setDraft] = useState<Draft>();
-  const [steps, setSteps] = useState<readonly FormSection[]>(INITIAL_STEPS);
-  const [current, setCurrent] = useState<FormSection>("application");
-  const [completed, setCompleted] = useState<ReadonlySet<FormSection>>(new Set());
-  const [application, setApplication] = useState<ApplicationStepValues>();
-  const [personal, setPersonal] = useState<PersonalSectionInput>();
-  const [confirmingBack, setConfirmingBack] = useState(false);
-  const createDraft = useCreateDraft();
-  const saveSection = useSaveSection();
-  const errors = formErrors(createDraft.error ?? saveSection.error);
-  const submitting = createDraft.isPending || saveSection.isPending;
-
-  function moveTo(section: FormSection) {
-    createDraft.reset();
-    saveSection.reset();
-    setCurrent(section);
-  }
-
-  function saved(section: FormSection, result: { steps: FormSection[]; next: FormSection | null }) {
-    setSteps(result.steps);
-    setCompleted((done) => new Set(done).add(section));
-    if (result.next) moveTo(result.next);
-  }
-
-  function saveApplication(values: ApplicationStepValues) {
-    if (!draft) {
-      const body = { application: values.application, personal: values.identity, strict: true };
-      createDraft.mutate(body, {
-        onSuccess: ({ data }) => {
-          setDraft({ id: data.id, loanId: data.loanId });
-          setApplication(values);
-          saved("application", { steps: data.steps, next: data.currentSection });
-        },
-      });
-      return;
-    }
-    const identity = application?.identity ?? values.identity;
-    saveSection.mutate(
-      { id: draft.id, section: "application", body: values.application },
-      {
-        onSuccess: ({ data }) => {
-          setApplication({ application: values.application, identity });
-          saved("application", { steps: data.steps, next: data.nextSection });
-        },
-      },
-    );
-  }
-
-  function savePersonal(input: PersonalSectionInput) {
-    if (!draft) return;
-    saveSection.mutate(
-      { id: draft.id, section: "personal", body: input },
-      {
-        onSuccess: ({ data }) => {
-          setPersonal(input);
-          saved("personal", { steps: data.steps, next: data.nextSection });
-        },
-      },
-    );
-  }
-
-  function confirmBack() {
-    setConfirmingBack(false);
-    const previous = steps[steps.indexOf(current) - 1];
-    if (previous) moveTo(previous);
-    else onExit();
-  }
-
-  const back = () => setConfirmingBack(true);
+export function NewApplication({ onExit, onSubmitted }: NewApplicationProps) {
+  const flow = useEntryFlow({ onExit, onSubmitted });
+  const { draft, current, values, errors, submitting, last } = flow;
+  const common = { onBack: flow.back, submitting, errors, last };
 
   return (
     <section className="flex flex-col gap-4">
@@ -99,39 +30,69 @@ export function NewApplication({ onExit }: { onExit: () => void }) {
         <h1 className="text-2xl font-bold text-primary">New Application</h1>
         {draft && <span className="font-semibold text-neutral-6">Loan ID: {draft.loanId}</span>}
       </div>
+      {flow.notice && <FeedbackMessage type={flow.notice.type}>{flow.notice.text}</FeedbackMessage>}
       <div className="flex flex-col gap-6 rounded-lg bg-neutral-0 p-6 shadow-s">
-        <ApplicationStepper steps={steps} current={current} completed={completed} />
+        <ApplicationStepper steps={flow.steps} current={current} completed={flow.completed} errored={flow.errored} />
         {current === "application" && (
           <ApplicationSection
-            saved={application}
+            {...common}
+            saved={values.application}
             identityLocked={draft !== undefined}
-            onNext={saveApplication}
-            onBack={back}
-            submitting={submitting}
-            errors={errors}
+            onNext={(input) => flow.saveApplication(input, true)}
+            onSaveDraft={(input) => flow.saveApplication(input, false)}
           />
         )}
-        {current === "personal" && application && (
+        {current === "personal" && values.application && (
           <PersonalSection
-            saved={personal}
-            identity={application.identity}
-            onNext={savePersonal}
-            onBack={back}
-            submitting={submitting}
-            errors={errors}
+            {...common}
+            saved={values.personal}
+            identity={values.application.identity}
+            onNext={(body) => flow.savePersonal(body, true)}
+            onSaveDraft={(body) => flow.savePersonal(body, false)}
           />
         )}
-        {/* Section Occupation, Document, dan Emergency Contact dipasang di kartu FE-S3-02. */}
-        {current !== "application" && current !== "personal" && (
-          <div className="flex justify-end">
-            <Button variant="secondary" onClick={back}>
-              <ArrowLeft size={20} aria-hidden />
-              Back
-            </Button>
-          </div>
+        {current === "occupation" && (
+          <OccupationSection
+            {...common}
+            saved={values.occupation}
+            onNext={(body) => flow.saveOccupation(body, true)}
+            onSaveDraft={(body) => flow.saveOccupation(body, false)}
+            pension={values.application?.application.productCategory === "PENSION"}
+          />
+        )}
+        {current === "documents" && draft && (
+          <DocumentsSection applicationId={draft.id} {...common} onNext={flow.leaveDocuments} />
+        )}
+        {current === "emergency-contact" && (
+          <EmergencyContactSection
+            {...common}
+            saved={values["emergency-contact"]}
+            onNext={(body) => flow.saveEmergencyContact(body, true)}
+            onSaveDraft={(body) => flow.saveEmergencyContact(body, false)}
+          />
         )}
       </div>
-      {confirmingBack && <BackConfirmation onConfirm={confirmBack} onCancel={() => setConfirmingBack(false)} />}
+      {flow.confirming === "back" && (
+        <ConfirmationPopup
+          title="Back"
+          text={UNSAVED_DATA_CONFIRMATION}
+          confirmLabel="OK"
+          cancelLabel="Cancel"
+          onConfirm={flow.confirmBack}
+          onCancel={flow.cancelConfirmation}
+        />
+      )}
+      {flow.confirming === "submit" && (
+        <ConfirmationPopup
+          title="Submit"
+          text={SUBMIT_CONFIRMATION}
+          confirmLabel="Yes"
+          cancelLabel="No"
+          busy={submitting}
+          onConfirm={flow.confirmSubmit}
+          onCancel={flow.cancelConfirmation}
+        />
+      )}
     </section>
   );
 }

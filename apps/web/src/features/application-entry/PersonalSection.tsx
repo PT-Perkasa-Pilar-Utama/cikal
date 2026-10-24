@@ -1,26 +1,19 @@
 import type { PersonalSectionInput } from "@cikal/contracts";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { type FormEvent, useState } from "react";
-import { Button } from "../../components/ui/Button";
+import { type FormEvent, useRef, useState } from "react";
 import { FeedbackMessage } from "../../components/ui/FeedbackMessage";
 import { SelectField } from "../../components/ui/SelectField";
 import { TextField } from "../../components/ui/TextField";
 import { AddressFields } from "./AddressFields";
+import { addressValues } from "./address-values";
 import type { ApplicationStepValues } from "./application-step-values";
 import { FieldGroup, ParameterSelect } from "./FieldGroup";
-import type { FormErrors } from "./field-errors";
 import { CONSENT_LABEL } from "./labels";
-import { addressValues, readPersonalStep } from "./personal-step-values";
+import { readPersonalStep } from "./personal-step-values";
+import { type SectionProps, StepActions } from "./StepActions";
 
-interface PersonalSectionProps {
-  /** Isi yang sudah disimpan dengan "Next", untuk kembali ke step ini. */
-  saved?: PersonalSectionInput;
+interface PersonalSectionProps extends SectionProps<PersonalSectionInput> {
   /** Identitas pemohon dari step Application, sebagai isi awal field yang sama. */
   identity: ApplicationStepValues["identity"];
-  onNext: (input: PersonalSectionInput) => void;
-  onBack: () => void;
-  submitting: boolean;
-  errors: FormErrors;
 }
 
 const ID_TYPE_OPTIONS = [{ value: "KTP", label: "KTP" }];
@@ -31,15 +24,32 @@ const PLACEHOLDER = "Type here";
  * ke domisili tanpa bisa diedit (AC-40.07), dan centang persetujuan dikirim sebagai `consentGiven` (AC-40.08). Aturan
  * NIK, usia, dan NPWP diperiksa API dan pesannya tampil di bawah field (AC-40.02 s.d. AC-40.06).
  */
-export function PersonalSection({ saved, identity, onNext, onBack, submitting, errors }: PersonalSectionProps) {
+export function PersonalSection({
+  saved,
+  identity,
+  onNext,
+  onSaveDraft,
+  onBack,
+  submitting,
+  errors,
+  last,
+}: PersonalSectionProps) {
+  const form = useRef<HTMLFormElement>(null);
   const [idAddress, setIdAddress] = useState(() => addressValues(saved?.addresses.id));
   const [residence, setResidence] = useState(() => addressValues(saved?.addresses.residence));
   const [sameAsId, setSameAsId] = useState(saved?.addresses.residence.sameAsId ?? false);
   const [consentGiven, setConsentGiven] = useState(saved?.consentGiven ?? false);
 
+  const read = (target: HTMLFormElement) =>
+    readPersonalStep(target, { id: idAddress, residence, sameAsId }, consentGiven);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onNext(readPersonalStep(event.currentTarget, { id: idAddress, residence, sameAsId }, consentGiven));
+    onNext(read(event.currentTarget));
+  }
+
+  function saveDraft() {
+    if (form.current) onSaveDraft(read(form.current));
   }
 
   const defaults: Partial<Record<keyof PersonalSectionInput, unknown>> = saved ?? identity;
@@ -55,7 +65,7 @@ export function PersonalSection({ saved, identity, onNext, onBack, submitting, e
   const parameter = (name: keyof PersonalSectionInput, label: string) => ({ ...field(name, label), required: true });
 
   return (
-    <form aria-label="Personal" noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form ref={form} aria-label="Personal" noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
       {errors.message && <FeedbackMessage type="error">{errors.message}</FeedbackMessage>}
       <FieldGroup title="Personal Info">
         <TextField {...field("fullName", "Full Name")} required placeholder={PLACEHOLDER} />
@@ -119,16 +129,7 @@ export function PersonalSection({ saved, identity, onNext, onBack, submitting, e
         </label>
         {errors.fields.consentGiven && <p className="text-xs text-error">{errors.fields.consentGiven}</p>}
       </div>
-      <div className="flex justify-end gap-3">
-        <Button variant="secondary" onClick={onBack}>
-          <ArrowLeft size={20} aria-hidden />
-          Back
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          Next
-          <ArrowRight size={20} aria-hidden />
-        </Button>
-      </div>
+      <StepActions onBack={onBack} onSaveDraft={saveDraft} submitting={submitting} last={last} />
     </form>
   );
 }
