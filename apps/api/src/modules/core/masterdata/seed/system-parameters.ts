@@ -12,6 +12,7 @@ export const seedSystemParameterIds = {
   selfEmployedOnly: "0192b6a7-0005-7000-8000-000000000001",
   selfEmployedOccupations: "0192b6a7-0006-7000-8000-000000000001",
   employedIncomeSources: "0192b6a7-0007-7000-8000-000000000001",
+  dueDateEndOfMonth: "0192b6a7-0008-7000-8000-000000000001",
 } as const;
 
 /** Batas tenor contoh produk KTA 60 bulan (AC-20.01); AC-20.07 menguji nilai 24 secara terpisah. */
@@ -114,6 +115,19 @@ export async function seedSystemParameterDefinitions(db: NodePgDatabase): Promis
         defaultValue: '["001"]',
         scope: "TENANT",
         lockOnSubmit: false,
+      },
+      {
+        id: seedSystemParameterIds.dueDateEndOfMonth,
+        paramKey: "DUE_DATE_END_OF_MONTH",
+        label: "Due Date at Month End",
+        description: "Installment due date when the day does not exist in that month",
+        moduleCode: "CORE",
+        category: "BUSINESS",
+        valueType: "CHOICE",
+        allowedValues: ["LAST_DAY", "NEXT_MONTH_FIRST_DAY"],
+        defaultValue: "LAST_DAY",
+        scope: "TENANT",
+        lockOnSubmit: true,
       },
     ])
     .onConflictDoNothing();
