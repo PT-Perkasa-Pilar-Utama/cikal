@@ -191,10 +191,10 @@ export class ProductsRepository {
     return row ?? null;
   }
 
-  async findCodes(tx: Tx, ids: readonly string[]): Promise<{ id: string; productCode: string }[]> {
+  async findCodes(tx: Tx, ids: readonly string[]): Promise<{ id: string; productCode: string; productName: string }[]> {
     if (ids.length === 0) return [];
     return tx
-      .select({ id: products.id, productCode: products.productCode })
+      .select({ id: products.id, productCode: products.productCode, productName: products.productName })
       .from(products)
       .where(inArray(products.id, [...ids]));
   }
