@@ -43,9 +43,9 @@ describe("migrate runner", () => {
   });
 
   it("applies the platform and each licensed module's migrations once and records them in the module ledger", async () => {
-    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(31);
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(32);
     expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(0);
-    expect(await latestMigration(app, installedModuleData)).toBe("notification/0000_notifications");
+    expect(await latestMigration(app, installedModuleData)).toBe("m11-decision/0000_decision_matrix");
   });
 
   it("applies seed layers idempotently", async () => {
@@ -90,7 +90,7 @@ describe("migrate runner", () => {
 
     expect(result).toMatchObject({
       seed: "qa",
-      migrationsApplied: 31,
+      migrationsApplied: 32,
       tenantsSeeded: ["001"],
       bucketObjectsDeleted: 3,
     });

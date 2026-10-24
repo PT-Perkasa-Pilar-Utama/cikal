@@ -39,9 +39,9 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     registerHandlers(app, [
       recordHandler("SCORING_MODEL", "Scoring Model"),
       recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
-      packageHandler("DECISION_MATRIX", "Decision Matrix"),
+      packageHandler("DOCUMENT_NUMBER_FORMAT", "Document Number Format"),
     ]);
-    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-DECISION"];
+    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-NUMBERING"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -168,7 +168,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
   it("applies all 50 rows of an import package at once (AC-12.07)", async () => {
     const items = Array.from({ length: 50 }, (_, index) => ({ name: `PARAM_${index + 1}` }));
     const { changeRequestId } = await submitAs(app, maker, {
-      entityType: "DECISION_MATRIX",
+      entityType: "DOCUMENT_NUMBER_FORMAT",
       entityId: null,
       oldData: null,
       newData: { items },
@@ -177,14 +177,14 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     const res = await review(checker, changeRequestId, "approve");
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({ data: { status: "APPROVED", entityId: null }, message: "Data approved" });
-    expect(await recordCount(db.owner, "DECISION_MATRIX")).toBe(50);
+    expect(await recordCount(db.owner, "DOCUMENT_NUMBER_FORMAT")).toBe(50);
   });
 
   it("applies none of an import package when one row fails (AC-12.07)", async () => {
-    const before = await recordCount(db.owner, "DECISION_MATRIX");
+    const before = await recordCount(db.owner, "DOCUMENT_NUMBER_FORMAT");
     const items = [...Array.from({ length: 49 }, (_, index) => ({ name: `ROW_${index + 1}` })), { name: "invalid" }];
     const { changeRequestId } = await submitAs(app, maker, {
-      entityType: "DECISION_MATRIX",
+      entityType: "DOCUMENT_NUMBER_FORMAT",
       entityId: null,
       oldData: null,
       newData: { items },
@@ -193,7 +193,7 @@ describe("POST /change-requests/{id}/approve and /reject", () => {
     const res = await review(checker, changeRequestId, "approve");
     expect(res.statusCode).toBe(422);
     expect(errorOf(res)).toMatchObject({ code: "BUSINESS_RULE_VIOLATION", message: "Row 50: Value is required" });
-    expect(await recordCount(db.owner, "DECISION_MATRIX")).toBe(before);
+    expect(await recordCount(db.owner, "DOCUMENT_NUMBER_FORMAT")).toBe(before);
     expect(await statusOf(changeRequestId)).toBe("WAITING_APPROVAL");
   });
 
