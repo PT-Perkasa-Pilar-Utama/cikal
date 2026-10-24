@@ -6,10 +6,11 @@ import {
   type OccupationSectionInput,
   type PersonalSectionInput,
 } from "@cikal/contracts";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ApiError, idempotencyHeader } from "../../lib/api/client";
 import { type SectionSave, useCreateDraft, useSaveSection, useSubmitApplication } from "./api";
 import type { ApplicationStepValues } from "./application-step-values";
+import type { DraftStart } from "./draft-form-values";
 import { formErrors } from "./field-errors";
 import { INITIAL_STEPS } from "./labels";
 
@@ -36,6 +37,8 @@ interface EntryFlowOptions {
   onExit: () => void;
   /** Submit berhasil, dengan pesan "Application submitted. Loan ID: ..." (AC-50.01). */
   onSubmitted: (message: string) => void;
+  /** Draft yang dilanjutkan; tanpa ini form mulai dari step Application tanpa draft (AC-49.05). */
+  start?: DraftStart;
 }
 
 const DOCUMENTS: FormSection = "documents";
@@ -46,19 +49,23 @@ const DOCUMENTS: FormSection = "documents";
  * terakhir menjadi "Submit": section disimpan strict, lalu konfirmasi "Submit this application?" mengirim
  * `POST /submit` dengan satu `Idempotency-Key` per konfirmasi (AC-50.07).
  */
-export function useEntryFlow({ onExit, onSubmitted }: EntryFlowOptions) {
-  const [draft, setDraft] = useState<Draft>();
-  const [steps, setSteps] = useState<readonly FormSection[]>(INITIAL_STEPS);
-  const [current, setCurrent] = useState<FormSection>("application");
-  const [completed, setCompleted] = useState<ReadonlySet<FormSection>>(new Set());
+export function useEntryFlow({ onExit, onSubmitted, start }: EntryFlowOptions) {
+  const [draft, setDraft] = useState<Draft | undefined>(start?.draft);
+  const [steps, setSteps] = useState<readonly FormSection[]>(start?.steps ?? INITIAL_STEPS);
+  const [current, setCurrent] = useState<FormSection>(start?.current ?? "application");
+  // Step sebelum `currentSection` draft yang dilanjutkan sudah disimpan dengan "Next".
+  const [completed, setCompleted] = useState<ReadonlySet<FormSection>>(
+    () => new Set(start ? start.steps.slice(0, start.steps.indexOf(start.current)) : []),
+  );
   const [errored, setErrored] = useState<ReadonlySet<FormSection>>(new Set());
-  const [values, setValues] = useState<SectionValues>({});
+  const [values, setValues] = useState<SectionValues>(start?.values ?? {});
   const [notice, setNotice] = useState<Notice>();
   const [confirming, setConfirming] = useState<"back" | "submit">();
   const [submitKey, setSubmitKey] = useState<Record<string, string>>({});
   const createDraft = useCreateDraft();
   const saveSection = useSaveSection();
   const submit = useSubmitApplication();
+  const submitLock = useRef(false);
   const last = current === steps[steps.length - 1];
 
   function moveTo(section: FormSection) {
@@ -153,12 +160,17 @@ export function useEntryFlow({ onExit, onSubmitted }: EntryFlowOptions) {
   }
 
   function confirmSubmit() {
-    if (!draft) return;
+    // `isPending` baru terbaca setelah render berikutnya; kunci ini menahan klik kedua dari klik ganda (AC-50.07).
+    if (!draft || submitLock.current) return;
+    submitLock.current = true;
     submit.mutate(
       { id: draft.id, idempotencyKey: submitKey },
       {
         onSuccess: ({ data, message }) => onSubmitted(message ?? APPLICATION_SUBMIT_MESSAGES.submitted(data.loanId)),
         onError: submitFailed,
+        onSettled: () => {
+          submitLock.current = false;
+        },
       },
     );
   }

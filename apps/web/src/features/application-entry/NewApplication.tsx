@@ -3,6 +3,7 @@ import { ApplicationSection } from "./ApplicationSection";
 import { ApplicationStepper } from "./ApplicationStepper";
 import { ConfirmationPopup } from "./ConfirmationPopup";
 import { DocumentsSection } from "./DocumentsSection";
+import type { DraftStart } from "./draft-form-values";
 import { EmergencyContactSection } from "./EmergencyContactSection";
 import { SUBMIT_CONFIRMATION, UNSAVED_DATA_CONFIRMATION } from "./labels";
 import { OccupationSection } from "./OccupationSection";
@@ -12,6 +13,8 @@ import { useEntryFlow } from "./use-entry-flow";
 interface NewApplicationProps {
   onExit: () => void;
   onSubmitted: (message: string) => void;
+  /** Draft yang dilanjutkan dari "Application List" (AC-49.05). */
+  start?: DraftStart;
 }
 
 /**
@@ -19,8 +22,8 @@ interface NewApplicationProps {
  * membuang isi step yang belum disimpan tanpa memanggil API; dari step pertama kembali ke "Application List"
  * (AC-39.04).
  */
-export function NewApplication({ onExit, onSubmitted }: NewApplicationProps) {
-  const flow = useEntryFlow({ onExit, onSubmitted });
+export function NewApplication({ onExit, onSubmitted, start }: NewApplicationProps) {
+  const flow = useEntryFlow({ onExit, onSubmitted, start });
   const { draft, current, values, errors, submitting, last } = flow;
   const common = { onBack: flow.back, submitting, errors, last };
 

@@ -6,7 +6,7 @@ import { TextField } from "../../components/ui/TextField";
 import { formatMoney, formatPercent, isMoneyValue } from "../../lib/format";
 import { useAvailableProducts, useInsurances } from "./api";
 import { type ApplicationStepValues, readApplicationStep } from "./application-step-values";
-import { FieldGroup, ParameterSelect } from "./FieldGroup";
+import { FieldGroup, loadingOptions, ParameterSelect } from "./FieldGroup";
 import { ORDER_LABELS, PRODUCT_CATEGORY_LABELS } from "./labels";
 import { type SectionProps, StepActions } from "./StepActions";
 
@@ -39,8 +39,10 @@ export function ApplicationSection({
   const application = saved?.application;
   const [category, setCategory] = useState<ProductCategory | undefined>(application?.productCategory);
   const [productId, setProductId] = useState(application?.productId ?? "");
-  const products = useAvailableProducts(category).data ?? [];
-  const insurances = useInsurances().data ?? [];
+  const availableProducts = useAvailableProducts(category);
+  const products = availableProducts.data ?? [];
+  const insuranceList = useInsurances();
+  const insurances = insuranceList.data ?? [];
   const product = products.find((option) => option.id === productId);
   const rate = product?.currentInterestRate;
 
@@ -96,8 +98,12 @@ export function ApplicationSection({
           name="productId"
           label="Product"
           required
-          options={products.map((option) => ({ value: option.id, label: option.productCode }))}
-          value={product ? productId : ""}
+          options={loadingOptions(
+            products.map((option) => ({ value: option.id, label: option.productCode })),
+            productId,
+            availableProducts.isLoading,
+          )}
+          value={product || availableProducts.isLoading ? productId : ""}
           onChange={(event) => setProductId(event.target.value)}
           error={error("productId")}
         />
@@ -131,7 +137,11 @@ export function ApplicationSection({
           key={insurances.length}
           name="insuranceId"
           label="Insurance"
-          options={insurances.map((option) => ({ value: option.id, label: option.insuranceName }))}
+          options={loadingOptions(
+            insurances.map((option) => ({ value: option.id, label: option.insuranceName })),
+            defaults("insuranceId"),
+            insuranceList.isPending,
+          )}
           defaultValue={defaults("insuranceId")}
           error={error("insuranceId")}
         />

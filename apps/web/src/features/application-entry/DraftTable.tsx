@@ -1,4 +1,5 @@
 import type { ApplicationDraftListResponse } from "@cikal/contracts";
+import { Link } from "@tanstack/react-router";
 import { formatDateTime, formatMoney } from "../../lib/format";
 import { STEP_LABELS } from "./labels";
 
@@ -6,7 +7,7 @@ type DraftRow = ApplicationDraftListResponse["data"][number];
 
 /**
  * Tabel "Application List": draft milik Sales yang login, termasuk pengajuan yang dikembalikan ke draft (api-specs
- * 12 §12.4). Membuka draft dari Loan ID dipasang di kartu FE-S3-03 (AC-49.05).
+ * 12 §12.4). Loan ID membuka draft pada step terakhir yang disimpan (AC-49.05).
  */
 export function DraftTable({ drafts }: { drafts: DraftRow[] }) {
   return (
@@ -25,7 +26,15 @@ export function DraftTable({ drafts }: { drafts: DraftRow[] }) {
       <tbody>
         {drafts.map((draft) => (
           <tr key={draft.id} className="border-b border-neutral-2 last:border-0">
-            <td className="p-3 font-semibold text-neutral-8">{draft.loanId}</td>
+            <td className="p-3">
+              <Link
+                to="/applications/$applicationId"
+                params={{ applicationId: draft.id }}
+                className="font-semibold text-primary hover:underline"
+              >
+                {draft.loanId}
+              </Link>
+            </td>
             <td className="p-3">{draft.fullName}</td>
             <td className="p-3">{draft.productCode}</td>
             <td className="p-3">{draft.requestedLimit ? formatMoney(draft.requestedLimit) : "-"}</td>

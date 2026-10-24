@@ -3,6 +3,9 @@ import {
   changeRequestReviewResponseSchema,
   type DocumentChecklistCreateRequest,
   type ProductCreateRequest,
+  type ProductPricingUpdateRequest,
+  type ProductRouteUpdateRequest,
+  type StepCode,
 } from "@cikal/contracts";
 import { todayIsoDate } from "../../src/lib/format";
 import { ApiSession } from "./api-session";
@@ -47,4 +50,33 @@ export async function submitChecklist(username: SessionUser, body: DocumentCheck
     maker.post(changeRequestAcceptedSchema, "/api/v1/document-checklists", body),
   );
   return accepted.data.changeRequestId;
+}
+
+/** Pricing dengan suku bunga 14% p.a. yang berlaku hari ini (AC-97.01, AC-97.04). */
+const pricingRequest = (): ProductPricingUpdateRequest => ({
+  adminFee: "500000.00",
+  provisionFee: "1.0000",
+  subProducts: [{ interestRate: "14.0000", validFrom: todayIsoDate() }],
+});
+
+/** Rute dengan Dedup sebagai langkah otomatis pertama setelah Data Entry, ditambah langkah wajib (RT-03). */
+const ROUTE_STEPS: StepCode[] = ["DATA_ENTRY", "DEDUP", "APPROVAL", "VALIDITY_CHECK", "PRINT_AKAD", "DISBURSEMENT"];
+const routeRequest: ProductRouteUpdateRequest = {
+  steps: ROUTE_STEPS.map((stepCode) => ({ stepCode, isEnabled: true })),
+};
+
+/**
+ * Produk yang tersedia untuk pengajuan baru (api-specs 08 §8.7): produk, pricing, dan rute masing-masing diajukan
+ * Maker lalu disetujui Checker. Hasilnya id produk.
+ */
+export async function availableProduct(productCode: string, productName: string): Promise<string> {
+  const productId = (await approve("checker.001", await submitProduct("maker.01", productCode, productName))) ?? "";
+  for (const [path, body] of [
+    [`/api/v1/products/${productId}/pricing`, pricingRequest()],
+    [`/api/v1/products/${productId}/route`, routeRequest],
+  ] as const) {
+    const accepted = await ApiSession.as("maker.01", (maker) => maker.put(changeRequestAcceptedSchema, path, body));
+    await approve("checker.001", accepted.data.changeRequestId);
+  }
+  return productId;
 }
