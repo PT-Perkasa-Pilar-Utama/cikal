@@ -14,9 +14,11 @@ Notification tidak punya endpoint di POC. Email dikirim oleh handler event outbo
 
 | Aturan | Rujukan |
 |---|---|
-| Email pemohon kosong: log `SKIPPED` | TRM_NTF_006 |
+| Email pemohon kosong: log `SKIPPED` dengan pesan "Notification skipped - no email" | TRM_NTF_006 |
 | Gagal kirim: log `FAILED`, proses pengajuan tidak berhenti | 5.8 |
-| Handler idempotent terhadap event yang dikirim ulang | 5.0.1 |
+| Handler idempotent terhadap event yang dikirim ulang: satu log per event per template | 5.0.1 |
+| Template tidak ada untuk company: log `FAILED` "Email template <code> is not configured" | 5.8 |
+| Event `DisbursementCompleted` dipublikasikan langkah Record Disbursement (kartu BE-S6-03); handler sudah terpasang | AC-101.01 |
 
 ## 18.2 Operasi backlog (TODO)
 
