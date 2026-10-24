@@ -50,6 +50,11 @@ export class ProcessInstancesRepository {
     return row ?? null;
   }
 
+  async findById(tx: Tx, id: string): Promise<ProcessRow | null> {
+    const [row] = await tx.select(processColumns).from(processInstances).where(eq(processInstances.id, id));
+    return row ?? null;
+  }
+
   async hasActive(tx: Tx, applicationId: string): Promise<boolean> {
     const rows = await tx
       .select({ id: processInstances.id })

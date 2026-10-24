@@ -156,7 +156,8 @@ export interface OrchestratorApi {
   retry(stepExecutionId: string, by: string): Promise<void>;
   finish(processInstanceId: string, reason: string, by: string): Promise<void>;
   recontest(applicationId: string, reason: string, changedFields: unknown, by: string): Promise<{ processInstanceId: string }>;
-  outcomes(processInstanceId: string): Promise<Record<StepCode, string | "SKIP">>;
+  outcomes(processInstanceId: string): Promise<Partial<Record<StepCode, string>>>;  // COMPLETED: outcomeCode, SKIPPED: "SKIP"
+  nextStep(processInstanceId: string, after: StepCode): Promise<StepCode | null>;    // dipakai GET /applications/{id}/decision
   timeline(applicationId: string): Promise<TimelineEntry[]>;
 }
 ```

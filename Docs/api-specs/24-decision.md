@@ -16,6 +16,8 @@ Decision Matrix, simulasi, dan keputusan awal Go/NotGo. Modul pemilik: M11 Decis
 
 Hasil yang menghentikan proses sebelum DECISION (Dukcapil Failed, High Fraud Potential) tidak muncul di matrix. Langkah yang dilewati rute atau tak berlisensi bernilai `SKIP` (AC-69.03).
 
+Langkah DECISION membaca `outcomeCode` keenam langkah lewat `orchestrator.outcomes`; langkah DEDUP, DUKCAPIL, FRAUD, RAC, SCORING, dan CREDIT_BUREAU wajib menyelesaikan langkahnya dengan salah satu nilai kolomnya di tabel ini (tanpa `ANY`). Nilai lain membuat DECISION berstatus `ERROR` kategori `CONFIG` tanpa retry, dengan pesan "Step <kode> outcome <nilai> is not a Decision Matrix value". Go menjadi hasil langkah `CONTINUE`; NotGo menjadi `RECONTEST`.
+
 ## 24.2 GET /decision-matrix, PUT /decision-matrix/rows/{id}, POST /decision-matrix/rows
 
 **Purpose:** Halaman "Decision Matrix": daftar baris dan perubahan keputusan kombinasi.  
@@ -76,9 +78,9 @@ Tanpa baris: `{"data":{"decisionOutcome":"NOTGO","matchedRow":null,"note":"No ma
             "matchedRow": { "id": "0192...", "priority": 4 }, "description": null, "nextStep": "APPROVAL" } }
 ```
 
-`NOTGO` membawa pengajuan ke status `RECONTEST` dan antrean "Recontest" tanpa email ke pemohon (AC-69.02).
+`NOTGO` membawa pengajuan ke status `RECONTEST` dan antrean "Recontest" tanpa email ke pemohon (AC-69.02). Tanpa `processInstanceId`, yang dibaca keputusan proses terakhir yang sudah sampai DECISION. `matchedRow.priority` adalah prioritas saat keputusan dibuat. `description` berisi deskripsi baris, atau "No matching rule, default decision applied" untuk NotGo default. `nextStep` hanya untuk Go: langkah sesudah DECISION yang sudah berjalan, atau yang akan berjalan menurut rute, lisensi, dan syarat langkah (AC-69.01); NotGo bernilai `null`.
 
-**Errors:** `APPLICATION_NOT_FOUND` 404, `MODULE_NOT_LICENSED` 403.
+**Errors:** `APPLICATION_NOT_FOUND` 404, `NOT_FOUND` 404 (pengajuan belum sampai DECISION), `MODULE_NOT_LICENSED` 403 (lisensi tenant tanpa M11, diperiksa use case karena menu `APP-INQUIRY` milik CORE).
 
 **Traceability:** US-69; AC-69.01 s.d. AC-69.03.
 

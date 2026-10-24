@@ -1,17 +1,20 @@
+import type { StepCode } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
+import { ProcessOutlook } from "./process-outlook.js";
 import { StartProcess } from "./start-process.js";
 import { type ExternalMatch, WaitingSteps } from "./waiting-steps.js";
 
 /**
  * Antarmuka publik Orchestrator untuk modul lain (technical-specs 12 §12.6), dipanggil di transaksi pemanggil.
- * `retry` dan `finish` hanya dipakai Process Monitoring modul ini (`monitoring.ts`); `outcomes` di kartu TL-S4-02.
+ * `retry` dan `finish` hanya dipakai Process Monitoring modul ini (`monitoring.ts`).
  */
 @Injectable()
 export class OrchestratorApi {
   constructor(
     private readonly starter: StartProcess,
     private readonly waiting: WaitingSteps,
+    private readonly outlook: ProcessOutlook,
   ) {}
 
   /** Dipanggil `application.submit` di transaksi yang sama (api-specs 12 §12.8 langkah 5). */
@@ -33,5 +36,15 @@ export class OrchestratorApi {
   /** Dipanggil endpoint data masuk Integration Registry (IN-15). */
   receiveExternal(tx: Tx, externalReference: string, payload: unknown): Promise<ExternalMatch> {
     return this.waiting.receiveExternal(tx, externalReference, payload);
+  }
+
+  /** `outcomeCode` langkah yang selesai dan `SKIP` untuk yang dilewati; dibaca M11 Decision (XM-02, DEP-02). */
+  outcomes(tx: Tx, processInstanceId: string): Promise<Partial<Record<StepCode, string>>> {
+    return this.outlook.outcomes(tx, processInstanceId);
+  }
+
+  /** Langkah sesudah `after` menurut rute proses, contoh SIKP atau APPROVAL sesudah DECISION (AC-69.01). */
+  nextStep(tx: Tx, processInstanceId: string, after: StepCode): Promise<StepCode | null> {
+    return this.outlook.nextStep(tx, processInstanceId, after);
   }
 }
