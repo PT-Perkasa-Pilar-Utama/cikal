@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentStep, inStepOrder, routeSkipReason } from "./route-plan.js";
+import { currentStep, dedupMatchSkipReason, inStepOrder, routeSkipReason } from "./route-plan.js";
 
 const POC_LICENSES = new Set(["CORE", "M06", "M07", "M08", "M09", "M10", "M11", "M15"]);
 
@@ -54,5 +54,20 @@ describe("step order", () => {
   it("orders steps by the standard route order, with NAME_SCREENING between DUKCAPIL and VERIFICATION", () => {
     const steps = [{ stepCode: "VERIFICATION" }, { stepCode: "NAME_SCREENING" }, { stepCode: "DUKCAPIL" }] as const;
     expect(inStepOrder(steps).map((step) => step.stepCode)).toEqual(["DUKCAPIL", "NAME_SCREENING", "VERIFICATION"]);
+  });
+});
+
+describe("dedup match skip reason", () => {
+  it("skips DUKCAPIL as dedup match when DEDUP completed with MATCH (TRM_DDP_001)", () => {
+    expect(dedupMatchSkipReason("DUKCAPIL", { DEDUP: "MATCH" })).toBe("DEDUP_MATCH");
+  });
+
+  it("keeps DUKCAPIL for UnMatch and Skip outcomes (TRM_DDP_003, TRM_DDP_005)", () => {
+    expect(dedupMatchSkipReason("DUKCAPIL", { DEDUP: "UNMATCH" })).toBeNull();
+    expect(dedupMatchSkipReason("DUKCAPIL", { DEDUP: "SKIP" })).toBeNull();
+  });
+
+  it("does not skip other steps after a dedup match", () => {
+    expect(dedupMatchSkipReason("FRAUD", { DEDUP: "MATCH" })).toBeNull();
   });
 });
