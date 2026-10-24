@@ -302,6 +302,7 @@ Klien menampilkan `completeness` sebagai "0 of 7 documents"; dokumen opsional ti
 ## 12.8 POST /applications/{id}/submit
 
 **Purpose:** Kirim pengajuan untuk diproses (tombol "Submit" lalu "Yes").  
+**Layar:** Tombol "Submit" di step terakhir lebih dulu menyimpan section itu dengan `strict=true` (12.3) agar pesan kontak darurat tampil di bawah field (AC-48.02 s.d. AC-48.04); konfirmasi "Submit this application?" muncul bila simpan berhasil. "Save as Draft" (`strict=false`) tersedia di setiap step kecuali Document, karena file tersimpan saat diunggah (keputusan FE-S3-02).  
 **Access:** `APP-ENTRY` CREATE; hanya pembuat draft.  
 **Idempotency:** wajib.
 
