@@ -205,6 +205,13 @@ pnpm --filter @cikal/api db:reset --seed=qa
 pnpm --filter @cikal/web e2e
 ```
 
+   Spec yang memeriksa langkah otomatis setelah submit atau email (contoh FE-S3-03) juga butuh worker pg-boss yang menyala, karena `pnpm dev` tidak menjalankannya:
+
+```bash
+pnpm --filter @cikal/api build
+pnpm --filter @cikal/api start:worker
+```
+
 7. Gate, commit, dan PR sama dengan 3.8 dan 3.9. Spec yang lulus adalah exit criterion kartu.
 
 ---
