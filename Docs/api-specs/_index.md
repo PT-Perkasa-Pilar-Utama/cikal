@@ -233,7 +233,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `GET /applications/{id}/dedup` | 19 §19.2 | POC | OK |
-| `GET /applications/{id}/dukcapil` | 20 §20.2 | POC | TODO |
+| `GET /applications/{id}/dukcapil` | 20 §20.2 | POC | OK |
 | `GET /applications/{id}/fraud` | 21 §21.2 | POC | TODO |
 | `GET /scoring-models` | 22 §22.1 | POC | TODO |
 | `GET /scoring-models/{id}` | 22 §22.2 | POC | TODO |

@@ -620,11 +620,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | dukcapil_rules.not_found_outcome | text | no | `REVIEW` (default), `FAILED` |
 | dukcapil_results.application_id, process_instance_id | uuid | no | |
 | dukcapil_results.record_found | boolean | no | |
-| dukcapil_results.provider_code, provider_reference | text | no / yes | |
+| dukcapil_results.provider_code, provider_reference | text | yes | kosong untuk `SKIP` karena penyedia tidak dipanggil |
 | dukcapil_results.dob_status, pob_status | text | yes | |
 | dukcapil_results.full_name_score, mother_name_score, final_score | numeric(5,4) | yes | |
 | dukcapil_results.outcome | text | no | `PASSED`, `REVIEW`, `FAILED`, `SKIP` |
-| dukcapil_results.raw_response_enc | bytea | yes | respons mentah terenkripsi (IN-06) |
+| dukcapil_results.raw_response_enc, raw_response_key_version | bytea, int | yes | respons mentah terenkripsi beserta versi kuncinya (IN-06) |
+| dukcapil_results.rule | jsonb | no | bobot dan ambang DukcapilRule saat langkah berjalan |
+| dukcapil_results.ran_at | timestamptz | no | |
 | dukcapil_reviews.dukcapil_result_id, reviewer_user_id | uuid | no | |
 | dukcapil_reviews.level | int | no | 1 Verifikator, 2 Supervisor |
 | dukcapil_reviews.decision | text | no | `PASS`, `FAIL`, `REVIEW` |

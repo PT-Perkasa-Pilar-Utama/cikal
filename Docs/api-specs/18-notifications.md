@@ -9,7 +9,7 @@ Notification tidak punya endpoint di POC. Email dikirim oleh handler event outbo
 | Event | Template | Penerima | Rujukan |
 |---|---|---|---|
 | `ApplicationSubmitted` | `APP_RECEIVED`, subjek "Pengajuan kredit <Loan ID> telah kami terima" | Email pemohon | AC-50.05 |
-| `ApplicationRejected` | `APP_REJECTED` | Email pemohon | US-87 |
+| `ApplicationRejected` | `APP_REJECTED`, subjek "Pengajuan kredit <Loan ID> belum dapat kami setujui" (teks usulan engineering). Ditulis Application saat status menjadi `FINISHED_REJECTED` | Email pemohon | US-87, TRM_DKC_005 |
 | `DisbursementCompleted` | `APP_DISBURSED`, subjek "Kredit <Loan ID> telah dicairkan" | Email pemohon | AC-101.01 |
 
 | Aturan | Rujukan |
