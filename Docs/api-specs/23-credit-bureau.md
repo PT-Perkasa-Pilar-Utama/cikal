@@ -14,7 +14,8 @@ Hitungan hasil:
 1. Hanya fasilitas `ACTIVE` diagregasi; kolektibilitas terburuk dipakai (`CREDIT_BUREAU_AGGREGATION`, TRM_SLK_007).
 2. Nilai di luar 1 s.d. 5: `ERROR INVALID_RESPONSE` "Invalid collectibility value: 6" (TRM_SLK_006).
 3. Tanpa riwayat: `hasHistory = false`, label "No credit history" (TRM_SLK_005).
-4. `CreditBureauOutcomeMapping` (seed MRTM TRM_SLK) memetakan kolektibilitas ke `quality` dan `outcome` untuk Decision Matrix.
+4. `CreditBureauOutcomeMapping` (seed MRTM TRM_SLK) memetakan kolektibilitas ke `quality` dan `outcome` untuk Decision Matrix. Tanpa fasilitas `ACTIVE` dipakai baris tanpa kolektibilitas (`NO_HISTORY`, "No credit history"). Kolektibilitas tanpa baris pemetaan: `ERROR BUSINESS_SETUP`.
+5. Di POC hanya mode `SYNC`; mode `MANUAL` dan `ASYNC` menjadi `ERROR BUSINESS_SETUP` "Credit bureau mode <mode> is not available in POC". Timeout, koneksi, dan gangguan penyedia diretry otomatis orchestrator. Satu hasil disimpan per ProcessInstance beserta respons mentah terenkripsi; retry manual memanggil penyedia lagi dan mengganti hasil lama. Hasil langkah `CONTINUE` dengan `outcomeCode` hasil pemetaan dan ringkasan label.
 
 ## 23.2 POST /applications/{id}/credit-report
 
@@ -71,9 +72,9 @@ Hitungan hasil:
 }
 ```
 
-`label` mengikuti MRTM: "Collectibility 1 - Good", "Collectibility 2 - Fair", "Collectibility 3 - Poor" s.d. 5, "No credit history" (AC-68.01, TRM_SLK_001 s.d. 005, 007).
+`label` mengikuti MRTM: "Collectibility 1 - Good", "Collectibility 2 - Fair", "Collectibility 3 - Poor" s.d. 5, "No credit history" (AC-68.01, TRM_SLK_001 s.d. 005, 007). Langkah belum berjalan, dilewati, atau `ERROR` tanpa hasil: `data: null` dengan `meta.stepStatus`; pengajuan tanpa proses `PENDING`. `facilities[].lastUpdated` kosong bila penyedia tidak memberinya.
 
-**Errors:** `APPLICATION_NOT_FOUND` 404, `MODULE_NOT_LICENSED` 403.
+**Errors:** `APPLICATION_NOT_FOUND` 404, `NOT_FOUND` 404 (`processInstanceId` bukan milik pengajuan), `MODULE_NOT_LICENSED` 403 (lisensi tenant tanpa M10, diperiksa use case karena menu `APP-INQUIRY` milik CORE).
 
 **Traceability:** US-68; AC-68.01, AC-68.02.
 

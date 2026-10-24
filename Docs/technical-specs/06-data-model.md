@@ -663,7 +663,9 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | scoring_criteria.weight | numeric(8,2) | yes | -1.000 s.d. 1.000 |
 | scoring_criteria.criterion_type | text | no | `WEIGHTED`, `MANDATORY` |
 | scoring_model_products.model_id, product_id | uuid | no | |
-| scoring_results.model_id, model_group, total_score, outcome | | no | |
+| scoring_results.model_id, model_group, total_score, outcome | | no / total_score yes | UQ(process_instance_id, model_group); `total_score` kosong untuk RAC |
+| scoring_results.application_id, process_instance_id, failed_reasons, ran_at | uuid, jsonb, timestamptz | no | `failed_reasons` alasan kriteria MANDATORY yang gagal (AC-67.02) |
+| scoring_criteria.sort_order, scoring_result_details.sort_order, display_text | int, text | no | teks kriteria saat langkah berjalan |
 | scoring_result_details.scoring_result_id, criterion_id, actual_value, is_met, applied_weight | | no | |
 
 ### M10 Credit Bureau (`m10_credit_bureau`)
@@ -677,13 +679,14 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | results.aggregated_collectibility | int | yes | |
 | results.quality, outcome | text | no | |
 | results.report_file_id | uuid | yes | wajib pada MANUAL |
-| results.entered_by, entered_at | | yes | MANUAL |
+| results.entered_by, entered_at | | yes | MANUAL; kolom dibuat bersama operasi unggah iDeb (api-specs 23 §23.2, backlog) |
+| results.application_id, process_instance_id, raw_response_key_version, ran_at | uuid, int, timestamptz | no / yes | satu hasil per ProcessInstance |
 | results.raw_response_enc | bytea | yes | |
 | credit_facilities.result_id | uuid | no | |
 | credit_facilities.lender_name, facility_type | text | no | |
 | credit_facilities.plafond, outstanding | numeric(18,2) | no | |
 | credit_facilities.collectibility, days_past_due | int | no | |
-| credit_facilities.condition, last_updated | text, date | no | hanya `ACTIVE` diagregasi |
+| credit_facilities.condition, last_updated | text, date | no / yes | hanya `ACTIVE` diagregasi; `last_updated` kosong bila penyedia tidak memberinya |
 
 ### M11 Decision Engine (`m11_decision`)
 | table.column | type | nullable | notes |
