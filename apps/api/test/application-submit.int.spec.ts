@@ -5,13 +5,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { TASK_QUEUE_PORT, type TaskQueuePort } from "../src/platform/http/task-queue-port.js";
 import {
-  attachDocument,
-  emergencyContactBody,
-  insertChecklist,
-  occupationBody,
+  completeDraft as completeDraftFor,
   personalBody,
   SEVEN_MANDATORY_DOCUMENTS,
   sectionClient,
+  submittableProduct,
 } from "./support/application.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 import {
@@ -25,7 +23,6 @@ import { insertProduct, nextProductCode } from "./support/product.js";
 import { expectError, MANDATORY_STEPS } from "./support/route.js";
 import { createRole, createSession, type TestSession } from "./support/session.js";
 
-const SEVEN = SEVEN_MANDATORY_DOCUMENTS.map((documentType) => ({ documentType, isMandatory: true }));
 /** Langkah pertama menunggu data luar agar langkah saat ini bisa diperiksa. */
 const WAITING: StepResult = {
   type: "WAIT_EXTERNAL",
@@ -65,22 +62,9 @@ describe("application submit", () => {
     await db?.stop();
   });
 
-  /** Produk KTA dengan rute `steps` dan checklist tujuh dokumen wajib untuk Karyawan Swasta, Belum Kawin. */
-  const product = async (steps: Record<string, boolean> = { ...MANDATORY_STEPS, DEDUP: true }) => {
-    const productId = await insertProduct(db.owner, { productCode: nextProductCode("U") });
-    await insertRoute(db.owner, productId, [{ versionNumber: 1, status: "ACTIVE", steps }]);
-    await insertChecklist(db.owner, productId, SEVEN);
-    return productId;
-  };
-  /** Draft dengan semua section lengkap dan `documents` dokumen wajib terunggah. */
-  const completeDraft = async (productId: string, documents = SEVEN_MANDATORY_DOCUMENTS) => {
-    const id = await client.createDraft(sales, productId);
-    await client.save(sales, id, "personal", personalBody());
-    await client.save(sales, id, "occupation", occupationBody);
-    await client.save(sales, id, "emergency-contact", emergencyContactBody);
-    for (const documentType of documents) await attachDocument(db.owner, id, documentType);
-    return id;
-  };
+  const product = (steps?: Record<string, boolean>) => submittableProduct(db.owner, steps);
+  const completeDraft = (productId: string, documents?: readonly string[]) =>
+    completeDraftFor(db.owner, client, sales, productId, { documents });
   const submit = (session: TestSession, id: string, key: string | null = uuidv7()) =>
     app.inject({
       method: "POST",

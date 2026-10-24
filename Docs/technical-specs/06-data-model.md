@@ -374,12 +374,13 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 ### EMAIL_TEMPLATES, NOTIFICATION_LOGS
 | table.column | type | nullable | notes |
 |---|---|---|---|
-| email_templates.template_code | text | no | `APP_RECEIVED`, `APP_REJECTED`, `APP_DISBURSED`, `RESET_PASSWORD`, `ADMIN_INVITE` |
-| email_templates.subject, body | text | no | berbahasa Indonesia untuk nasabah |
+| email_templates.template_code | text | no | `APP_RECEIVED`, `APP_REJECTED`, `APP_DISBURSED`, `RESET_PASSWORD`, `ADMIN_INVITE`; UQ(tenant_id, template_code) |
+| email_templates.subject, body | text | no | berbahasa Indonesia untuk nasabah; placeholder `{{loanId}}` |
+| notification_logs.event_id | uuid | no | id event outbox; UQ(tenant_id, event_id, template_code) menjaga handler idempotent |
 | notification_logs.application_id | uuid | yes | FK application.applications |
-| notification_logs.template_code, recipient | text | no | |
+| notification_logs.template_code, recipient | text | no | `recipient` kosong untuk `SKIPPED` |
 | notification_logs.status | text | no | `SENT`, `FAILED`, `SKIPPED` |
-| notification_logs.sent_at, error_message | timestamptz, text | yes | |
+| notification_logs.sent_at, error_message | timestamptz, text | yes | `error_message` juga mencatat "Notification skipped - no email" (TRM_NTF_006) |
 
 ### DOCUMENT_FILES, DOCUMENT_TEMPLATES, GENERATED_DOCUMENTS
 | table.column | type | nullable | notes |

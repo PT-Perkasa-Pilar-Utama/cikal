@@ -200,3 +200,36 @@ export const emergencyContactBody = {
   relationToApplicant: "002",
   address: { address: "Jl. Braga 5" },
 };
+
+/** Produk KTA dengan rute `steps` dan checklist tujuh dokumen wajib untuk Karyawan Swasta, Belum Kawin. */
+export async function submittableProduct(
+  owner: pg.Pool,
+  steps: Record<string, boolean> = { ...MANDATORY_STEPS, DEDUP: true },
+): Promise<string> {
+  const productId = await insertProduct(owner, { productCode: nextProductCode("U") });
+  await insertRoute(owner, productId, [{ versionNumber: 1, status: "ACTIVE", steps }]);
+  await insertChecklist(
+    owner,
+    productId,
+    SEVEN_MANDATORY_DOCUMENTS.map((documentType) => ({ documentType, isMandatory: true })),
+  );
+  return productId;
+}
+
+/** Draft dengan semua section lengkap dan `documents` dokumen wajib terunggah, siap disubmit. */
+export async function completeDraft(
+  owner: pg.Pool,
+  client: ReturnType<typeof sectionClient>,
+  session: TestSession,
+  productId: string,
+  options: { documents?: readonly string[]; personal?: object } = {},
+): Promise<string> {
+  const id = await client.createDraft(session, productId);
+  await client.save(session, id, "personal", personalBody(options.personal));
+  await client.save(session, id, "occupation", occupationBody);
+  await client.save(session, id, "emergency-contact", emergencyContactBody);
+  for (const documentType of options.documents ?? SEVEN_MANDATORY_DOCUMENTS) {
+    await attachDocument(owner, id, documentType);
+  }
+  return id;
+}

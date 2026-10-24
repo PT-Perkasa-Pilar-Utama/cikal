@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { seedCompanyIds } from "../src/modules/core/tenancy/index.js";
 import { TenantTx } from "../src/platform/db/tenant-tx.js";
-import { Outbox, type OutboxEvent } from "../src/platform/queue/outbox.js";
+import { type DispatchedEvent, Outbox } from "../src/platform/queue/outbox.js";
 import { OUTBOX_QUEUE } from "../src/platform/queue/outbox-queues.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 
@@ -14,7 +14,7 @@ const AGGREGATE_ID = "0192b6e0-0001-7000-8000-000000000002";
 describe("outbox", () => {
   let db: TestDatabase;
   let app: NestFastifyApplication;
-  const received: OutboxEvent[] = [];
+  const received: DispatchedEvent[] = [];
   let failNext = false;
 
   beforeAll(async () => {
@@ -68,7 +68,7 @@ describe("outbox", () => {
     await app.get(Outbox).dispatch(job);
 
     expect(received).toEqual([
-      { tenantId: ACTOR.tenantId, eventType: "TestHappened", aggregateId: AGGREGATE_ID, payload: { n: 1 } },
+      { id, tenantId: ACTOR.tenantId, eventType: "TestHappened", aggregateId: AGGREGATE_ID, payload: { n: 1 } },
     ]);
     expect(await eventRow(id)).toEqual({ published_at: expect.any(Date), attempts: 1 });
   });
