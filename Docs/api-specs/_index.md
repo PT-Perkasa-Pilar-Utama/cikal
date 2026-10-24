@@ -246,7 +246,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /applications/{id}/credit-bureau` | 23 §23.3 | POC | TODO |
 | `GET /decision-matrix`, `PUT /decision-matrix/rows/{id}`, `POST /decision-matrix/rows` | 24 §24.2 | POC | OK |
 | `POST /decision-matrix/simulate` | 24 §24.3 | POC | OK |
-| `GET /applications/{id}/decision` | 24 §24.4 | POC | TODO |
+| `GET /applications/{id}/decision` | 24 §24.4 | POC | OK |
 | `GET /applications/{id}/disbursement` | 25 §25.1 | POC | TODO |
 | `POST /applications/{id}/validity-check` | 25 §25.2 | POC | TODO |
 | `POST /applications/{id}/akad/print` | 25 §25.3 | POC | TODO |
