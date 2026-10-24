@@ -9,14 +9,19 @@ export interface SelectOption {
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   options: readonly SelectOption[];
+  error?: string;
 }
 
 const PLACEHOLDER = "Select";
 
-/** Dropdown dengan label, tanda `*` merah untuk wajib, placeholder "Select", dan chevron di kanan (design-system 7.1). */
-export function SelectField({ label, options, required, id, ...props }: SelectFieldProps) {
+/**
+ * Dropdown dengan label, tanda `*` merah untuk wajib, placeholder "Select", chevron di kanan, dan pesan error di
+ * bawah field (design-system 7.1).
+ */
+export function SelectField({ label, options, error, required, id, ...props }: SelectFieldProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
+  const errorId = `${selectId}-error`;
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={selectId} className="font-semibold text-neutral-7">
@@ -30,7 +35,11 @@ export function SelectField({ label, options, required, id, ...props }: SelectFi
       <div className="relative">
         <select
           id={selectId}
-          className="w-full appearance-none rounded bg-neutral-0 py-2.5 pr-9 pl-3 text-neutral-8 shadow-xs ring-1 ring-neutral-3 outline-none focus:ring-2 focus:ring-primary"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          className={`w-full appearance-none rounded bg-neutral-0 py-2.5 pr-9 pl-3 text-neutral-8 shadow-xs ring-1 outline-none focus:ring-2 disabled:bg-neutral-1 ${
+            error ? "ring-error focus:ring-error" : "ring-neutral-3 focus:ring-primary"
+          }`}
           {...props}
         >
           <option value="">{PLACEHOLDER}</option>
@@ -46,6 +55,11 @@ export function SelectField({ label, options, required, id, ...props }: SelectFi
           className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-neutral-5"
         />
       </div>
+      {error && (
+        <p id={errorId} className="text-xs text-error">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
