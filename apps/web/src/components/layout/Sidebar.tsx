@@ -9,6 +9,7 @@ import { menuGroupIcon } from "./menu-icons";
  * sebagai tujuan navigasi. Menu tanpa rute di sini belum punya layar dan tidak ditampilkan.
  */
 const menuRoutes = new Map<string, LinkProps["to"]>([
+  ["APP-ENTRY", "/applications/drafts"],
   ["MST-PRODUCT", "/master/products"],
   ["MST-ROUTE", "/master/routes"],
   ["MST-CHECKLIST", "/master/checklists"],

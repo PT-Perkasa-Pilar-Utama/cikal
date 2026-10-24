@@ -25,9 +25,9 @@ export function TextField({ label, error, icon: Icon, trailing, required, id, ..
         )}
       </label>
       <div
-        className={`flex items-center gap-2 rounded bg-neutral-0 px-3 shadow-xs ring-1 focus-within:ring-2 ${
-          error ? "ring-error focus-within:ring-error" : "ring-neutral-3 focus-within:ring-primary"
-        }`}
+        className={`flex items-center gap-2 rounded px-3 shadow-xs ring-1 focus-within:ring-2 ${
+          props.readOnly || props.disabled ? "bg-neutral-1" : "bg-neutral-0"
+        } ${error ? "ring-error focus-within:ring-error" : "ring-neutral-3 focus-within:ring-primary"}`}
       >
         {Icon && <Icon size={16} className="shrink-0 text-neutral-4" aria-hidden />}
         <input
