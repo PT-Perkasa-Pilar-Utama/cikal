@@ -36,17 +36,17 @@ Simulasi angsuran, mesin rumus, dan kalender libur. Modul pemilik: CORE Calculat
 {
   "data": {
     "interestType": "EFFECTIVE", "principal": "100000000.00", "tenor": 12, "appliedRate": "12.0000",
-    "monthlyInstallment": "8884879.00", "totalInterest": "6618548.00", "totalPayment": "106618548.00",
+    "monthlyInstallment": "8884879.00", "totalInterest": "6618545.00", "totalPayment": "106618545.00",
     "schedule": [
       { "installmentNo": 1, "dueDate": "2026-11-21", "principalAmount": "7884879.00", "interestAmount": "1000000.00", "installmentAmount": "8884879.00", "outstandingAmount": "92115121.00" },
-      { "installmentNo": 12, "dueDate": "2027-10-21", "principalAmount": "8796910.00", "interestAmount": "87969.00", "installmentAmount": "8884879.00", "outstandingAmount": "0.00" }
+      { "installmentNo": 12, "dueDate": "2027-10-21", "principalAmount": "8796907.00", "interestAmount": "87969.00", "installmentAmount": "8884876.00", "outstandingAmount": "0.00" }
     ],
-    "formulaVersions": { "INSTALLMENT_EFFECTIVE": "0192..." }
+    "formulaVersions": { "INSTALLMENT_EFFECTIVE": "DEFAULT", "INSTALLMENT_DUE_DATE": "DEFAULT" }
   }
 }
 ```
 
-`monthlyInstallment` adalah angsuran baris pertama; untuk Flat baris terakhir bisa berbeda (TRM_INS_001). Selisih pembulatan baris terakhir mengikuti FM-07; nilai acuan uji ada di MRTM US-51.
+`monthlyInstallment` adalah angsuran baris pertama. Pokok baris terakhir sama dengan sisa pinjaman, jadi angsuran baris terakhir Flat dan Effective bisa berbeda beberapa rupiah karena selisih pembulatan (TRM_INS_001; FM-07). `formulaVersions` berisi id versi rumus, atau `DEFAULT` untuk rumus default bawaan (FM-04). Nilai acuan uji ada di MRTM US-51.
 
 **Errors**
 
