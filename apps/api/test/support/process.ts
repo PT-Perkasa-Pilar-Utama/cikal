@@ -75,15 +75,20 @@ export class ScriptedStepHandler implements StepHandler {
   }
 }
 
-/** Satu handler uji per langkah; APPROVAL berakhir Approved dan langkah lain CONTINUE bila tidak diatur. */
+/**
+ * Satu handler uji per langkah; APPROVAL berakhir Approved dan langkah lain CONTINUE bila tidak diatur. Handler asli
+ * modul langkah yang sudah dibangun (contoh DEDUP) diganti, karena uji orchestrator mengatur hasil langkahnya sendiri.
+ */
 export function registerStepHandlers(
   app: INestApplicationContext,
   codes: StepCode[],
 ): Map<StepCode, ScriptedStepHandler> {
   const registry = app.get(StepHandlerRegistry);
+  const installed = Reflect.get(registry, "handlers") as Map<StepCode, StepHandler>;
   return new Map(
     codes.map((code) => {
       const handler = new ScriptedStepHandler(code, code === "APPROVAL" ? APPROVED : CONTINUE);
+      installed.delete(code);
       registry.register(handler);
       return [code, handler];
     }),

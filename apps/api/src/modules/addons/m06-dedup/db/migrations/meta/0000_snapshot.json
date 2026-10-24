@@ -1,0 +1,708 @@
+{
+  "id": "b7739649-2e75-4183-a4c4-cbd78560ec7c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m06_dedup.dedup_candidates": {
+      "name": "dedup_candidates",
+      "schema": "m06_dedup",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dedup_result_id": {
+          "name": "dedup_result_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidate_application_id": {
+          "name": "candidate_application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidate_loan_id": {
+          "name": "candidate_loan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidate_status": {
+          "name": "candidate_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nik_result": {
+          "name": "nik_result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dob_result": {
+          "name": "dob_result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pob_result": {
+          "name": "pob_result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_score": {
+          "name": "name_score",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mother_name_score": {
+          "name": "mother_name_score",
+          "type": "numeric(5, 4)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dedup_candidates_result_idx": {
+          "name": "dedup_candidates_result_idx",
+          "columns": [
+            {
+              "expression": "dedup_result_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dedup_candidates_tenant_id_companies_id_fk": {
+          "name": "dedup_candidates_tenant_id_companies_id_fk",
+          "tableFrom": "dedup_candidates",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dedup_candidates_dedup_result_id_dedup_results_id_fk": {
+          "name": "dedup_candidates_dedup_result_id_dedup_results_id_fk",
+          "tableFrom": "dedup_candidates",
+          "tableTo": "dedup_results",
+          "schemaTo": "m06_dedup",
+          "columnsFrom": [
+            "dedup_result_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "dedup_candidates_candidate_application_id_applications_id_fk": {
+          "name": "dedup_candidates_candidate_application_id_applications_id_fk",
+          "tableFrom": "dedup_candidates",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "candidate_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dedup_candidates_nik_result_check": {
+          "name": "dedup_candidates_nik_result_check",
+          "value": "\"nik_result\" in ('MATCH', 'UNMATCH')"
+        },
+        "dedup_candidates_dob_result_check": {
+          "name": "dedup_candidates_dob_result_check",
+          "value": "\"dob_result\" in ('MATCH', 'UNMATCH')"
+        },
+        "dedup_candidates_pob_result_check": {
+          "name": "dedup_candidates_pob_result_check",
+          "value": "\"pob_result\" in ('MATCH', 'UNMATCH')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m06_dedup.dedup_field_settings": {
+      "name": "dedup_field_settings",
+      "schema": "m06_dedup",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_code": {
+          "name": "field_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "algorithm": {
+          "name": "algorithm",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fuzzy_threshold": {
+          "name": "fuzzy_threshold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 80
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dedup_field_settings_field_unique": {
+          "name": "dedup_field_settings_field_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "field_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dedup_field_settings_tenant_id_companies_id_fk": {
+          "name": "dedup_field_settings_tenant_id_companies_id_fk",
+          "tableFrom": "dedup_field_settings",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dedup_field_settings_field_code_check": {
+          "name": "dedup_field_settings_field_code_check",
+          "value": "\"field_code\" in ('FULL_NAME_ID', 'MOTHER_MAIDEN_NAME')"
+        },
+        "dedup_field_settings_algorithm_check": {
+          "name": "dedup_field_settings_algorithm_check",
+          "value": "\"algorithm\" in ('LEVENSHTEIN_RATIO', 'JARO_WINKLER', 'TOKEN_SET_RATIO')"
+        },
+        "dedup_field_settings_fuzzy_threshold_check": {
+          "name": "dedup_field_settings_fuzzy_threshold_check",
+          "value": "\"m06_dedup\".\"dedup_field_settings\".\"fuzzy_threshold\" between 50 and 100"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m06_dedup.dedup_matrix": {
+      "name": "dedup_matrix",
+      "schema": "m06_dedup",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nik": {
+          "name": "nik",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name_id": {
+          "name": "full_name_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dob": {
+          "name": "dob",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pob": {
+          "name": "pob",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mother_maiden_name": {
+          "name": "mother_maiden_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dedup_outcome": {
+          "name": "dedup_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dedup_matrix_priority_idx": {
+          "name": "dedup_matrix_priority_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "priority",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dedup_matrix_tenant_id_companies_id_fk": {
+          "name": "dedup_matrix_tenant_id_companies_id_fk",
+          "tableFrom": "dedup_matrix",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dedup_matrix_priority_check": {
+          "name": "dedup_matrix_priority_check",
+          "value": "\"m06_dedup\".\"dedup_matrix\".\"priority\" >= 1"
+        },
+        "dedup_matrix_nik_check": {
+          "name": "dedup_matrix_nik_check",
+          "value": "\"nik\" in ('MATCH', 'UNMATCH', 'ANY')"
+        },
+        "dedup_matrix_dob_check": {
+          "name": "dedup_matrix_dob_check",
+          "value": "\"dob\" in ('MATCH', 'UNMATCH', 'ANY')"
+        },
+        "dedup_matrix_pob_check": {
+          "name": "dedup_matrix_pob_check",
+          "value": "\"pob\" in ('MATCH', 'UNMATCH', 'ANY')"
+        },
+        "dedup_matrix_full_name_id_check": {
+          "name": "dedup_matrix_full_name_id_check",
+          "value": "\"full_name_id\" in ('MATCH', 'UNMATCH', 'FUZZY', 'ANY')"
+        },
+        "dedup_matrix_mother_maiden_name_check": {
+          "name": "dedup_matrix_mother_maiden_name_check",
+          "value": "\"mother_maiden_name\" in ('MATCH', 'UNMATCH', 'FUZZY', 'ANY')"
+        },
+        "dedup_matrix_dedup_outcome_check": {
+          "name": "dedup_matrix_dedup_outcome_check",
+          "value": "\"dedup_outcome\" in ('MATCH', 'UNMATCH', 'REVIEW', 'SKIP')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m06_dedup.dedup_results": {
+      "name": "dedup_results",
+      "schema": "m06_dedup",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "matched_application_id": {
+          "name": "matched_application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "matrix_row_id": {
+          "name": "matrix_row_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "matrix_row_priority": {
+          "name": "matrix_row_priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ran_at": {
+          "name": "ran_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dedup_results_process_unique": {
+          "name": "dedup_results_process_unique",
+          "columns": [
+            {
+              "expression": "process_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dedup_results_application_idx": {
+          "name": "dedup_results_application_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dedup_results_tenant_id_companies_id_fk": {
+          "name": "dedup_results_tenant_id_companies_id_fk",
+          "tableFrom": "dedup_results",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dedup_results_application_id_applications_id_fk": {
+          "name": "dedup_results_application_id_applications_id_fk",
+          "tableFrom": "dedup_results",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dedup_results_matched_application_id_applications_id_fk": {
+          "name": "dedup_results_matched_application_id_applications_id_fk",
+          "tableFrom": "dedup_results",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "matched_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dedup_results_matrix_row_id_dedup_matrix_id_fk": {
+          "name": "dedup_results_matrix_row_id_dedup_matrix_id_fk",
+          "tableFrom": "dedup_results",
+          "tableTo": "dedup_matrix",
+          "schemaTo": "m06_dedup",
+          "columnsFrom": [
+            "matrix_row_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "dedup_results_outcome_check": {
+          "name": "dedup_results_outcome_check",
+          "value": "\"outcome\" in ('MATCH', 'UNMATCH', 'REVIEW', 'SKIP', 'DUPLICATE_IN_FLIGHT')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m06_dedup": "m06_dedup"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
