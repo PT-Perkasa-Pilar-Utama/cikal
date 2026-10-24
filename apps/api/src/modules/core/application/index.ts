@@ -1,5 +1,6 @@
 export { ApplicationContacts } from "./application/application-contacts.js";
 export {
+  APPLICATION_REJECTED_EVENT,
   APPLICATION_SUBMITTED_EVENT,
   type ApplicationEventPayload,
   applicationEventPayloadSchema,
