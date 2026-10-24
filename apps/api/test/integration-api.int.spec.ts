@@ -104,23 +104,23 @@ describe("IntegrationApi", () => {
   });
 
   it("calls the active adapter with canonical fields only and logs the call with PII masked", async () => {
-    const adapter = testAdapter("SIMULATION_M07", "M07", true, async () => ({
+    const adapter = testAdapter("TEST_M12", "M12", true, async () => ({
       ok: true,
       response: { recordFound: true },
       raw: { NIK: "3171010101900001", status: "FOUND" },
     }));
     api.registerAdapter(adapter);
-    await insertConfig(db.owner, "M07", "SIMULATION_M07");
+    await insertConfig(db.owner, "M12", "TEST_M12");
     const ctx = context();
     const withExtraField = { ...REQUEST, motherMaidenName: "Siti Aminah" };
 
-    const outcome = await api.invoke(portFor("M07"), withExtraField, ctx);
+    const outcome = await api.invoke(portFor("M12"), withExtraField, ctx);
 
     expect(outcome).toEqual({ ok: true, response: { recordFound: true }, raw: expect.anything() });
     expect(adapter.received).toEqual([REQUEST]);
     expect(await logOf(ctx)).toEqual({
-      module_code: "M07",
-      provider_code: "SIMULATION_M07",
+      module_code: "M12",
+      provider_code: "TEST_M12",
       status: "SUCCESS",
       error_category: null,
       error_message: null,
@@ -128,15 +128,15 @@ describe("IntegrationApi", () => {
       request_masked: { nik: "************0001", fullName: "Rudi Hartono" },
       response_masked: { NIK: "************0001", status: "FOUND" },
     });
-    expect(await api.activeMode(TENANT, "M07")).toBe("SYNC");
+    expect(await api.activeMode(TENANT, "M12")).toBe("SYNC");
   });
 
   it("stops waiting after the configured timeout and reports a TIMEOUT", async () => {
-    api.registerAdapter(testAdapter("SLOW_M10", "M10", false, () => new Promise(() => undefined)));
-    await insertConfig(db.owner, "M10", "SLOW_M10", 1);
+    api.registerAdapter(testAdapter("SLOW_M04", "M04", false, () => new Promise(() => undefined)));
+    await insertConfig(db.owner, "M04", "SLOW_M04", 1);
     const ctx = context();
 
-    const outcome = await api.invoke(portFor("M10"), REQUEST, ctx);
+    const outcome = await api.invoke(portFor("M04"), REQUEST, ctx);
 
     expect(outcome).toEqual({
       ok: false,
@@ -158,11 +158,11 @@ describe("IntegrationApi", () => {
 
   it("reports INVALID_RESPONSE when the adapter answers outside the canonical contract", async () => {
     api.registerAdapter(
-      testAdapter("BROKEN_M08", "M08", false, async () => ({ ok: true, response: { found: "yes" }, raw: null })),
+      testAdapter("BROKEN_M05", "M05", false, async () => ({ ok: true, response: { found: "yes" }, raw: null })),
     );
-    await insertConfig(db.owner, "M08", "BROKEN_M08");
+    await insertConfig(db.owner, "M05", "BROKEN_M05");
 
-    const outcome = await api.invoke(portFor("M08"), REQUEST, context());
+    const outcome = await api.invoke(portFor("M05"), REQUEST, context());
 
     expect(outcome).toMatchObject({ ok: false, category: "INVALID_RESPONSE" });
   });
@@ -184,14 +184,14 @@ describe("IntegrationApi", () => {
     const strict = await createApp({ ...db.config, allowSimulationAdapters: false });
     await strict.init();
     try {
-      const adapter = testAdapter("SIMULATION_M07", "M07", true, async () => ({
+      const adapter = testAdapter("TEST_M12", "M12", true, async () => ({
         ok: true,
         response: { recordFound: true },
         raw: null,
       }));
       strict.get(IntegrationApi).registerAdapter(adapter);
 
-      const outcome = await strict.get(IntegrationApi).invoke(portFor("M07"), REQUEST, context());
+      const outcome = await strict.get(IntegrationApi).invoke(portFor("M12"), REQUEST, context());
 
       expect(outcome).toEqual({
         ok: false,
