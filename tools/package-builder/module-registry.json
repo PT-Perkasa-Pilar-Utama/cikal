@@ -41,12 +41,12 @@
       "importPath": "./modules/core/document/index.js"
     },
     {
-      "className": "NotificationModule",
-      "importPath": "./modules/core/notification/index.js"
-    },
-    {
       "className": "ApplicationModule",
       "importPath": "./modules/core/application/index.js"
+    },
+    {
+      "className": "NotificationModule",
+      "importPath": "./modules/core/notification/index.js"
     },
     {
       "className": "OrchestratorModule",

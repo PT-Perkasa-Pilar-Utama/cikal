@@ -10,13 +10,11 @@ import { ApplicationsRepository, type DraftRow } from "../db/applications.reposi
 import { applicationRequiredError } from "../domain/application-section-rules.js";
 import { incompleteApplicationError } from "../domain/section-errors.js";
 import { storedSectionInputs } from "../domain/stored-sections.js";
+import { APPLICATION_SUBMITTED_EVENT, type ApplicationEventPayload } from "./application-events.js";
 import { ApplicationSectionChecks } from "./application-section-checks.js";
 import { DraftDocuments } from "./draft-documents.js";
 import { DraftFormSections } from "./draft-form-sections.js";
 import { StrictSections } from "./strict-sections.js";
-
-/** Event setelah submit untuk email konfirmasi (api-specs 12 §12.8 langkah 6, kartu BE-S3-04). */
-export const APPLICATION_SUBMITTED_EVENT = "ApplicationSubmitted";
 
 /**
  * Submit pengajuan dalam satu transaksi (api-specs 12 §12.8; AC-50.01 s.d. AC-50.04, AC-50.07): semua section lolos
@@ -53,7 +51,7 @@ export class SubmitApplicationUseCase {
         tenantId: ctx.tenantId,
         eventType: APPLICATION_SUBMITTED_EVENT,
         aggregateId: draft.id,
-        payload: { applicationId: draft.id, loanId: draft.loanId },
+        payload: { applicationId: draft.id, loanId: draft.loanId } satisfies ApplicationEventPayload,
       });
       return {
         data: { id: draft.id, loanId: draft.loanId, status: "ON_PROGRESS", processInstanceId },

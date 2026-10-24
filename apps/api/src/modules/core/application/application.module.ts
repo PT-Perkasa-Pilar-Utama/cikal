@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DocumentModule } from "../document/index.js";
 import { ProductModule } from "../product/index.js";
+import { ApplicationContacts } from "./application/application-contacts.js";
 import { ApplicationFileAccess } from "./application/application-file-access.js";
 import { ApplicationProcess } from "./application/application-process.js";
 import { ApplicationSectionChecks } from "./application/application-section-checks.js";
@@ -42,6 +43,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationEmergencyContactsRepository,
     ApplicationDocumentsRepository,
     ApplicationProcess,
+    ApplicationContacts,
     LoanIdCountersRepository,
     LoanIds,
     DraftSections,
@@ -61,6 +63,6 @@ import { ApplicationsController } from "./http/applications.controller.js";
     UploadApplicationDocumentUseCase,
     SubmitApplicationUseCase,
   ],
-  exports: [ApplicationProcess],
+  exports: [ApplicationProcess, ApplicationContacts],
 })
 export class ApplicationModule {}
