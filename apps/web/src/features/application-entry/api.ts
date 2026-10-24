@@ -4,6 +4,7 @@ import {
   applicationDocumentsResponseSchema,
   applicationDraftListResponseSchema,
   applicationDraftResponseSchema,
+  applicationFormResponseSchema,
   applicationSubmitResponseSchema,
   availableProductsResponseSchema,
   documentUploadResponseSchema,
@@ -24,6 +25,8 @@ import { apiRequest } from "../../lib/api/client";
 
 const DRAFTS_KEY = "application-drafts";
 const DOCUMENTS_KEY = "application-documents";
+/** Kunci terpisah dari daftar draft: simpan dan submit tidak boleh memuat ulang form yang sedang diisi. */
+const FORM_KEY = "application-form";
 
 /** `GET /api/v1/applications/drafts` untuk "Application List" (api-specs 12 §12.4). */
 export function useDrafts(page: number, q: string) {
@@ -32,6 +35,17 @@ export function useDrafts(page: number, q: string) {
   return useQuery({
     queryKey: [DRAFTS_KEY, page, q],
     queryFn: () => apiRequest(applicationDraftListResponseSchema, `/v1/applications/drafts?${search}`),
+  });
+}
+
+/** `GET /api/v1/applications/{id}/form` untuk melanjutkan draft (api-specs 12 §12.5, AC-49.05). */
+export function useApplicationForm(id: string) {
+  return useQuery({
+    queryKey: [FORM_KEY, id],
+    queryFn: () => apiRequest(applicationFormResponseSchema, `/v1/applications/${id}/form`),
+    // Form dibaca sekali saat dibuka; isi berikutnya dipegang state form, bukan cache.
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchOnWindowFocus: false,
   });
 }
 

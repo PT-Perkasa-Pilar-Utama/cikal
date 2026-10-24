@@ -169,6 +169,22 @@ describe(
       expect(step("Occupation")).not.toHaveAttribute("data-error");
     });
 
+    it("AC-50.07 sends one submit request when Yes is double-clicked", async () => {
+      const fetchSpy = await openStep("emergency-contact", stepRoutes({ [`POST ${SUBMIT_PATH}`]: submitted }));
+      await fillContact();
+      clickButton("Submit");
+      const yes = within(await screen.findByRole("dialog", { name: "Submit" })).getByRole("button", { name: "Yes" });
+
+      fireEvent.click(yes);
+      fireEvent.click(yes);
+
+      expect(await screen.findByRole("heading", { name: "Application List" })).toBeInTheDocument();
+      const submits = fetchSpy.mock.calls.filter(
+        ([input, init]) => init?.method === "POST" && String(input) === SUBMIT_PATH,
+      );
+      expect(submits).toHaveLength(1);
+    });
+
     it("closes the submit confirmation without submitting on No", async () => {
       const fetchSpy = await openStep("emergency-contact");
       await fillContact();

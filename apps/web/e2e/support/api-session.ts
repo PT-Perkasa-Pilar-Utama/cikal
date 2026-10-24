@@ -47,6 +47,29 @@ export class ApiSession {
     return schema.parse(await response.json());
   }
 
+  async get<T>(schema: z.ZodType<T>, path: string): Promise<T> {
+    const response = await this.context.get(path);
+    if (!response.ok()) throw new Error(`GET ${path} failed with ${response.status()}: ${await response.text()}`);
+    return schema.parse(await response.json());
+  }
+
+  async put<T>(schema: z.ZodType<T>, path: string, body: object): Promise<T> {
+    const response = await this.context.put(path, { data: body, headers: { "X-CSRF-Token": this.csrf } });
+    if (!response.ok()) throw new Error(`PUT ${path} failed with ${response.status()}: ${await response.text()}`);
+    return schema.parse(await response.json());
+  }
+
+  /** Unggah satu file `multipart/form-data` di field `file` (api-specs 12 §12.7). */
+  async putFile<T>(
+    schema: z.ZodType<T>,
+    path: string,
+    file: { name: string; mimeType: string; buffer: Buffer },
+  ): Promise<T> {
+    const response = await this.context.put(path, { multipart: { file }, headers: { "X-CSRF-Token": this.csrf } });
+    if (!response.ok()) throw new Error(`PUT ${path} failed with ${response.status()}: ${await response.text()}`);
+    return schema.parse(await response.json());
+  }
+
   async saveState(path: string): Promise<void> {
     await this.context.storageState({ path });
   }
