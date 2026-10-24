@@ -224,6 +224,8 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 | `test(versionId, inputs)` | Menyimpan FormulaTestCase; ChangeRequest rumus ditolak tanpa minimal satu uji (FM-06) |
 | `schedule(principal, tenor, rate, type, firstDate)` | Jadwal angsuran Flat dan Effective; sisa pokok baris terakhir 0 (AC-51.01, RM-19) |
 
+Rumus default bawaan (FM-12) ada di `calculation/domain/default-formulas.ts`: `INSTALLMENT_FLAT`, `INSTALLMENT_EFFECTIVE`, `INSTALLMENT_DUE_DATE` (RM-19), empat rumus RM-07, `DBR_RATIO`, `DSR_RATIO` (RM-08). Versi rumus per tenant atau produk menunggu operasi rumus api-specs 09 §9.3; sampai itu `evaluate` selalu memakai default bawaan.
+
 Bahasa ekspresi: angka, string, tanggal, `+ - * /`, perbandingan, `AND OR NOT`, `IF`, `MIN`, `MAX`, `ABS`, `ROUND`, `ROUNDUP`, `ROUNDDOWN`, `PMT`, `IPMT`, `PPMT`, `PV`, `DATEDIFF`, `ADDMONTHS`, `EOMONTH`, `WORKDAYS`, `LOOKUP`. Semua angka diproses decimal.js; pembulatan per rumus (FM-07).
 
 ## 5.17 Reporting
