@@ -124,7 +124,15 @@ apps/api/src/modules/addons/m07-dukcapil/
     └── simulation.adapter.ts   respons dari data simulasi per NIK
 ```
 
-Setiap adapter punya uji kontrak bersama (`adapter.contract.spec.ts`) yang dijalankan terhadap adapter asli (dengan rekaman respons) dan adapter simulasi.
+Setiap adapter punya uji kontrak bersama (`apps/api/test/support/adapter-contract.ts`, dipanggil dari `adapters/<adapter>.spec.ts`) yang dijalankan terhadap adapter asli (dengan rekaman respons) dan adapter simulasi.
+
+Adapter simulasi POC menjawab per masukan dari tabel di kode adapternya; masukan lain mendapat jawaban "normal". Konfigurasi ACTIVE-nya untuk company 001 ada di seed `dev` modul Integration (timeout 30 detik, retry 3).
+
+| Penyedia | Kunci | Jawaban khusus | Jawaban normal |
+|---|---|---|---|
+| `SIMULATION_M07` | NIK (`dukcapilSimulationNiks`) | Skor TRM_DKC_002 s.d. 005, tanggal atau tempat lahir beda (006, 007), data tidak ditemukan, tanpa jawaban (timeout, AC-61.02) | Cocok penuh, skor 1,0 (TRM_DKC_001) |
+| `SIMULATION_M08` | IP (`ipReputationSimulationAddresses`) | VPN/proxy (TRM_FRD_004), provinsi lain (TRM_FRD_005), tanpa jawaban | Indonesia, provinsi 31, kota 3171 (TRM_FRD_006) |
+| `SIMULATION_M10` | NIK (`creditBureauSimulationNiks`) | Kolektibilitas 2, 3, 5, 6, tanpa riwayat, beberapa fasilitas (TRM_SLK_002 s.d. 007), tanpa jawaban | Satu fasilitas aktif kolektibilitas 1 (TRM_SLK_001) |
 
 ## 13.8 Yang tidak dilakukan
 
