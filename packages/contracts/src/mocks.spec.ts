@@ -37,6 +37,8 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["documentChecklistList", c.documentChecklistListResponseSchema, c.documentChecklistListResponseMock],
   ["occupationOptions", c.parameterOptionsResponseSchema, c.occupationOptionsResponseMock],
   ["fileDownloadUrl", c.fileDownloadUrlResponseSchema, c.fileDownloadUrlResponseMock],
+  ["decisionMatrixList", c.decisionMatrixListResponseSchema, c.decisionMatrixListResponseMock],
+  ["decisionSimulation", c.decisionSimulationResponseSchema, c.decisionSimulationResponseMock],
   ["applicationDraft", c.applicationDraftResponseSchema, c.applicationDraftResponseMock],
   ["applicationDraftList", c.applicationDraftListResponseSchema, c.applicationDraftListResponseMock],
   ["applicationForm", c.applicationFormResponseSchema, c.applicationFormResponseMock],
