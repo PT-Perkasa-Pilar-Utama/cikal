@@ -31,6 +31,7 @@ Hanya Sales pembuat draft yang bisa membaca dan mengubah form draft (AC-49.06). 
 ## 12.2 POST /applications
 
 **Purpose:** Simpan draft pertama kali dan bentuk Loan ID (tombol "Save as Draft" pertama, atau "Next" pertama di step Application).  
+**Layar:** Step Application memuat blok "Applicant Identity" (ID Type, ID Card Number, Full Name, Full Name ID) agar tujuh field minimum draft terisi sebelum "Next" pertama; setelah draft terbentuk, identitas diubah di step Personal (keputusan FE-S3-01, 2026-10-24).  
 **Access:** `APP-ENTRY` CREATE. Idempotency: opsional, dianjurkan.
 
 **Input (body)**
@@ -191,6 +192,7 @@ Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas
 ## 12.4 GET /applications/drafts
 
 **Purpose:** Daftar draft milik Sales di "Application List", termasuk pengajuan yang dikembalikan ke draft.  
+**Layar:** "Application List" dibuka menu Data Entry dan menjadi tujuan tombol "Back" step pertama (AC-39.04); dibangun FE-S3-01, membuka draft dari Loan ID dipasang FE-S3-03 (AC-49.05).  
 **Access:** `APP-ENTRY` VIEW. Hanya draft dengan `createdBy` = user sesi (AC-49.06).
 
 **Input (query):** `q` (Loan ID atau nama), paging, `sort` (`updatedAt`, default `updatedAt,desc`).
