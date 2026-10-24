@@ -9,6 +9,8 @@ import {
   draftCreated,
   entryRoutes,
   expectStep,
+  FLOW_TIMEOUT_MS,
+  fieldError,
   fillApplicationStep,
   rejected,
   sentBody,
@@ -60,12 +62,6 @@ async function fillPersonal(values: { dateOfBirth?: string; npwp?: string } = {}
   fireEvent.click(screen.getByRole("checkbox", { name: "Same as ID Address" }));
 }
 
-const fieldError = (label: string) =>
-  screen
-    .getByLabelText(new RegExp(`^${label}\\*?$`))
-    .closest("div.flex-col")
-    ?.querySelector("p.text-error");
-
 const ktpAddress = {
   address: "Jl. Merdeka No. 10",
   provinceCode: "31",
@@ -74,9 +70,6 @@ const ktpAddress = {
   subDistrictCode: "3171011001",
   zipCode: "10110",
 };
-
-/** Alur lewat SPA utuh mengisi puluhan field; batas waktu dilonggarkan untuk runner CI yang sibuk. */
-const FLOW_TIMEOUT_MS = 15_000;
 
 describe(
   "New Application - Personal",

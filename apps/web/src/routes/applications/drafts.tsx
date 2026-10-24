@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { BlankSlate } from "../../components/ui/BlankSlate";
@@ -10,12 +10,16 @@ import { DraftTable } from "../../features/application-entry/DraftTable";
 import { useMenuActions } from "../../features/session/api";
 import { MenuGuard } from "../../features/session/MenuGuard";
 
-/** Halaman "Application List" menu Data Entry: cari Loan ID atau nama, lalu "New Application" (api-specs 12 §12.4). */
+/**
+ * Halaman "Application List" menu Data Entry: cari Loan ID atau nama, lalu "New Application" (api-specs 12 §12.4).
+ * Pesan submit berhasil dibawa dari form lewat history state (AC-50.01).
+ */
 function ApplicationListPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const { data, isPending, error } = useDrafts(page, q);
   const actions = useMenuActions("APP-ENTRY");
+  const notice = useRouterState({ select: (state) => state.location.state.notice });
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +47,7 @@ function ApplicationListPage() {
           </Link>
         )}
       </div>
+      {notice && <FeedbackMessage type="success">{notice}</FeedbackMessage>}
       {error && <FeedbackMessage type="error">{error.message}</FeedbackMessage>}
       <div className="rounded-lg bg-neutral-0 shadow-s">
         <DraftTable drafts={data?.data ?? []} />

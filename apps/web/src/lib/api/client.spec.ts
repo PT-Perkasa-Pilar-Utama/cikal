@@ -39,4 +39,12 @@ describe("apiRequest", () => {
     await apiRequest(productListResponseSchema, "/v1/products");
     expect(new Headers(fetchSpy.mock.calls[0]?.[1]?.headers).has("X-CSRF-Token")).toBe(false);
   });
+
+  it("leaves the multipart Content-Type to the browser when the body is FormData", async () => {
+    const fetchSpy = respond(200, productListResponseMock);
+    const body = new FormData();
+    body.append("file", new Blob(["%PDF"]), "ktp.pdf");
+    await apiRequest(productListResponseSchema, "/v1/products", { method: "PUT", body });
+    expect(new Headers(fetchSpy.mock.calls[0]?.[1]?.headers).has("Content-Type")).toBe(false);
+  });
 });

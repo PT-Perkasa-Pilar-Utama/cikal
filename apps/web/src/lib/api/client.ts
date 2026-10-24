@@ -47,7 +47,8 @@ export async function apiRequest<T extends z.ZodType>(
     ...init,
     headers: {
       Accept: "application/json",
-      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      // Body FormData (unggah file) memakai Content-Type multipart beserta boundary yang dibuat browser.
+      ...(typeof init.body === "string" ? { "Content-Type": "application/json" } : {}),
       ...(csrf ? { "X-CSRF-Token": csrf } : {}),
       ...init.headers,
     },

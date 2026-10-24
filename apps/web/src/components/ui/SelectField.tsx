@@ -35,6 +35,7 @@ export function SelectField({ label, options, error, required, id, ...props }: S
       <div className="relative">
         <select
           id={selectId}
+          aria-required={required || undefined}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           className={`w-full appearance-none rounded bg-neutral-0 py-2.5 pr-9 pl-3 text-neutral-8 shadow-xs ring-1 outline-none focus:ring-2 disabled:bg-neutral-1 ${
