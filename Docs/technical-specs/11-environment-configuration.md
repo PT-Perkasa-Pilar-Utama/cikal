@@ -24,7 +24,8 @@ Konfigurasi teknis per lingkungan diatur lewat environment variable saat deploy 
 | `DATABASE_URL` | Ya | `postgres://cikal_app:***@db:5432/cikal` | Role aplikasi tanpa `BYPASSRLS` |
 | `DATABASE_MIGRATION_URL` | Ya (container `migrate`) | `postgres://cikal_owner:***@db:5432/cikal` | Role pemilik skema; hanya dipakai migrasi dan reset |
 | `DATABASE_POOL_MAX` | Tidak | `20` | |
-| `S3_ENDPOINT` | Ya | `https://s3.bankcontoh.co.id` | |
+| `S3_ENDPOINT` | Ya | `https://s3.bankcontoh.co.id` | Endpoint internal untuk api dan worker |
+| `S3_PUBLIC_ENDPOINT` | Tidak | `https://files.cikal.bankcontoh.co.id` | Host yang dijangkau browser untuk URL unduhan bertanda tangan; default `S3_ENDPOINT`. Tanda tangan SigV4 memuat host, jadi proxy di depan storage meneruskan header `Host` apa adanya |
 | `S3_REGION` | Ya | `id-jkt-1` | |
 | `S3_BUCKET` | Ya | `cikal-uat` | |
 | `S3_ACCESS_KEY_FILE`, `S3_SECRET_KEY_FILE` | Ya | `/run/secrets/s3_access_key` | Dibaca dari file secret |

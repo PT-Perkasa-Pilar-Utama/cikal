@@ -31,6 +31,12 @@ it("requires SMTP_PASSWORD_FILE when SMTP_USER is set (technical-specs 11 §11.2
   ]);
 });
 
+it("accepts an optional browser-reachable S3_PUBLIC_ENDPOINT URL (issue #102)", () => {
+  expect(envSchema.parse({ ...BASE_ENV, APP_ENV: "sit" }).S3_PUBLIC_ENDPOINT).toBeUndefined();
+  const result = envSchema.safeParse({ ...BASE_ENV, APP_ENV: "sit", S3_PUBLIC_ENDPOINT: "files.example.id" });
+  expect(result.error?.issues).toEqual([expect.objectContaining({ path: ["S3_PUBLIC_ENDPOINT"] })]);
+});
+
 describe("envSchema ALLOW_SIMULATION_ADAPTERS", () => {
   it("allows simulation adapters outside production (technical-specs 11 §11.2)", () => {
     const env = envSchema.parse({ ...BASE_ENV, APP_ENV: "sit", ALLOW_SIMULATION_ADAPTERS: "true" });
