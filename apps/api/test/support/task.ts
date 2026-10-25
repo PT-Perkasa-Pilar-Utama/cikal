@@ -2,10 +2,12 @@ import type { StepResult } from "@cikal/contracts";
 import type { INestApplicationContext } from "@nestjs/common";
 import type pg from "pg";
 import { seedRoleIds } from "../../src/modules/core/identity/index.js";
+import { seedOrganizationIds } from "../../src/modules/core/organization/index.js";
 import { drainProcessJobs, insertApplication, insertRoute, type ScriptedStepHandler, startProcess } from "./process.js";
 import { insertProduct } from "./product.js";
 
-export const TASK_BRANCH_ID = "0192b6a9-0001-7000-8000-000000000001";
+/** Cabang seed 011 Bandung, di regional Jawa Barat. */
+export const TASK_BRANCH_ID = seedOrganizationIds.bandung;
 
 export interface TestTask {
   id: string;
@@ -57,11 +59,14 @@ export async function verificationTask(
 export async function setUser(
   owner: pg.Pool,
   userId: string,
-  values: { username?: string; branchId?: string | null },
+  values: { username?: string; branchId?: string | null; regionalId?: string | null },
 ): Promise<void> {
   if (values.username) await owner.query("update iam.users set username = $1 where id = $2", [values.username, userId]);
   if (values.branchId !== undefined) {
     await owner.query("update iam.users set branch_id = $1 where id = $2", [values.branchId, userId]);
+  }
+  if (values.regionalId !== undefined) {
+    await owner.query("update iam.users set regional_id = $1 where id = $2", [values.regionalId, userId]);
   }
 }
 

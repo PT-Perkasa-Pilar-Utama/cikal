@@ -17,7 +17,7 @@ Di POC, Approval Level (US-26) berasal dari seed; Approval Hierarchy dikelola le
 { "data": [ { "id": "0192...", "branch": { "id": "...", "branchCode": "011" }, "product": { "id": "...", "productCode": "KPR" }, "jobLevel": 2, "subLevel": 1,
               "levelDescription": "Kepala Cabang", "upLevel": 1, "upSubLevel": 1,
               "approver": { "id": "...", "username": "rina.approver", "fullName": "Rina Kusuma", "status": "INACTIVE" },
-              "approverInactive": true, "hasPendingChange": false } ],
+              "approverInactive": true, "isActive": true, "hasPendingChange": false } ],
   "meta": { "page": 1, "pageSize": 20, "totalItems": 6, "totalPages": 1 } }
 ```
 
@@ -39,12 +39,12 @@ Di POC, Approval Level (US-26) berasal dari seed; Approval Hierarchy dikelola le
 | jobLevel | int | ya | harus ada di Approval Level cabang dan produk |
 | subLevel | int | ya | >= 1 |
 | approverUserId | uuid | ya | user aktif |
-| upLevel, upSubLevel | int | tidak | level berikutnya dalam rantai (RM-06) |
+| upLevel, upSubLevel | int | tidak | level berikutnya dalam rantai (RM-06); diisi berpasangan atau dikosongkan berdua, selain itu `400` "Up Level and Up Sub Level must be filled together" (teks usulan engineering). `upLevel` juga harus ada di Approval Level cabang dan produk |
 
 **Behavior**
 
 1. Approval Level `(branchId, productId, jobLevel)` tidak ada: `422 APPROVAL_LEVEL_NOT_FOUND`.
-2. Approver tanpa hak APPROVE efektif pada `OPS-APPROVAL`: `422 APPROVER_WITHOUT_ACCESS` (AC-27.02).
+2. Approver tanpa hak APPROVE efektif pada `OPS-APPROVAL`, atau user tidak aktif: `422 APPROVER_WITHOUT_ACCESS` (AC-27.02).
 3. Kombinasi branch, product, level, sub level, approver sudah ada: `409 HIERARCHY_EXISTS`.
 4. Buat ChangeRequest `APPROVAL_HIERARCHY`.
 

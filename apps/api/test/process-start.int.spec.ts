@@ -1,6 +1,7 @@
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "../src/app.factory.js";
+import { seedOrganizationIds } from "../src/modules/core/organization/index.js";
 import { TASK_QUEUE_PORT, type TaskQueuePort } from "../src/platform/http/task-queue-port.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 import {
@@ -93,7 +94,7 @@ describe("process start", () => {
     handler("DEDUP").script(running, {
       type: "WAIT_HUMAN",
       queueCode: "DEDUP_REVIEW",
-      branchId: "0192b6a9-0001-7000-8000-000000000001",
+      branchId: seedOrganizationIds.bandung,
       summary: "Review",
     });
     const runningProcess = await startProcess(app, running);

@@ -4,6 +4,7 @@ import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
 import { ACCESS_PORT, type AccessPort, type RequestContext } from "../../../../platform/http/access-port.js";
 import { USER_DIRECTORY_PORT, type UserDirectoryPort } from "../../../../platform/http/user-directory-port.js";
 import { ApplicationProcess } from "../../application/index.js";
+import { BranchDirectory } from "../../organization/index.js";
 import { ProductCodes } from "../../product/index.js";
 import { HumanTasksRepository, type TaskFilter, type TaskPage, type TaskRow } from "../db/human-tasks.repository.js";
 import { QUEUE_CATALOG } from "../domain/queue-catalog.js";
@@ -31,6 +32,7 @@ export class ListTasksUseCase {
     private readonly products: ProductCodes,
     @Inject(ACCESS_PORT) private readonly menus: AccessPort,
     @Inject(USER_DIRECTORY_PORT) private readonly users: UserDirectoryPort,
+    private readonly branches: BranchDirectory,
   ) {}
 
   async execute(ctx: RequestContext, query: TaskListQuery): Promise<TaskListResponse> {
@@ -63,7 +65,7 @@ export class ListTasksUseCase {
     });
   }
 
-  /** Data pengajuan, produk, dan pengambil dibaca lewat antarmuka modul pemiliknya (XM-02). */
+  /** Data pengajuan, produk, cabang, dan pengambil dibaca lewat antarmuka modul pemiliknya (XM-02). */
   private async items(tx: Tx, rows: TaskRow[], viewer: TaskViewer): Promise<TaskItem[]> {
     const applications = new Map(
       (
@@ -81,6 +83,10 @@ export class ListTasksUseCase {
       tx,
       rows.flatMap((row) => (row.assignedUserId ? [row.assignedUserId] : [])),
     );
+    const branches = await this.branches.describe(
+      tx,
+      rows.flatMap((row) => (row.branchId ? [row.branchId] : [])),
+    );
     return rows.map((row) => {
       const productId = applications.get(row.applicationId)?.productId ?? "";
       const assignee = row.assignedUserId ? assignees.get(row.assignedUserId) : undefined;
@@ -91,7 +97,7 @@ export class ListTasksUseCase {
         loanId: row.loanId,
         fullName: null,
         productCode: productCodes.get(productId) ?? "",
-        branchCode: null,
+        branchCode: row.branchId ? (branches.get(row.branchId)?.branchCode ?? null) : null,
         status: row.status,
         assignedTo: assignee ? { id: assignee.id, username: assignee.username } : null,
         assignedAt: row.assignedAt?.toISOString() ?? null,

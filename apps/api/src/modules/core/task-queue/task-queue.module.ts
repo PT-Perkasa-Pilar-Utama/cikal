@@ -3,6 +3,7 @@ import { TASK_QUEUE_PORT } from "../../../platform/http/task-queue-port.js";
 import { ApplicationModule } from "../application/index.js";
 import { AuditModule } from "../audit/index.js";
 import { OrchestratorModule } from "../orchestrator/index.js";
+import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
 import { AssignTaskUseCase } from "./application/assign-task.use-case.js";
 import { ListTasksUseCase } from "./application/list-tasks.use-case.js";
@@ -20,7 +21,7 @@ import { TasksController } from "./http/tasks.controller.js";
  */
 @Global()
 @Module({
-  imports: [ApplicationModule, AuditModule, OrchestratorModule, ProductModule],
+  imports: [ApplicationModule, AuditModule, OrchestratorModule, OrganizationModule, ProductModule],
   controllers: [TasksController],
   providers: [
     HumanTasksRepository,

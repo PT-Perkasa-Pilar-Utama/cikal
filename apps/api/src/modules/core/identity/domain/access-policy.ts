@@ -21,7 +21,8 @@ export interface MenuAccessFacts {
 
 export type AccessDecision = "ALLOW" | "ACCESS_DENIED" | "ACTION_DENIED" | "MODULE_NOT_LICENSED";
 
-const FLAG_OF: Record<Action, keyof AccessFlags> = {
+/** Kolom hak tiap aksi menu. */
+export const ACCESS_FLAG_OF: Record<Action, keyof AccessFlags> = {
   VIEW: "canView",
   CREATE: "canCreate",
   UPDATE: "canUpdate",
@@ -38,5 +39,5 @@ export function decideAccess(facts: MenuAccessFacts, action: Action): AccessDeci
   if (!facts.menu?.isActive) return denied;
   if (!facts.licenseExempt && !facts.licensedModules.has(facts.menu.moduleCode)) return "MODULE_NOT_LICENSED";
   const has = (flag: keyof AccessFlags) => facts.grants.some((grant) => grant[flag]);
-  return has("canView") && has(FLAG_OF[action]) ? "ALLOW" : denied;
+  return has("canView") && has(ACCESS_FLAG_OF[action]) ? "ALLOW" : denied;
 }

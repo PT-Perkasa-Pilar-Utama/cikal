@@ -3,6 +3,7 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { OrchestratorApi } from "../src/modules/core/orchestrator/index.js";
+import { seedOrganizationIds } from "../src/modules/core/organization/index.js";
 import { seedCompanyIds } from "../src/modules/core/tenancy/index.js";
 import { TenantTx } from "../src/platform/db/tenant-tx.js";
 import { TASK_QUEUE_PORT, type TaskQueuePort } from "../src/platform/http/task-queue-port.js";
@@ -21,7 +22,7 @@ import {
 import { insertProduct } from "./support/product.js";
 import { createSession, type TestSession } from "./support/session.js";
 
-const BRANCH_ID = "0192b6a9-0001-7000-8000-000000000001";
+const BRANCH_ID = seedOrganizationIds.bandung;
 const ROUTE = { DATA_ENTRY: true, DEDUP: true, CREDIT_BUREAU: true, APPROVAL: true };
 
 /** Tujuh hasil langkah dan keluar dari status menunggu (technical-specs 12 §12.3, 06 §6.13). */

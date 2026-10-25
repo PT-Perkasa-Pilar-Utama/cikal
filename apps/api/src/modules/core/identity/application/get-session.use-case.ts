@@ -4,6 +4,7 @@ import { businessDate } from "../../../../platform/clock/business-date.js";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
+import { BranchDirectory } from "../../organization/index.js";
 import { CompanyDirectory, Licensing } from "../../tenancy/index.js";
 import { MenusRepository } from "../db/menus.repository.js";
 import { SessionsRepository } from "../db/sessions.repository.js";
@@ -13,7 +14,7 @@ import { SESSION_IDLE_MINUTES } from "../domain/session-policy.js";
 
 /**
  * `GET /auth/session` (api-specs 02 §2.4). Menu dan `license.modules` hanya modul lisensi aktif yang ada di paket
- * (AC-100.01). Unit kerja (`branchCode`) menunggu tabel Organization.
+ * (AC-100.01). `branchCode` kosong untuk user pusat tanpa cabang.
  */
 @Injectable()
 export class GetSessionUseCase {
@@ -24,14 +25,19 @@ export class GetSessionUseCase {
     private readonly menus: MenusRepository,
     private readonly companies: CompanyDirectory,
     private readonly licensing: Licensing,
+    private readonly branches: BranchDirectory,
   ) {}
 
   execute(ctx: RequestContext): Promise<SessionResponse> {
     const today = businessDate(new Date());
     return this.db.withTenantTx(ctx, async (tx) => {
-      const profile = await this.users.findProfile(tx, ctx.userId);
+      const found = await this.users.findProfile(tx, ctx.userId);
       const expiresAt = await this.sessions.findExpiry(tx, ctx.sessionId);
-      if (!profile || !expiresAt) throw DomainError.standard("UNAUTHENTICATED");
+      if (!found || !expiresAt) throw DomainError.standard("UNAUTHENTICATED");
+      const { branchId, ...profile } = found;
+      const branchCode = branchId
+        ? ((await this.branches.describe(tx, [branchId])).get(branchId)?.branchCode ?? null)
+        : null;
       const company = await this.companies.summary(tx, ctx.tenantId);
       const license = await this.licensing.state(tx);
       const menus = buildMenuTree(
@@ -41,7 +47,7 @@ export class GetSessionUseCase {
       );
       return {
         data: {
-          user: { ...profile, branchCode: null },
+          user: { ...profile, branchCode },
           company,
           mustChangePassword: ctx.mustChangePassword,
           license: {

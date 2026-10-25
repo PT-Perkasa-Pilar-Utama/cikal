@@ -1,0 +1,418 @@
+{
+  "id": "8b246fdf-262a-4b6a-b6d5-6cf6f1cf1c59",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "approval.hierarchies": {
+      "name": "hierarchies",
+      "schema": "approval",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_level": {
+          "name": "job_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sub_level": {
+          "name": "sub_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "up_level": {
+          "name": "up_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "up_sub_level": {
+          "name": "up_sub_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approver_user_id": {
+          "name": "approver_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "hierarchies_tenant_id_companies_id_fk": {
+          "name": "hierarchies_tenant_id_companies_id_fk",
+          "tableFrom": "hierarchies",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hierarchies_branch_id_branches_id_fk": {
+          "name": "hierarchies_branch_id_branches_id_fk",
+          "tableFrom": "hierarchies",
+          "tableTo": "branches",
+          "schemaTo": "org",
+          "columnsFrom": [
+            "branch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hierarchies_product_id_products_id_fk": {
+          "name": "hierarchies_product_id_products_id_fk",
+          "tableFrom": "hierarchies",
+          "tableTo": "products",
+          "schemaTo": "product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hierarchies_approver_user_id_users_id_fk": {
+          "name": "hierarchies_approver_user_id_users_id_fk",
+          "tableFrom": "hierarchies",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "approver_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hierarchies_level_fk": {
+          "name": "hierarchies_level_fk",
+          "tableFrom": "hierarchies",
+          "tableTo": "levels",
+          "schemaTo": "approval",
+          "columnsFrom": [
+            "branch_id",
+            "product_id",
+            "job_level"
+          ],
+          "columnsTo": [
+            "branch_id",
+            "product_id",
+            "job_level"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "hierarchies_assignment_unique": {
+          "name": "hierarchies_assignment_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "branch_id",
+            "product_id",
+            "job_level",
+            "sub_level",
+            "approver_user_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "hierarchies_sub_level_check": {
+          "name": "hierarchies_sub_level_check",
+          "value": "\"approval\".\"hierarchies\".\"sub_level\" >= 1"
+        },
+        "hierarchies_up_level_check": {
+          "name": "hierarchies_up_level_check",
+          "value": "(\"approval\".\"hierarchies\".\"up_level\" is null) = (\"approval\".\"hierarchies\".\"up_sub_level\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "approval.levels": {
+      "name": "levels",
+      "schema": "approval",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_level": {
+          "name": "job_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_begin": {
+          "name": "amount_begin",
+          "type": "numeric(18, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_end": {
+          "name": "amount_end",
+          "type": "numeric(18, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_approve": {
+          "name": "is_approve",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_reject": {
+          "name": "is_reject",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_return": {
+          "name": "is_return",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_cancel": {
+          "name": "is_cancel",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_final_approver": {
+          "name": "is_final_approver",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "levels_tenant_id_companies_id_fk": {
+          "name": "levels_tenant_id_companies_id_fk",
+          "tableFrom": "levels",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "levels_branch_id_branches_id_fk": {
+          "name": "levels_branch_id_branches_id_fk",
+          "tableFrom": "levels",
+          "tableTo": "branches",
+          "schemaTo": "org",
+          "columnsFrom": [
+            "branch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "levels_product_id_products_id_fk": {
+          "name": "levels_product_id_products_id_fk",
+          "tableFrom": "levels",
+          "tableTo": "products",
+          "schemaTo": "product",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "levels_branch_product_level_unique": {
+          "name": "levels_branch_product_level_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "branch_id",
+            "product_id",
+            "job_level"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "levels_job_level_check": {
+          "name": "levels_job_level_check",
+          "value": "\"approval\".\"levels\".\"job_level\" >= 1"
+        },
+        "levels_amount_check": {
+          "name": "levels_amount_check",
+          "value": "\"approval\".\"levels\".\"amount_end\" > \"approval\".\"levels\".\"amount_begin\""
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "approval": "approval"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

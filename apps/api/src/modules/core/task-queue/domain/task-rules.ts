@@ -6,6 +6,8 @@ export interface WorkUnit {
   regionalId: string | null;
   branchId: string | null;
   subBranchId: string | null;
+  /** Cabang di regional user, dari `org.branches`; kosong bila user punya cabang atau sub cabang. */
+  regionalBranchIds: readonly string[];
 }
 
 /** Fakta user sesi untuk aturan antrean; hak menu sudah dihitung dari menu antrean dan menu Supervisor. */
@@ -29,12 +31,10 @@ export interface TaskFacts {
   assignedUserId: string | null;
 }
 
-/**
- * Cabang yang dicakup unit kerja: role pusat mencakup semua. Cakupan regional butuh hierarki cabang di tabel
- * `org.branches` (kartu TL-S5-04); sampai itu ada, user regional hanya mencakup tugas tanpa cabang.
- */
+/** Cabang yang dicakup unit kerja: role pusat semua cabang, role regional cabang di regionalnya, selain itu cabangnya. */
 export function branchScope(unit: WorkUnit): "ALL" | string[] {
   if (!unit.regionalId && !unit.branchId && !unit.subBranchId) return "ALL";
+  if (!unit.branchId && !unit.subBranchId) return [...unit.regionalBranchIds];
   return [unit.branchId, unit.subBranchId].filter((id): id is string => id !== null);
 }
 

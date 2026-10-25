@@ -15,6 +15,13 @@
       "when": 1792660628262,
       "tag": "0001_local_login",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792921541513,
+      "tag": "0002_org_unit_foreign_keys",
+      "breakpoints": true
     }
   ]
 }

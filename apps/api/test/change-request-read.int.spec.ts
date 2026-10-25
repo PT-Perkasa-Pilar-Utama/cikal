@@ -37,10 +37,10 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     await app.getHttpAdapter().getInstance().ready();
     registerHandlers(app, [
       recordHandler("SCORING_MODEL", "Scoring Model"),
-      recordHandler("APPROVAL_HIERARCHY", "Approval Hierarchy"),
+      recordHandler("INTEGRATION_CONFIG", "Integration Config"),
       packageHandler("DOCUMENT_NUMBER_FORMAT", "Document Number Format"),
     ]);
-    const menus = ["MST-SCORING", "MST-APPROVAL", "MST-NUMBERING"];
+    const menus = ["MST-SCORING", "MST-INTEGRATION", "MST-NUMBERING"];
     const makerRole = await createRole(
       db.owner,
       "Maker Uji",
@@ -52,7 +52,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
       menus.map((menuCode) => ({ menuCode, view: true, approve: true })),
     );
     const adminRole = await createRole(db.owner, "Admin Uji", [
-      { menuCode: "MST-APPROVAL", view: true, create: true, approve: true },
+      { menuCode: "MST-INTEGRATION", view: true, create: true, approve: true },
     ]);
     maker = await createSession(db.owner, { roleId: makerRole });
     checker = await createSession(db.owner, { roleId: checkerRole });
@@ -81,7 +81,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
     return changeRequestDetailResponseSchema.parse(res.json()).data;
   };
   const errorOf = (res: { json(): unknown }) => errorEnvelopeSchema.parse(res.json());
-  const submitNew = (session: TestSession, entityType: "SCORING_MODEL" | "APPROVAL_HIERARCHY", name: string) =>
+  const submitNew = (session: TestSession, entityType: "SCORING_MODEL" | "INTEGRATION_CONFIG", name: string) =>
     submitAs(app, session, { entityType, entityId: null, oldData: null, newData: { name } });
   const reject = (id: string) =>
     app.inject({ method: "POST", url: `/api/v1/change-requests/${id}/reject`, headers: checker.headers, payload: {} });
@@ -132,12 +132,12 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("tells the maker they cannot review their own submission (AC-12.04)", async () => {
-    const { changeRequestId } = await submitNew(admin, "APPROVAL_HIERARCHY", "Credit Analyst");
+    const { changeRequestId } = await submitNew(admin, "INTEGRATION_CONFIG", "Credit Analyst");
     expect(await detailOf(admin, changeRequestId)).toMatchObject({
       canReview: false,
       reviewBlockedReason: "You cannot review your own submission",
     });
-    const { data } = await listOf(admin, "entityType=APPROVAL_HIERARCHY");
+    const { data } = await listOf(admin, "entityType=INTEGRATION_CONFIG");
     expect(data.find((row) => row.id === changeRequestId)?.canReview).toBe(false);
   });
 
@@ -218,7 +218,7 @@ describe("GET /change-requests and /change-requests/{id}", () => {
   });
 
   it("rejects entity types from different menus in one list", async () => {
-    const res = await get(checker, "?entityType=SCORING_MODEL,APPROVAL_HIERARCHY");
+    const res = await get(checker, "?entityType=SCORING_MODEL,INTEGRATION_CONFIG");
     expect(res.statusCode).toBe(400);
     expect(errorOf(res)).toMatchObject({
       code: "VALIDATION_FAILED",
