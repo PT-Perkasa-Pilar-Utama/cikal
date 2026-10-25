@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatMoney, formatPercent, parseMoneyInput, parsePercentInput, todayIsoDate } from "./format";
+import {
+  formatDate,
+  formatDecimal,
+  formatMoney,
+  formatPercent,
+  parseMoneyInput,
+  parsePercentInput,
+  todayIsoDate,
+} from "./format";
 
 describe("format", () => {
   it("groups money thousands with dots and hides zero cents", () => {
@@ -11,6 +19,12 @@ describe("format", () => {
   it("drops trailing percent zeros and uses a decimal comma", () => {
     expect(formatPercent("40.0000")).toBe("40");
     expect(formatPercent("12.5000")).toBe("12,5");
+  });
+
+  it("drops trailing score zeros and uses a decimal comma", () => {
+    expect(formatDecimal("470.00")).toBe("470");
+    expect(formatDecimal("0.8800")).toBe("0,88");
+    expect(formatDecimal("-12.50")).toBe("-12,5");
   });
 
   it("shows dates as DD-MM-YYYY", () => {

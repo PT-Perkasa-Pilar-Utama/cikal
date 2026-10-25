@@ -5,6 +5,7 @@
  */
 
 const MONEY_VALUE = /^(-?)(\d+)\.(\d{2})$/;
+const DECIMAL_VALUE = /^(-?\d+)\.(\d+)$/;
 const PERCENT_VALUE = /^(\d+)\.(\d{4})$/;
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const MONEY_INPUT = /^(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?$/;
@@ -35,6 +36,15 @@ export function formatPercent(value: string): string {
   const [, whole, fraction = ""] = match;
   const trimmed = trimFraction(fraction);
   return trimmed ? `${whole},${trimmed}` : `${whole}`;
+}
+
+/** Skor dan rasio tanpa pemisah ribuan: `"470.00"` menjadi `"470"`, `"0.8800"` menjadi `"0,88"`. */
+export function formatDecimal(value: string): string {
+  const match = DECIMAL_VALUE.exec(value);
+  if (!match) return value;
+  const [, whole = "", fraction = ""] = match;
+  const trimmed = trimFraction(fraction);
+  return trimmed ? `${whole},${trimmed}` : whole;
 }
 
 /** `"2026-10-01"` menjadi `"01-10-2026"`. */
