@@ -1,9 +1,10 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { seedProductIds } from "../../../core/product/index.js";
 import { seedCompanyIds } from "../../../core/tenancy/index.js";
-import { scoringCriteria, scoringModels } from "../db/schema.js";
+import { scoringCriteria, scoringModelProducts, scoringModels } from "../db/schema.js";
 import type { Criterion } from "../domain/criteria.js";
 
-/** ID tetap model seed company 001; produk pemakainya ditautkan saat produk dibuat (US-37 backlog). */
+/** ID tetap model seed company 001; seed `qa` menautkannya ke produk KTA QA, layar tautan model adalah US-37. */
 export const seedScoringModelIds = {
   ktaRac: "0192b6c5-0001-7000-8000-000000000001",
   ktaScoring: "0192b6c5-0002-7000-8000-000000000001",
@@ -96,5 +97,27 @@ export async function seedScoringModels(db: NodePgDatabase): Promise<void> {
         sortOrder: index + 1,
       })),
     )
+    .onConflictDoNothing();
+}
+
+/** Model RAC dan Scoring KTA dipakai produk KTA QA (seed `qa`) untuk spec wiring FE-S4-02. */
+export async function seedQaModelProducts(db: NodePgDatabase): Promise<void> {
+  const tenantId = seedCompanyIds.company001;
+  await db
+    .insert(scoringModelProducts)
+    .values([
+      {
+        id: "0192b6c5-0101-7000-8000-000000000001",
+        tenantId,
+        modelId: seedScoringModelIds.ktaRac,
+        productId: seedProductIds.ktaQa,
+      },
+      {
+        id: "0192b6c5-0102-7000-8000-000000000001",
+        tenantId,
+        modelId: seedScoringModelIds.ktaScoring,
+        productId: seedProductIds.ktaQa,
+      },
+    ])
     .onConflictDoNothing();
 }
