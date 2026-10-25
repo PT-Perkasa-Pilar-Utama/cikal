@@ -11,3 +11,4 @@ export { ProductTerms } from "./application/product-terms.js";
 export { productRouteVersions, products } from "./db/schema.js";
 export { productData } from "./product.data.js";
 export { ProductModule } from "./product.module.js";
+export { seedProductIds } from "./seed/qa-products.js";
