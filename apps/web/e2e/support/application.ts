@@ -1,6 +1,7 @@
 import {
   type ApplicationSectionInput,
   applicationDraftResponseSchema,
+  applicationSubmitResponseSchema,
   documentUploadResponseSchema,
   type EmergencyContactSectionInput,
   type OccupationSectionInput,
@@ -26,18 +27,28 @@ const PDF = Buffer.from(
     "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n",
 );
 
-const applicationSection = (productId: string): ApplicationSectionInput => ({
+/** Identitas pemohon yang menentukan hasil Dedup, Fraud velocity, dan adapter simulasi per NIK. */
+interface Applicant {
+  fullName: string;
+  idCardNumber: string;
+  /** Wajib untuk plafon di atas 50.000.000. */
+  npwpNumber?: string;
+}
+
+const RUDI: Applicant = { fullName: "Rudi Hartono", idCardNumber: "3273011402900001" };
+
+const applicationSection = (productId: string, requestedLimit: string): ApplicationSectionInput => ({
   applicationType: "NTB",
   productCategory: "NON_COLLATERAL",
   productId,
   segment: "MIKRO",
   tenorProposed: 36,
-  requestedLimit: "20000000.00",
+  requestedLimit,
 });
 
-const personalSection = (marital: string, email: string): PersonalSectionInput => ({
-  fullName: "Rudi Hartono",
-  fullNameId: "RUDI HARTONO",
+const personalSection = (marital: string, email: string, applicant: Applicant): PersonalSectionInput => ({
+  fullName: applicant.fullName,
+  fullNameId: applicant.fullName.toUpperCase(),
   placeOfBirth: "Bandung",
   dateOfBirth: "1990-02-14",
   gender: "L",
@@ -47,19 +58,20 @@ const personalSection = (marital: string, email: string): PersonalSectionInput =
   marital,
   motherMaidenName: "Siti",
   idType: "KTP",
-  idCardNumber: "3273011402900001",
+  idCardNumber: applicant.idCardNumber,
+  ...(applicant.npwpNumber && { npwpNumber: applicant.npwpNumber }),
   mobileNumber: "081298765432",
   email,
   addresses: { id: { address: "Jl. Merdeka No. 10" }, residence: { sameAsId: true } },
   consentGiven: true,
 });
 
-const occupationSection: OccupationSectionInput = {
+const occupationSection = (monthlyIncomeAllowance: string): OccupationSectionInput => ({
   sourceOfIncome: "001",
   occupation: KARYAWAN_SWASTA,
   industryOfProfession: "001",
   tenureAtCurrentJob: "4",
-  monthlyIncomeAllowance: "8000000.00",
+  monthlyIncomeAllowance,
   company: {
     name: "PT Maju Jaya",
     address: "Jl. Sudirman No. 1",
@@ -70,7 +82,7 @@ const occupationSection: OccupationSectionInput = {
     zipCode: "10110",
     phoneNumber: "0215551234",
   },
-};
+});
 
 const emergencyContactSection: EmergencyContactSectionInput = {
   contactName: "Dewi",
@@ -82,6 +94,10 @@ const emergencyContactSection: EmergencyContactSectionInput = {
 interface DraftOptions {
   marital?: string;
   email?: string;
+  /** Nama dan NIK lain per pengajuan agar Dedup dan aturan velocity Fraud tidak terpicu pengajuan spec lain. */
+  applicant?: Applicant;
+  requestedLimit?: string;
+  monthlyIncome?: string;
   /** Section yang disimpan dengan "Next" setelah step Application, berurutan. */
   next?: SavableSection[];
   /** Section terakhir yang disimpan dengan "Save as Draft", sehingga draft dibuka di step itu. */
@@ -98,10 +114,11 @@ export async function salesDraft(
   options: DraftOptions = {},
 ): Promise<{ id: string; loanId: string }> {
   const marital = options.marital ?? BELUM_KAWIN;
+  const applicant = options.applicant ?? RUDI;
   const bodies: Record<SavableSection, object> = {
-    application: applicationSection(productId),
-    personal: personalSection(marital, options.email ?? "rudi@contoh.com"),
-    occupation: occupationSection,
+    application: applicationSection(productId, options.requestedLimit ?? "20000000.00"),
+    personal: personalSection(marital, options.email ?? "rudi@contoh.com", applicant),
+    occupation: occupationSection(options.monthlyIncome ?? "8000000.00"),
     "emergency-contact": emergencyContactSection,
   };
   return ApiSession.as("sales.jkt01", async (sales) => {
@@ -109,9 +126,9 @@ export async function salesDraft(
       application: bodies.application,
       personal: {
         idType: "KTP",
-        idCardNumber: "3273011402900001",
-        fullName: "Rudi Hartono",
-        fullNameId: "RUDI HARTONO",
+        idCardNumber: applicant.idCardNumber,
+        fullName: applicant.fullName,
+        fullNameId: applicant.fullName.toUpperCase(),
       },
       strict: true,
     });
@@ -133,6 +150,18 @@ export async function salesDraft(
     }
     return { id, loanId };
   });
+}
+
+/** "Submit" lalu "Yes" lewat API (api-specs 12 §12.8); langkah otomatis sesudahnya dijalankan worker pg-boss. */
+export function submitDraft(applicationId: string) {
+  return ApiSession.as("sales.jkt01", (sales) =>
+    sales.post(
+      applicationSubmitResponseSchema,
+      `/api/v1/applications/${applicationId}/submit`,
+      {},
+      { "Idempotency-Key": crypto.randomUUID() },
+    ),
+  );
 }
 
 /** Timeline proses terbaru pengajuan (api-specs 13 §13.2), dibaca Sales lewat hak APP-INQUIRY View. */
