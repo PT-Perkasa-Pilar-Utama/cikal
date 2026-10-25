@@ -6,9 +6,13 @@ import { emailTemplates } from "../db/schema.js";
 export const seedEmailTemplateIds = {
   appReceived: "0192b6aa-0001-7000-8000-000000000001",
   appDisbursed: "0192b6aa-0002-7000-8000-000000000001",
+  appRejected: "0192b6aa-0003-7000-8000-000000000001",
 } as const;
 
-/** Template email nasabah company 001 (api-specs 18 §18.1); subjek mengikuti AC-50.05 dan AC-101.01. */
+/**
+ * Template email nasabah company 001 (api-specs 18 §18.1); subjek mengikuti AC-50.05 dan AC-101.01. AC belum memberi
+ * teks email penolakan, jadi `APP_REJECTED` memakai teks usulan engineering.
+ */
 export async function seedEmailTemplates(db: NodePgDatabase): Promise<void> {
   await db
     .insert(emailTemplates)
@@ -28,6 +32,15 @@ export async function seedEmailTemplates(db: NodePgDatabase): Promise<void> {
         templateCode: "APP_DISBURSED",
         subject: "Kredit {{loanId}} telah dicairkan",
         body: "Kredit Anda dengan nomor {{loanId}} telah dicairkan. Terima kasih atas kepercayaan Anda.",
+      },
+      {
+        id: seedEmailTemplateIds.appRejected,
+        tenantId: seedCompanyIds.company001,
+        templateCode: "APP_REJECTED",
+        subject: "Pengajuan kredit {{loanId}} belum dapat kami setujui",
+        body:
+          "Mohon maaf, pengajuan kredit Anda dengan nomor {{loanId}} belum dapat kami setujui. " +
+          "Terima kasih atas kepercayaan Anda.",
       },
     ])
     .onConflictDoNothing();

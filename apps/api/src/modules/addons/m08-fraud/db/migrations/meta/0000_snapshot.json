@@ -1,0 +1,688 @@
+{
+  "id": "59093e16-0a2b-40d6-be7e-27d7e66e1499",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m08_fraud.blacklists": {
+      "name": "blacklists",
+      "schema": "m08_fraud",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_card_number_enc": {
+          "name": "id_card_number_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_card_number_key_version": {
+          "name": "id_card_number_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_card_number_bidx": {
+          "name": "id_card_number_bidx",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_application_id": {
+          "name": "source_application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_by": {
+          "name": "added_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "blacklists_id_card_number_bidx_idx": {
+          "name": "blacklists_id_card_number_bidx_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id_card_number_bidx",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "blacklists_tenant_id_companies_id_fk": {
+          "name": "blacklists_tenant_id_companies_id_fk",
+          "tableFrom": "blacklists",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "blacklists_source_application_id_applications_id_fk": {
+          "name": "blacklists_source_application_id_applications_id_fk",
+          "tableFrom": "blacklists",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "source_application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "blacklists_identity_check": {
+          "name": "blacklists_identity_check",
+          "value": "\"m08_fraud\".\"blacklists\".\"id_card_number_bidx\" is not null or \"m08_fraud\".\"blacklists\".\"ip_address\" is not null or \"m08_fraud\".\"blacklists\".\"full_name\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m08_fraud.fraud_matrix": {
+      "name": "fraud_matrix",
+      "schema": "m08_fraud",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_condition": {
+          "name": "name_condition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_condition": {
+          "name": "ip_condition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fraud_outcome": {
+          "name": "fraud_outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "fraud_matrix_priority_idx": {
+          "name": "fraud_matrix_priority_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "priority",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fraud_matrix_tenant_id_companies_id_fk": {
+          "name": "fraud_matrix_tenant_id_companies_id_fk",
+          "tableFrom": "fraud_matrix",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "fraud_matrix_priority_check": {
+          "name": "fraud_matrix_priority_check",
+          "value": "\"m08_fraud\".\"fraud_matrix\".\"priority\" >= 1"
+        },
+        "fraud_matrix_name_condition_check": {
+          "name": "fraud_matrix_name_condition_check",
+          "value": "\"m08_fraud\".\"fraud_matrix\".\"name_condition\" in ('NORMAL', 'EXCEEDED', 'ANY')"
+        },
+        "fraud_matrix_ip_condition_check": {
+          "name": "fraud_matrix_ip_condition_check",
+          "value": "\"m08_fraud\".\"fraud_matrix\".\"ip_condition\" in ('NORMAL', 'VPN_PROXY', 'LOCATION_MISMATCH', 'NOT_APPLICABLE', 'ANY')"
+        },
+        "fraud_matrix_fraud_outcome_check": {
+          "name": "fraud_matrix_fraud_outcome_check",
+          "value": "\"m08_fraud\".\"fraud_matrix\".\"fraud_outcome\" in ('CLEAN', 'SUSPICIOUS', 'HIGH_FRAUD_POTENTIAL')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m08_fraud.fraud_results": {
+      "name": "fraud_results",
+      "schema": "m08_fraud",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_blacklisted": {
+          "name": "is_blacklisted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_status": {
+          "name": "ip_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_category": {
+          "name": "ip_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_provider_code": {
+          "name": "ip_provider_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "velocity_hits": {
+          "name": "velocity_hits",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "matrix_row_id": {
+          "name": "matrix_row_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "matrix_row_priority": {
+          "name": "matrix_row_priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ran_at": {
+          "name": "ran_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "fraud_results_process_unique": {
+          "name": "fraud_results_process_unique",
+          "columns": [
+            {
+              "expression": "process_instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "fraud_results_application_idx": {
+          "name": "fraud_results_application_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fraud_results_tenant_id_companies_id_fk": {
+          "name": "fraud_results_tenant_id_companies_id_fk",
+          "tableFrom": "fraud_results",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fraud_results_application_id_applications_id_fk": {
+          "name": "fraud_results_application_id_applications_id_fk",
+          "tableFrom": "fraud_results",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fraud_results_matrix_row_id_fraud_matrix_id_fk": {
+          "name": "fraud_results_matrix_row_id_fraud_matrix_id_fk",
+          "tableFrom": "fraud_results",
+          "tableTo": "fraud_matrix",
+          "schemaTo": "m08_fraud",
+          "columnsFrom": [
+            "matrix_row_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "fraud_results_outcome_check": {
+          "name": "fraud_results_outcome_check",
+          "value": "\"m08_fraud\".\"fraud_results\".\"outcome\" in ('CLEAN', 'SUSPICIOUS', 'HIGH_FRAUD_POTENTIAL')"
+        },
+        "fraud_results_ip_status_check": {
+          "name": "fraud_results_ip_status_check",
+          "value": "\"m08_fraud\".\"fraud_results\".\"ip_status\" in ('NORMAL', 'VPN_PROXY', 'LOCATION_MISMATCH', 'NOT_APPLICABLE')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m08_fraud.fraud_velocity_rules": {
+      "name": "fraud_velocity_rules",
+      "schema": "m08_fraud",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dimension": {
+          "name": "dimension",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "window_value": {
+          "name": "window_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "window_unit": {
+          "name": "window_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_count": {
+          "name": "max_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome_when_exceeded": {
+          "name": "outcome_when_exceeded",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fraud_velocity_rules_tenant_id_companies_id_fk": {
+          "name": "fraud_velocity_rules_tenant_id_companies_id_fk",
+          "tableFrom": "fraud_velocity_rules",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "fraud_velocity_rules_dimension_check": {
+          "name": "fraud_velocity_rules_dimension_check",
+          "value": "\"m08_fraud\".\"fraud_velocity_rules\".\"dimension\" in ('FULL_NAME', 'ID_CARD_NUMBER', 'IP_ADDRESS', 'DEVICE_ID')"
+        },
+        "fraud_velocity_rules_window_unit_check": {
+          "name": "fraud_velocity_rules_window_unit_check",
+          "value": "\"m08_fraud\".\"fraud_velocity_rules\".\"window_unit\" in ('DAY', 'HOUR')"
+        },
+        "fraud_velocity_rules_window_value_check": {
+          "name": "fraud_velocity_rules_window_value_check",
+          "value": "\"m08_fraud\".\"fraud_velocity_rules\".\"window_value\" >= 1"
+        },
+        "fraud_velocity_rules_max_count_check": {
+          "name": "fraud_velocity_rules_max_count_check",
+          "value": "\"m08_fraud\".\"fraud_velocity_rules\".\"max_count\" >= 1"
+        },
+        "fraud_velocity_rules_outcome_check": {
+          "name": "fraud_velocity_rules_outcome_check",
+          "value": "\"m08_fraud\".\"fraud_velocity_rules\".\"outcome_when_exceeded\" in ('CLEAN', 'SUSPICIOUS', 'HIGH_FRAUD_POTENTIAL')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m08_fraud": "m08_fraud"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

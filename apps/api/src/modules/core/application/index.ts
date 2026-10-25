@@ -1,10 +1,16 @@
 export { ApplicationContacts } from "./application/application-contacts.js";
 export {
+  APPLICATION_REJECTED_EVENT,
   APPLICATION_SUBMITTED_EVENT,
   type ApplicationEventPayload,
   applicationEventPayloadSchema,
   DISBURSEMENT_COMPLETED_EVENT,
 } from "./application/application-events.js";
+export {
+  type ApplicationFacts,
+  ApplicationFactsReader,
+  type SubmissionKey,
+} from "./application/application-facts.js";
 export {
   type ApplicantIdentity,
   ApplicationIdentities,

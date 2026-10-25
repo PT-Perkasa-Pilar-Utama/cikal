@@ -20,6 +20,9 @@ export interface CallContext {
 }
 
 type Failure = Extract<AdapterOutcome<never>, { ok: false }>;
+
+/** Hasil satu panggilan; jawaban sukses membawa penyedia yang menjawab, untuk dicatat di hasil modul (api-specs 20 §20.2). */
+export type InvokeOutcome<Res> = (Extract<AdapterOutcome<Res>, { ok: true }> & { providerCode: string }) | Failure;
 type Resolution = { ok: true; adapter: RegisteredAdapter; config: ResolvedConfig } | { ok: false; failure: Failure };
 
 const configFailure = (message: string): Failure => ({ ok: false, category: "CONFIG", message });
@@ -62,7 +65,7 @@ export class IntegrationApi {
     req: Req,
     ctx: CallContext,
     opts: { providerCode?: string } = {},
-  ): Promise<AdapterOutcome<Res>> {
+  ): Promise<InvokeOutcome<Res>> {
     const startedAt = new Date();
     const request = port.request.parse(req);
     const resolution = await this.resolve(ctx.tenantId, port.moduleCode, opts.providerCode);
@@ -91,7 +94,10 @@ export class IntegrationApi {
         responseMasked: outcome.raw === undefined ? null : maskPii(outcome.raw),
       }),
     );
-    return outcome;
+    if (!outcome.ok) return outcome;
+    // Jawaban sukses hanya mungkin sesudah konfigurasi diresolusi.
+    if (!resolution.ok) throw new Error("Adapter answered without a resolved configuration");
+    return { ...outcome, providerCode: resolution.config.providerCode };
   }
 
   private resolve(tenantId: string, moduleCode: ModuleCode, providerCode?: string): Promise<Resolution> {

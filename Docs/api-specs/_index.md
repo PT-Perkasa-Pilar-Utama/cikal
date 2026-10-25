@@ -233,17 +233,17 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `GET /applications/{id}/dedup` | 19 §19.2 | POC | OK |
-| `GET /applications/{id}/dukcapil` | 20 §20.2 | POC | TODO |
-| `GET /applications/{id}/fraud` | 21 §21.2 | POC | TODO |
+| `GET /applications/{id}/dukcapil` | 20 §20.2 | POC | OK |
+| `GET /applications/{id}/fraud` | 21 §21.2 | POC | OK |
 | `GET /scoring-models` | 22 §22.1 | POC | TODO |
 | `GET /scoring-models/{id}` | 22 §22.2 | POC | TODO |
 | `POST /scoring-models`, `POST /scoring-models/{id}/new-version`, `PUT /scoring-models/{id}` | 22 §22.3 | POC | TODO |
 | `POST`, `PUT`, `DELETE /scoring-models/{id}/criteria[/{criterionId}]` | 22 §22.3 | POC | TODO |
 | `POST /scoring-models/{id}/submit` | 22 §22.4 | POC | TODO |
 | `POST /scoring-models/{id}/test` | 22 §22.5 | POC | TODO |
-| `GET /applications/{id}/scoring` | 22 §22.6 | POC | TODO |
+| `GET /applications/{id}/scoring` | 22 §22.6 | POC | OK |
 | `POST /applications/{id}/credit-report` | 23 §23.2 | Backlog | TODO |
-| `GET /applications/{id}/credit-bureau` | 23 §23.3 | POC | TODO |
+| `GET /applications/{id}/credit-bureau` | 23 §23.3 | POC | OK |
 | `GET /decision-matrix`, `PUT /decision-matrix/rows/{id}`, `POST /decision-matrix/rows` | 24 §24.2 | POC | OK |
 | `POST /decision-matrix/simulate` | 24 §24.3 | POC | OK |
 | `GET /applications/{id}/decision` | 24 §24.4 | POC | OK |

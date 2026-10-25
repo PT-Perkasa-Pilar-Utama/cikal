@@ -419,6 +419,7 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | id | uuid | no | | PK | |
 | loan_id | text | no | | UQ(tenant_id, loan_id) | `20102026KTA0000013` |
 | channel | text | no | | | `WEB`, `MOBILE`, `API`, `UPLOAD` |
+| client_ip_address | inet | yes | | | IP asal pembuatan draft kanal WEB dan MOBILE; kosong untuk Upload dan API (cek IP Fraud Not applicable, AC-65.02) |
 | application_type, customer_type, segment, purpose_of_loan | text | yes | | | `param_id` |
 | product_category | text | no | | | dari produk |
 | product_id | uuid | no | | FK product.products | |
@@ -620,11 +621,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | dukcapil_rules.not_found_outcome | text | no | `REVIEW` (default), `FAILED` |
 | dukcapil_results.application_id, process_instance_id | uuid | no | |
 | dukcapil_results.record_found | boolean | no | |
-| dukcapil_results.provider_code, provider_reference | text | no / yes | |
+| dukcapil_results.provider_code, provider_reference | text | yes | kosong untuk `SKIP` karena penyedia tidak dipanggil |
 | dukcapil_results.dob_status, pob_status | text | yes | |
 | dukcapil_results.full_name_score, mother_name_score, final_score | numeric(5,4) | yes | |
 | dukcapil_results.outcome | text | no | `PASSED`, `REVIEW`, `FAILED`, `SKIP` |
-| dukcapil_results.raw_response_enc | bytea | yes | respons mentah terenkripsi (IN-06) |
+| dukcapil_results.raw_response_enc, raw_response_key_version | bytea, int | yes | respons mentah terenkripsi beserta versi kuncinya (IN-06) |
+| dukcapil_results.rule | jsonb | no | bobot dan ambang DukcapilRule saat langkah berjalan |
+| dukcapil_results.ran_at | timestamptz | no | |
 | dukcapil_reviews.dukcapil_result_id, reviewer_user_id | uuid | no | |
 | dukcapil_reviews.level | int | no | 1 Verifikator, 2 Supervisor |
 | dukcapil_reviews.decision | text | no | `PASS`, `FAIL`, `REVIEW` |
@@ -640,10 +643,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | fraud_velocity_rules.is_active | boolean | no | |
 | fraud_results.outcome, is_blacklisted, ip_category, ip_provider_code | | no / yes | |
 | fraud_results.ip_address | inet | yes | |
-| fraud_results.velocity_hits | jsonb | yes | |
+| fraud_results.velocity_hits | jsonb | no | default `[]` |
+| fraud_results.application_id, process_instance_id, ip_status, matrix_row_id, matrix_row_priority, ran_at | | no / yes | satu hasil per ProcessInstance; `ip_status` `NORMAL`, `VPN_PROXY`, `LOCATION_MISMATCH`, `NOT_APPLICABLE` |
+| fraud_matrix.name_condition, ip_condition | text | no | `NORMAL`, `EXCEEDED`, `ANY` / status IP atau `ANY` |
 | blacklists.full_name | text | yes | |
 | blacklists.id_card_number_enc, id_card_number_bidx | bytea | yes | |
-| blacklists.ip_address | inet | yes | |
+| blacklists.ip_address | inet | yes | disimpan tetapi belum dicocokkan sampai ada kanal self-service (grooming v2 R-02); pencocokan lewat `id_card_number_bidx` |
+| blacklists.id_card_number_key_version | int | yes | versi kunci `id_card_number_enc` |
 | blacklists.reason, source_application_id, added_by, added_at | | no | |
 | fraud_reviews.fraud_result_id, decision, notes, reviewer_user_id | | no | `CLEAR`, `REJECT_AND_BLACKLIST` |
 
@@ -661,7 +667,9 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | scoring_criteria.weight | numeric(8,2) | yes | -1.000 s.d. 1.000 |
 | scoring_criteria.criterion_type | text | no | `WEIGHTED`, `MANDATORY` |
 | scoring_model_products.model_id, product_id | uuid | no | |
-| scoring_results.model_id, model_group, total_score, outcome | | no | |
+| scoring_results.model_id, model_group, total_score, outcome | | no / total_score yes | UQ(process_instance_id, model_group); `total_score` kosong untuk RAC |
+| scoring_results.application_id, process_instance_id, failed_reasons, ran_at | uuid, jsonb, timestamptz | no | `failed_reasons` alasan kriteria MANDATORY yang gagal (AC-67.02) |
+| scoring_criteria.sort_order, scoring_result_details.sort_order, display_text | int, text | no | teks kriteria saat langkah berjalan |
 | scoring_result_details.scoring_result_id, criterion_id, actual_value, is_met, applied_weight | | no | |
 
 ### M10 Credit Bureau (`m10_credit_bureau`)
@@ -675,13 +683,14 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | results.aggregated_collectibility | int | yes | |
 | results.quality, outcome | text | no | |
 | results.report_file_id | uuid | yes | wajib pada MANUAL |
-| results.entered_by, entered_at | | yes | MANUAL |
+| results.entered_by, entered_at | | yes | MANUAL; kolom dibuat bersama operasi unggah iDeb (api-specs 23 §23.2, backlog) |
+| results.application_id, process_instance_id, raw_response_key_version, ran_at | uuid, int, timestamptz | no / yes | satu hasil per ProcessInstance |
 | results.raw_response_enc | bytea | yes | |
 | credit_facilities.result_id | uuid | no | |
 | credit_facilities.lender_name, facility_type | text | no | |
 | credit_facilities.plafond, outstanding | numeric(18,2) | no | |
 | credit_facilities.collectibility, days_past_due | int | no | |
-| credit_facilities.condition, last_updated | text, date | no | hanya `ACTIVE` diagregasi |
+| credit_facilities.condition, last_updated | text, date | no / yes | hanya `ACTIVE` diagregasi; `last_updated` kosong bila penyedia tidak memberinya |
 
 ### M11 Decision Engine (`m11_decision`)
 | table.column | type | nullable | notes |

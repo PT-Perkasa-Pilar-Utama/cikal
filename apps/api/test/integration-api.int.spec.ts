@@ -116,7 +116,12 @@ describe("IntegrationApi", () => {
 
     const outcome = await api.invoke(portFor("M12"), withExtraField, ctx);
 
-    expect(outcome).toEqual({ ok: true, response: { recordFound: true }, raw: expect.anything() });
+    expect(outcome).toEqual({
+      ok: true,
+      response: { recordFound: true },
+      raw: expect.anything(),
+      providerCode: expect.any(String),
+    });
     expect(adapter.received).toEqual([REQUEST]);
     expect(await logOf(ctx)).toEqual({
       module_code: "M12",

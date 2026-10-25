@@ -153,7 +153,7 @@ describe("application notifications", () => {
     await app.get(TenantTx).withTenantTx({ tenantId: COMPANY_001, userId: sales.userId }, (tx) =>
       app.get(Notifications).send(tx, COMPANY_001, {
         eventId: uuidv7(),
-        templateCode: "APP_REJECTED",
+        templateCode: "RESET_PASSWORD",
         applicationId: null,
         recipient: "rudi@contoh.com",
         values: {},
@@ -161,9 +161,9 @@ describe("application notifications", () => {
     );
 
     const { rows } = await db.owner.query(
-      "select status, error_message from notification.notification_logs where template_code = 'APP_REJECTED'",
+      "select status, error_message from notification.notification_logs where template_code = 'RESET_PASSWORD'",
     );
-    expect(rows).toEqual([{ status: "FAILED", error_message: "Email template APP_REJECTED is not configured" }]);
+    expect(rows).toEqual([{ status: "FAILED", error_message: "Email template RESET_PASSWORD is not configured" }]);
     expect(email.sent).toEqual([]);
   });
 });

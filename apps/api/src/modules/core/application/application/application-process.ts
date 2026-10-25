@@ -2,8 +2,10 @@ import type { ApplicationStatus, StepCode } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
+import { Outbox } from "../../../../platform/queue/outbox.js";
 import { type ApplicationProcessRow, ApplicationsRepository } from "../db/applications.repository.js";
 import { canTransition } from "../domain/application-status.js";
+import { APPLICATION_REJECTED_EVENT, type ApplicationEventPayload } from "./application-events.js";
 
 export type ProcessApplication = ApplicationProcessRow;
 
@@ -13,7 +15,10 @@ export type ProcessApplication = ApplicationProcessRow;
  */
 @Injectable()
 export class ApplicationProcess {
-  constructor(private readonly applications: ApplicationsRepository) {}
+  constructor(
+    private readonly applications: ApplicationsRepository,
+    private readonly outbox: Outbox,
+  ) {}
 
   /** Pengajuan tenant transaksi; `null` bila tidak ada atau milik tenant lain (RLS). */
   find(tx: Tx, id: string): Promise<ProcessApplication | null> {
@@ -32,7 +37,8 @@ export class ApplicationProcess {
 
   /**
    * Status dari hasil langkah dan aksi proses. Transisi di luar technical-specs 06 §6.13 ditolak `INVALID_STATE`.
-   * Kembali ke Draft menyimpan catatan pengembalian dan mengosongkan langkah saat ini.
+   * Kembali ke Draft menyimpan catatan pengembalian dan mengosongkan langkah saat ini. Penolakan menulis event
+   * `ApplicationRejected` untuk email penolakan di transaksi yang sama (TRM_DKC_005).
    */
   async transition(
     tx: Tx,
@@ -54,5 +60,17 @@ export class ApplicationProcess {
       },
       options.userId,
     );
+    if (to === "FINISHED_REJECTED") await this.publishRejected(tx, id);
+  }
+
+  private async publishRejected(tx: Tx, id: string): Promise<void> {
+    const application = await this.applications.findById(tx, id);
+    if (!application) throw new Error(`Application ${id} not found`);
+    await this.outbox.publish(tx, {
+      tenantId: application.tenantId,
+      eventType: APPLICATION_REJECTED_EVENT,
+      aggregateId: id,
+      payload: { applicationId: id, loanId: application.loanId } satisfies ApplicationEventPayload,
+    });
   }
 }

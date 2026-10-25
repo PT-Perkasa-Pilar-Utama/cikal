@@ -2,6 +2,7 @@ import { Injectable, type OnModuleInit } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { type DispatchedEvent, Outbox } from "../../../../platform/queue/outbox.js";
 import {
+  APPLICATION_REJECTED_EVENT,
   APPLICATION_SUBMITTED_EVENT,
   ApplicationContacts,
   applicationEventPayloadSchema,
@@ -12,10 +13,11 @@ import { Notifications } from "./notifications.js";
 /** Template per event pengajuan (api-specs 18 §18.1). */
 const TEMPLATES: Readonly<Record<string, string>> = {
   [APPLICATION_SUBMITTED_EVENT]: "APP_RECEIVED",
+  [APPLICATION_REJECTED_EVENT]: "APP_REJECTED",
   [DISBURSEMENT_COMPLETED_EVENT]: "APP_DISBURSED",
 };
 
-/** Email nasabah dari event outbox pengajuan (api-specs 18 §18.1; AC-50.05, AC-101.01). */
+/** Email nasabah dari event outbox pengajuan (api-specs 18 §18.1; AC-50.05, AC-101.01, TRM_DKC_005). */
 @Injectable()
 export class ApplicationEmails implements OnModuleInit {
   constructor(

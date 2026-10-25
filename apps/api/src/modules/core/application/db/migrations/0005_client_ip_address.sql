@@ -1,0 +1,1 @@
+ALTER TABLE "application"."applications" ADD COLUMN "client_ip_address" "inet";

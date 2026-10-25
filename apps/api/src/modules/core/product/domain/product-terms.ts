@@ -30,6 +30,7 @@ export function productTermVariables(product: ProductData, pricing: SubProductDa
     PRODUCT_PROVISION_FEE: product.provisionFee,
     PRODUCT_SALES_FEE: product.salesFee,
     PRODUCT_LIMIT_AUTO_APPROVAL: product.limitAutoApproval,
+    PRODUCT_INTEREST_TYPE: product.interestType,
     PRODUCT_INTEREST_RATE: pricing?.interestRate ?? null,
     PRODUCT_FLOATING_RATE: pricing?.floatingRate ?? null,
     PRODUCT_CAP_RATE: pricing?.capRate ?? null,
