@@ -242,6 +242,10 @@ pnpm --filter @cikal/api db:seed --seed=qa
 
 Contoh lengkap: modul `apps/api/src/modules/core/tenancy`.
 
+### 6.3 Modul langkah baru
+
+Ikuti [STEP_MODULE_GUIDE.md](STEP_MODULE_GUIDE.md): StepHandler, registrasi, paket, lisensi, rute, dan uji.
+
 ---
 
 ## 7. Mereview PR

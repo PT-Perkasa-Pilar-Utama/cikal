@@ -23,6 +23,7 @@ This manual restates rules tersely. Read the source for detail.
 | Environments, deploy, rollback, reset, DB debugging | `Docs/DEPLOYMENT_PLAN.md` |
 | Engineering terms / business terms | `Docs/GLOSSARY.md` / `Docs/ba/glossary.md` |
 | How to do a card end to end | `Docs/DEVELOPMENT_SCENARIO_GUIDE.md` |
+| How to add a step module (StepHandler, package, license, route) | `Docs/STEP_MODULE_GUIDE.md` |
 | UI tokens | `Docs/design-system.md` |
 
 Language policy: identifiers, file names, error codes, and commit subjects in English. Code comments, JSDoc, and docs in Indonesian. UI text and user-facing error messages copied verbatim from the AC.
