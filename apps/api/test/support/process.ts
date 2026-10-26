@@ -143,7 +143,15 @@ let loanCounter = 0;
 /** Pengajuan yang sudah disubmit (`ON_PROGRESS`) atau masih draft, ditulis langsung karena API draft ada di Sprint 3. */
 export async function insertApplication(
   owner: pg.Pool,
-  options: { productId: string; submittedBy: string | null; status?: ApplicationStatus; tenantId?: string },
+  options: {
+    productId: string;
+    submittedBy: string | null;
+    status?: ApplicationStatus;
+    tenantId?: string;
+    branchId?: string;
+    requestedLimit?: string;
+    tenorProposed?: number;
+  },
 ): Promise<string> {
   loanCounter += 1;
   const id = uuidv7();
@@ -151,8 +159,8 @@ export async function insertApplication(
   const submitted = status !== "DRAFT";
   await owner.query(
     `insert into application.applications (id, tenant_id, loan_id, channel, product_category, product_id, status,
-       submitted_by, submitted_at, created_at, created_by)
-     values ($1, $2, $3, 'WEB', 'NON_COLLATERAL', $4, $5, $6, $7, now() - interval '2 days', $8)`,
+       submitted_by, submitted_at, created_at, created_by, branch_id, requested_limit, tenor_proposed)
+     values ($1, $2, $3, 'WEB', 'NON_COLLATERAL', $4, $5, $6, $7, now() - interval '2 days', $8, $9, $10, $11)`,
     [
       id,
       options.tenantId ?? seedCompanyIds.company001,
@@ -162,6 +170,9 @@ export async function insertApplication(
       submitted ? options.submittedBy : null,
       submitted ? new Date() : null,
       options.submittedBy,
+      options.branchId ?? null,
+      options.requestedLimit ?? null,
+      options.tenorProposed ?? null,
     ],
   );
   return id;

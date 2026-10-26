@@ -43,6 +43,13 @@
       "when": 1792871680519,
       "tag": "0005_client_ip_address",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792983372585,
+      "tag": "0006_application_branch",
+      "breakpoints": true
     }
   ]
 }
