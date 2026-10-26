@@ -45,17 +45,12 @@ export class HumanTasksRepository {
 
   /** Tugas belum ditutup satu pengajuan pada satu antrean, dikunci untuk operasi penutup (api-specs 14 §14.5). */
   async lockOpenOf(tx: Tx, applicationId: string, queueCode: QueueCode): Promise<TaskRow | null> {
-    const [row] = await tx
-      .select()
-      .from(humanTasks)
-      .where(
-        and(
-          eq(humanTasks.applicationId, applicationId),
-          eq(humanTasks.queueCode, queueCode),
-          inArray(humanTasks.status, ["OPEN", "ASSIGNED"]),
-        ),
-      )
-      .for("update");
+    const [row] = await tx.select().from(humanTasks).where(openOf(applicationId, queueCode)).for("update");
+    return row ?? null;
+  }
+
+  async findOpenOf(tx: Tx, applicationId: string, queueCode: QueueCode): Promise<TaskRow | null> {
+    const [row] = await tx.select().from(humanTasks).where(openOf(applicationId, queueCode));
     return row ?? null;
   }
 
@@ -141,6 +136,14 @@ export class HumanTasksRepository {
         ),
       );
   }
+}
+
+function openOf(applicationId: string, queueCode: QueueCode): SQL | undefined {
+  return and(
+    eq(humanTasks.applicationId, applicationId),
+    eq(humanTasks.queueCode, queueCode),
+    inArray(humanTasks.status, ["OPEN", "ASSIGNED"]),
+  );
 }
 
 function closing(resultCode: string, userId: string) {
