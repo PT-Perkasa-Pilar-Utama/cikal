@@ -423,7 +423,7 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | application_type, customer_type, segment, purpose_of_loan | text | yes | | | `param_id` |
 | product_category | text | no | | | dari produk |
 | product_id | uuid | no | | FK product.products | |
-| branch_id | uuid | no | | FK org.branches | |
+| branch_id | uuid | yes | | FK org.branches | cabang unit kerja pembuat draft, atau cabang induk sub cabangnya; kosong bila pembuatnya role regional atau pusat (routing approval lalu ERROR) |
 | tenor_proposed, tenor_approved | int | yes | | | |
 | requested_limit, max_loan_amount, loan_amount | numeric(18,2) | yes | | | |
 | insurance_id | uuid | yes | | FK masterdata.insurances | |
@@ -558,27 +558,30 @@ Kolom: `application_id`, `process_instance_id`, `verifier_user_id`, `result` (`I
 | hierarchies.branch_id, product_id, job_level, sub_level | | no | |
 | hierarchies.up_level, up_sub_level | int | yes | RM-06 |
 | hierarchies.approver_user_id | uuid | no | FK iam.users |
-| approvals.application_id, process_instance_id | uuid | no | |
-| approvals.job_level, sub_level, description | | no | |
-| approvals.approver_user_id | uuid | yes | null untuk auto approval |
-| approvals.decision | text | no | `PENDING`, `APPROVE`, `REJECT`, `RETURN`, `AUTO_APPROVED` |
-| approvals.comment | text | yes | maks 1.000 |
-| approvals.decided_at | timestamptz | yes | |
+| application_approvals.application_id, process_instance_id | uuid | no | tabel `application_approvals`; `process_instance_id` tanpa foreign key, seperti tabel hasil langkah lain |
+| application_approvals.sequence | int | no | urutan posisi rantai dari level terendah; UQ(process_instance_id, sequence) |
+| application_approvals.job_level, sub_level, description | | yes | kosong hanya untuk `AUTO_APPROVED` (CHECK) |
+| application_approvals.approver_user_id | uuid | yes | null untuk auto approval |
+| application_approvals.decision | text | no | `PENDING`, `APPROVE`, `REJECT`, `RETURN`, `AUTO_APPROVED` |
+| application_approvals.comment | text | yes | maks 1.000 (CHECK) |
+| application_approvals.decided_at | timestamptz | yes | |
 
 ### FINANCINGS, INSTALLMENTS (`approval`)
 | table.column | type | nullable | notes |
 |---|---|---|---|
-| financings.application_id | uuid | no | UQ |
+| financings.application_id | uuid | no | UQ; persetujuan ulang sesudah Recontest atau kembali ke Draft mengganti baris dan angsurannya |
+| financings.process_instance_id | uuid | no | proses yang menyetujui |
+| financings.approval_type | text | no | `AUTO`, `MANUAL` (api-specs 16 §16.7) |
 | financings.loan_amount | numeric(18,2) | no | |
 | financings.tenor | int | no | |
 | financings.interest_type | text | no | |
 | financings.interest_rate, floating_rate, cap_rate | numeric(9,4) | no / yes | |
 | financings.tenor_fixed | int | yes | |
 | financings.admin_fee, sales_fee, provision_fee, insurance_value, net_disbursement, monthly_installment | numeric(18,2) | no / yes | rumus RM-07 |
-| financings.dbr_ratio, dsr_ratio | numeric(9,4) | no | RM-08 |
+| financings.dbr_ratio, dsr_ratio | numeric(9,4) | yes | persen RM-08; kosong bila penghasilan atau angsuran berjalan tidak ada |
 | financings.formula_versions | jsonb | no | |
 | financings.first_installment_date | date | no | |
-| installments.financing_id | uuid | no | FK financings |
+| installments.financing_id | uuid | no | FK financings, ON DELETE CASCADE |
 | installments.installment_no | int | no | UQ(financing_id, installment_no) |
 | installments.due_date | date | no | |
 | installments.principal_amount, interest_amount, outstanding_amount | numeric(18,2) | no | baris terakhir outstanding 0 |

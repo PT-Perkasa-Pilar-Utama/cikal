@@ -75,16 +75,19 @@ StepHandler `APPROVAL` berjalan setelah DECISION `GO` (atau langsung bila M11 ti
 
 | Kondisi | Hasil | Rujukan |
 |---|---|---|
-| `limitAutoApproval > 0` dan `requestedLimit <= limitAutoApproval` | Keputusan `AUTO_APPROVED` oleh System; struktur kredit dibangun; lanjut ke langkah berikutnya | AC-74.01, AC-74.02, AC-74.05, RM-05 |
-| Selain itu | Level awal dipilih dari rentang `amountBegin` s.d. `amountEnd` (batas mengikuti `APPROVAL_RANGE_BOUNDARY`); tugas `APPROVAL` ditugaskan ke approver sub level aktif; naik lewat `upLevel` sampai `isFinalApprover` | AC-72.06 (TRM_APV_001 s.d. 003), AC-74.03, RM-06 |
+| `limitAutoApproval > 0` dan `requestedLimit <= limitAutoApproval` | Keputusan `AUTO_APPROVED` oleh System; struktur kredit dibangun (`approvalType` `AUTO`); `CONTINUE` dengan `outcomeCode` `AUTO_APPROVED`, atau `FINISH APPROVED` bila tidak ada langkah sesudah APPROVAL | AC-74.01, AC-74.02, AC-74.05, RM-05 |
+| Selain itu | Rantai dibentuk sekali per ProcessInstance: mulai dari sub level terkecil level terendah (nomor level terbesar), naik lewat `upLevel`/`upSubLevel` sampai level yang rentangnya mencakup nominal (batas mengikuti `APPROVAL_RANGE_BOUNDARY`) atau sampai level `isFinalApprover`. Tiap posisi rantai mendapat approver aktif pertama menurut urutan pembuatan baris hierarki. Tugas `APPROVAL` `ASSIGNED` ke approver posisi pertama; `WAIT_HUMAN` | AC-72.06 (TRM_APV_001 s.d. 003), AC-74.03, RM-06, grooming v1 A-37 |
+| Cabang dan produk tanpa Approval Level atau Approval Hierarchy | `ERROR` `BUSINESS_SETUP` "No approval setup for branch 012 and product KPR" | TRM_APV_005 |
 | Tidak ada level yang mencakup nominal | `ERROR` `BUSINESS_SETUP` "No approval level covers this amount" | TRM_APV_004 |
-| Cabang dan produk tanpa setup | `ERROR` `BUSINESS_SETUP` "No approval setup for branch 012 and product KPR" | TRM_APV_005 |
-| Semua approver level aktif nonaktif | `ERROR` `BUSINESS_SETUP` "No active approver for level 2" | AC-27.04 |
+| Satu posisi rantai tanpa approver aktif (baris hierarki nonaktif atau user tidak ACTIVE), termasuk `upLevel` yang menunjuk posisi tanpa baris | `ERROR` `BUSINESS_SETUP` "No active approver for level 2"; Retry dari Process Monitoring merouting ulang | AC-27.04 |
+| Pengajuan tanpa cabang (dibuat role pusat) | `ERROR` `BUSINESS_SETUP` "The application has no branch for approval routing" (teks usulan engineering) | api-specs 12 §12.2 langkah 5 |
+
+Semua ERROR di atas tanpa retry otomatis (`retryable: false`). Error rumus struktur kredit auto approval menjadi `ERROR` `FORMULA` tanpa baris `AUTO_APPROVED` (FM-09). Cabang pengajuan adalah cabang unit kerja pembuat draft, atau cabang induk sub cabangnya.
 
 ## 16.5 GET /applications/{id}/approval
 
 **Purpose:** Halaman "Approval Detail": rantai approval, struktur kredit usulan, dan tombol yang boleh dipakai.  
-**Access:** `OPS-APPROVAL` VIEW. Approver melihat pengajuan yang ditugaskan kepadanya; `APP-INQUIRY` VIEW membaca tanpa aksi.
+**Access:** `OPS-APPROVAL` VIEW untuk approver yang ada di rantai pengajuan; `APP-INQUIRY` VIEW membaca tanpa aksi (`myLevel` `null`). Rute memakai `@Authenticated()` dan use case memeriksa kedua menu; tanpa keduanya `403 ACCESS_DENIED`. Rantai yang dibaca adalah rantai ProcessInstance terbaru yang sudah sampai langkah APPROVAL. `allowedActions` hanya terisi selama langkah APPROVAL `WAITING_HUMAN`.
 
 **Output 200**
 
@@ -110,7 +113,7 @@ StepHandler `APPROVAL` berjalan setelah DECISION `GO` (atau langsung bila M11 ti
 | `blockedReason` | "Waiting for level 2 approval" bila level bawah belum memutuskan (AC-72.03); "You cannot approve an application you submitted" bila user sesi adalah penginput (AC-72.05). Bila terisi, `allowedActions` kosong |
 | `rateEditable` | `true` bila SubProduct punya rentang Approver (AC-97.05, AC-97.06) |
 
-**Errors:** `APPLICATION_NOT_FOUND` 404.
+**Errors:** `APPLICATION_NOT_FOUND` 404 (pengajuan tidak ada, atau approver tanpa `APP-INQUIRY` yang tidak ada di rantainya); `NOT_FOUND` 404 bila langkah APPROVAL belum membentuk rantai.
 
 **Traceability:** US-72 (AC-72.03, AC-72.05); US-73 (AC-73.03); US-97 (AC-97.05, AC-97.06).
 
@@ -183,13 +186,13 @@ StepHandler `APPROVAL` berjalan setelah DECISION `GO` (atau langsung bila M11 ti
   "data": {
     "loanAmount": "20000000.00", "tenor": 36, "interestType": "EFFECTIVE", "interestRate": "13.0000", "monthlyInstallment": "673879.00",
     "adminFee": "250000.00", "provisionFee": "200000.00", "insuranceValue": "150000.00", "netDisbursement": "19400000.00",
-    "dbrRatio": "0.0842", "dsrRatio": null, "firstInstallmentDate": "2026-11-21", "approvalType": "MANUAL", "sp3kNumber": null,
+    "dbrRatio": "8.4200", "dsrRatio": null, "firstInstallmentDate": "2026-11-21", "approvalType": "MANUAL", "sp3kNumber": null,
     "schedule": [ { "installmentNo": 1, "dueDate": "2026-11-21", "principalAmount": "457212.00", "interestAmount": "216667.00", "outstandingAmount": "19542788.00" } ]
   }
 }
 ```
 
-`approvalType` = `AUTO` untuk auto approval (AC-74.01). Belum disetujui: `404 NOT_FOUND` "Financing is not available yet".
+`approvalType` = `AUTO` untuk auto approval (AC-74.01). `dbrRatio` dan `dsrRatio` dalam persen (rumus `DBR_RATIO`, `DSR_RATIO` RM-08); `dbrRatio` `null` bila penghasilan kosong, `dsrRatio` `null` karena angsuran berjalan belum menjadi data pengajuan di POC. `insuranceValue` 0 sampai e-polis menghitung ulang. Tanggal angsuran pertama = tanggal bisnis persetujuan + 1 bulan. `sp3kNumber` `null` sampai BE-S6-05 membentuk nomor SP3K (AC-102.02). Belum disetujui: `404 NOT_FOUND` "Financing is not available yet"; pengajuan tidak ada: `404 APPLICATION_NOT_FOUND`.
 
 **Traceability:** US-72 (AC-72.01), US-74 (AC-74.01), US-97 (AC-97.06), US-76 (AC-76.05).
 
