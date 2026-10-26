@@ -7,26 +7,17 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 import { USER_DIRECTORY_PORT, type UserDirectoryPort } from "../../../../platform/http/user-directory-port.js";
 import { ApplicationFactsReader, ApplicationProcess } from "../../application/index.js";
 import { OrchestratorApi } from "../../orchestrator/index.js";
-import { type ApplicationApprovalRow, ApplicationApprovalsRepository } from "../db/application-approvals.repository.js";
+import { ApplicationApprovalsRepository } from "../db/application-approvals.repository.js";
 import { LevelsRepository } from "../db/levels.repository.js";
 import { applicationNotFound } from "../domain/approval-errors.js";
-import { type ApprovalChainRow, approvalView, type LevelActions } from "../domain/approval-view.js";
+import { approvalView } from "../domain/approval-view.js";
 import { approverRateRange } from "../domain/approver-rate.js";
+import { chainOf, NO_ACTIONS } from "./approval-chain.js";
 
 const MONEY_SCALE = 2;
 const PERCENT_SCALE = 4;
-const NO_ACTIONS: LevelActions = { isApprove: false, isReject: false, isReturn: false, isFinalApprover: false };
 
 const percentOf = (value: string | undefined): string => new Decimal(value ?? 0).toFixed(PERCENT_SCALE);
-
-type ChainEntry = ApprovalChainRow & Pick<ApplicationApprovalRow, "description" | "comment" | "decidedAt">;
-
-/** Posisi rantai beserta approver-nya; baris AUTO_APPROVED tanpa level tidak termasuk rantai. */
-function chainOf(rows: readonly ApplicationApprovalRow[]): ChainEntry[] {
-  return rows.flatMap(({ approverUserId, jobLevel, subLevel, ...row }) =>
-    approverUserId && jobLevel !== null && subLevel !== null ? [{ ...row, approverUserId, jobLevel, subLevel }] : [],
-  );
-}
 
 /**
  * Halaman "Approval Detail" (api-specs 16 §16.5). Approver dengan `OPS-APPROVAL` VIEW membuka pengajuan yang

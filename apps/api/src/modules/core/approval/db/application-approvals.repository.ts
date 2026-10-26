@@ -48,14 +48,43 @@ export class ApplicationApprovalsRepository {
       .orderBy(asc(applicationApprovals.sequence));
   }
 
-  /** Rantai ProcessInstance terbaru pengajuan yang sudah sampai langkah APPROVAL; id UUID v7 urut waktu. */
-  async listLatestByApplication(tx: Tx, applicationId: string): Promise<ApplicationApprovalRow[]> {
+  /** Rantai satu ProcessInstance dikunci sampai transaksi selesai, sehingga keputusan bersamaan diproses sekali (AC-72.07). */
+  async lockByProcess(tx: Tx, processInstanceId: string): Promise<ApplicationApprovalRow[]> {
+    return tx
+      .select(columns)
+      .from(applicationApprovals)
+      .where(eq(applicationApprovals.processInstanceId, processInstanceId))
+      .orderBy(asc(applicationApprovals.sequence))
+      .for("update");
+  }
+
+  /** Keputusan satu posisi rantai oleh approver-nya (api-specs 16 §16.6). */
+  async decide(
+    tx: Tx,
+    id: string,
+    decision: { decision: ApprovalDecision; comment: string; decidedAt: Date },
+    actorId: string,
+  ): Promise<void> {
+    await tx
+      .update(applicationApprovals)
+      .set({ ...decision, updatedAt: decision.decidedAt, updatedBy: actorId })
+      .where(eq(applicationApprovals.id, id));
+  }
+
+  /** ProcessInstance terbaru pengajuan yang sudah sampai langkah APPROVAL; id UUID v7 urut waktu. */
+  async latestProcessOf(tx: Tx, applicationId: string): Promise<string | null> {
     const [latest] = await tx
       .select({ processInstanceId: applicationApprovals.processInstanceId })
       .from(applicationApprovals)
       .where(eq(applicationApprovals.applicationId, applicationId))
       .orderBy(desc(applicationApprovals.processInstanceId))
       .limit(1);
-    return latest ? this.listByProcess(tx, latest.processInstanceId) : [];
+    return latest?.processInstanceId ?? null;
+  }
+
+  /** Rantai ProcessInstance terbaru pengajuan yang sudah sampai langkah APPROVAL; id UUID v7 urut waktu. */
+  async listLatestByApplication(tx: Tx, applicationId: string): Promise<ApplicationApprovalRow[]> {
+    const processInstanceId = await this.latestProcessOf(tx, applicationId);
+    return processInstanceId ? this.listByProcess(tx, processInstanceId) : [];
   }
 }
