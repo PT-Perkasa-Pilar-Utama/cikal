@@ -536,7 +536,7 @@ Tabel `application_spouses`, `application_businesses`, `application_collaterals`
 | application_id | uuid | no | FK application.applications; disalin saat tugas dibuat agar antrean tidak membaca skema `application` (XM-02) |
 | loan_id | text | no | salinan Loan ID (tetap sejak draft pertama) untuk pencarian dan urutan antrean |
 | queue_code | text | no | katalog antrean data dictionary |
-| branch_id | uuid | yes | FK org.branches setelah tabel itu dibuat (TL-S5-04); null = tugas belum terikat cabang, terlihat di seluruh company |
+| branch_id | uuid | yes | FK org.branches; null = tugas belum terikat cabang, terlihat di seluruh company |
 | eligible_role_id | uuid | yes | FK iam.roles; null bila ditugaskan per user |
 | assigned_user_id | uuid | yes | FK iam.users |
 | assigned_at | timestamptz | yes | |

@@ -5,6 +5,7 @@ import { seedUsers } from "./users.js";
 
 export { seedMenuId } from "./menus.js";
 export { seedRoleAccessId, seedRoleIds } from "./roles.js";
+export { seedUserId } from "./users.js";
 
 export const base: ModuleSeed = seedMenus;
 

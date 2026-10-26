@@ -1,0 +1,3 @@
+ALTER TABLE "iam"."users" ADD CONSTRAINT "users_regional_id_regionals_id_fk" FOREIGN KEY ("regional_id") REFERENCES "org"."regionals"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "iam"."users" ADD CONSTRAINT "users_branch_id_branches_id_fk" FOREIGN KEY ("branch_id") REFERENCES "org"."branches"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "iam"."users" ADD CONSTRAINT "users_sub_branch_id_sub_branches_id_fk" FOREIGN KEY ("sub_branch_id") REFERENCES "org"."sub_branches"("id") ON DELETE no action ON UPDATE no action;

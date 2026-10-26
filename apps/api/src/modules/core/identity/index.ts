@@ -2,4 +2,4 @@ export { AccessService } from "./application/access.service.js";
 export { roles, users } from "./db/schema.js";
 export { identityData } from "./identity.data.js";
 export { IdentityModule } from "./identity.module.js";
-export { seedMenuId, seedRoleAccessId, seedRoleIds } from "./seed/index.js";
+export { seedMenuId, seedRoleAccessId, seedRoleIds, seedUserId } from "./seed/index.js";

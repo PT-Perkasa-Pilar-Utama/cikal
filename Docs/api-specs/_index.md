@@ -77,7 +77,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /role-access` | 03 §3.3 | POC | OK |
 | `POST /role-access` | 03 §3.4 | POC | OK |
 | `PUT /role-access/{id}` | 03 §3.5 | POC | OK |
-| `GET /users` | 03 §3.6 | POC | TODO |
+| `GET /users` | 03 §3.6 | POC | OK |
 | Users, roles, user access, menus (tulis), devices | 03 §3.7 | Backlog | TODO |
 
 ### Tenancy and license
@@ -92,8 +92,8 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /branches` | 05 §5.1 | POC | TODO |
-| `GET /regionals`, `GET /branches/{id}/sub-branches` | 05 §5.2 | POC | TODO |
+| `GET /branches` | 05 §5.1 | POC | OK |
+| `GET /regionals`, `GET /branches/{id}/sub-branches` | 05 §5.2 | POC | OK |
 | Regional, branch, sub branch, currency (tulis) | 05 §5.3 | Backlog | TODO |
 
 ### Master data
@@ -210,9 +210,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /approval-hierarchies` | 16 §16.1 | POC | TODO |
-| `POST /approval-hierarchies` | 16 §16.2 | POC | TODO |
-| `PUT /approval-hierarchies/{id}` | 16 §16.3 | POC | TODO |
+| `GET /approval-hierarchies` | 16 §16.1 | POC | OK |
+| `POST /approval-hierarchies` | 16 §16.2 | POC | OK |
+| `PUT /approval-hierarchies/{id}` | 16 §16.3 | POC | OK |
 | `GET /applications/{id}/approval` | 16 §16.5 | POC | TODO |
 | `POST /applications/{id}/approval/decision` | 16 §16.6 | POC | TODO |
 | `GET /applications/{id}/financing` | 16 §16.7 | POC | TODO |

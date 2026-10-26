@@ -25,6 +25,7 @@ export interface UserProfile {
   username: string;
   fullName: string;
   roleName: string;
+  branchId: string | null;
 }
 
 /** Akses tabel `iam.users` (technical-specs 06 §6.4). */
@@ -78,7 +79,13 @@ export class UsersRepository {
   async findRefs(tx: Tx, ids: readonly string[]): Promise<UserRef[]> {
     if (ids.length === 0) return [];
     return tx
-      .select({ id: users.id, username: users.username, roleName: roles.roleName })
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        status: users.status,
+        roleName: roles.roleName,
+      })
       .from(users)
       .leftJoin(roles, eq(roles.id, users.roleId))
       .where(inArray(users.id, [...ids]));
@@ -99,7 +106,13 @@ export class UsersRepository {
 
   async findProfile(tx: Tx, id: string): Promise<UserProfile | null> {
     const [row] = await tx
-      .select({ id: users.id, username: users.username, fullName: users.fullName, roleName: roles.roleName })
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        roleName: roles.roleName,
+        branchId: users.branchId,
+      })
       .from(users)
       .innerJoin(roles, eq(roles.id, users.roleId))
       .where(eq(users.id, id));

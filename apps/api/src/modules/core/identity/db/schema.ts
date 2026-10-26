@@ -1,3 +1,4 @@
+import type { UserStatus } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
@@ -15,6 +16,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
+import { branches, regionals, subBranches } from "../../organization/index.js";
 import { companies } from "../../tenancy/index.js";
 
 export const iam = pgSchema("iam");
@@ -79,9 +81,8 @@ export const roles = iam.table(
 );
 
 /**
- * USERS (UI label: "User Application"), technical-specs 06 §6.4. Foreign key unit kerja ke skema `org`
- * ditambahkan saat tabel Organization dibuat. Diekspor lewat `index.ts` hanya untuk foreign key modul lain
- * (XM-05); modul lain membaca user lewat `USER_DIRECTORY_PORT` (XM-02).
+ * USERS (UI label: "User Application"), technical-specs 06 §6.4. Diekspor lewat `index.ts` hanya untuk foreign key
+ * modul lain (XM-05); modul lain membaca user lewat `USER_DIRECTORY_PORT` (XM-02).
  */
 export const users = iam.table(
   "users",
@@ -96,10 +97,10 @@ export const users = iam.table(
     passwordHash: text("password_hash"),
     mustChangePassword: boolean("must_change_password").notNull().default(true),
     roleId: uuid("role_id").references(() => roles.id),
-    regionalId: uuid("regional_id"),
-    branchId: uuid("branch_id"),
-    subBranchId: uuid("sub_branch_id"),
-    status: text("status").notNull().default("ACTIVE"),
+    regionalId: uuid("regional_id").references(() => regionals.id),
+    branchId: uuid("branch_id").references(() => branches.id),
+    subBranchId: uuid("sub_branch_id").references(() => subBranches.id),
+    status: text("status").$type<UserStatus>().notNull().default("ACTIVE"),
     failedLoginCount: integer("failed_login_count").notNull().default(0),
     lockedUntil: timestamp("locked_until", { withTimezone: true }),
     ssoSubject: text("sso_subject"),

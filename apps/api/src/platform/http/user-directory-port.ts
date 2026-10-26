@@ -1,8 +1,11 @@
+import type { Action, MenuCode, UserStatus } from "@cikal/contracts";
 import type { Tx } from "../db/tenant-tx.js";
 
 export interface UserRef {
   id: string;
   username: string;
+  fullName: string;
+  status: UserStatus;
   /** `null` bila user belum punya role. */
   roleName: string | null;
 }
@@ -24,6 +27,8 @@ export interface UserDirectoryPort {
   describe(tx: Tx, userIds: readonly string[]): Promise<Map<string, UserRef>>;
   /** `null` bila user tidak ada di tenant transaksi `tx`. */
   scope(tx: Tx, userId: string): Promise<UserScope | null>;
+  /** User aktif yang hak efektifnya hari ini mencakup `action` pada `menuCode`, contoh approver (AC-27.02). */
+  hasAccess(tx: Tx, userId: string, menuCode: MenuCode, action: Action): Promise<boolean>;
 }
 
 export const USER_DIRECTORY_PORT = Symbol("USER_DIRECTORY_PORT");

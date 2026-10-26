@@ -1,0 +1,1 @@
+ALTER TABLE "taskqueue"."human_tasks" ADD CONSTRAINT "human_tasks_branch_id_branches_id_fk" FOREIGN KEY ("branch_id") REFERENCES "org"."branches"("id") ON DELETE no action ON UPDATE no action;

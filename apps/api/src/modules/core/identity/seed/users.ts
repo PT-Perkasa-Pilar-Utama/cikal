@@ -38,6 +38,13 @@ const USER_SEEDS: UserSeed[] = [
 
 const userId = (n: number) => `0192b6aa-${String(n).padStart(4, "0")}-7000-8000-${String(n).padStart(12, "0")}`;
 
+/** ID user seed menurut username, untuk seed modul lain, contoh approver di Approval Hierarchy. */
+export function seedUserId(username: string): string {
+  const user = USER_SEEDS.find((seed) => seed.username === username);
+  if (!user) throw new Error(`No seeded user ${username}`);
+  return userId(user.n);
+}
+
 /**
  * User seed company 001. Password semua akun seed satu per lingkungan dan berasal dari vault
  * (`SEED_USER_PASSWORD_FILE`), tidak pernah dari repo (DEPLOYMENT_PLAN §6.5).
@@ -57,7 +64,7 @@ export async function seedUsers(db: NodePgDatabase, ctx: SeedContext): Promise<v
         passwordHash,
         mustChangePassword: false,
         roleId: seedRoleIds[user.role],
-        status: user.status ?? "ACTIVE",
+        status: user.status ?? ("ACTIVE" as const),
       })),
     )
     .onConflictDoNothing();

@@ -1,5 +1,6 @@
 export * from "./access-control/index.js";
 export * from "./application/index.js";
+export * from "./approval/index.js";
 export * from "./auth/index.js";
 export * from "./calculation/index.js";
 export * from "./change-request/index.js";
@@ -18,6 +19,7 @@ export * from "./health/index.js";
 export * from "./integration/index.js";
 export * from "./masterdata/index.js";
 export * from "./orchestrator/index.js";
+export * from "./organization/index.js";
 export * from "./product/index.js";
 export * from "./scoring/index.js";
 export * from "./system/index.js";

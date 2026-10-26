@@ -5,12 +5,14 @@ import { CHANGE_REQUEST_PORT } from "../../../platform/http/change-request-port.
 import { USER_DIRECTORY_PORT } from "../../../platform/http/user-directory-port.js";
 import { AuditModule } from "../audit/index.js";
 import type { ChangeRequestPort } from "../change-request/index.js";
+import { OrganizationModule } from "../organization/index.js";
 import { TenancyModule } from "../tenancy/index.js";
 import { AccessService } from "./application/access.service.js";
 import { GetSessionUseCase } from "./application/get-session.use-case.js";
 import { ListMenusUseCase } from "./application/list-menus.use-case.js";
 import { ListRoleAccessUseCase } from "./application/list-role-access.use-case.js";
 import { ListRolesUseCase } from "./application/list-roles.use-case.js";
+import { ListUsersUseCase } from "./application/list-users.use-case.js";
 import { LoginUseCase } from "./application/login.use-case.js";
 import { LogoutUseCase } from "./application/logout.use-case.js";
 import { PasswordHasher } from "./application/password-hasher.js";
@@ -25,11 +27,13 @@ import { MenusRepository } from "./db/menus.repository.js";
 import { RoleAccessRepository } from "./db/role-access.repository.js";
 import { RolesRepository } from "./db/roles.repository.js";
 import { SessionsRepository } from "./db/sessions.repository.js";
+import { UserListRepository } from "./db/user-list.repository.js";
 import { UsersRepository } from "./db/users.repository.js";
 import { AuthController } from "./http/auth.controller.js";
 import { MenusController } from "./http/menus.controller.js";
 import { RoleAccessController } from "./http/role-access.controller.js";
 import { RolesController } from "./http/roles.controller.js";
+import { UsersController } from "./http/users.controller.js";
 
 /** Login 10 request per menit per IP (technical-specs 07 §7.5). */
 const LOGIN_RATE_LIMIT = { ttl: 60_000, limit: 10 };
@@ -41,14 +45,15 @@ const LOGIN_RATE_LIMIT = { ttl: 60_000, limit: 10 };
  */
 @Global()
 @Module({
-  imports: [TenancyModule, AuditModule, ThrottlerModule.forRoot([LOGIN_RATE_LIMIT])],
-  controllers: [AuthController, RolesController, MenusController, RoleAccessController],
+  imports: [TenancyModule, AuditModule, OrganizationModule, ThrottlerModule.forRoot([LOGIN_RATE_LIMIT])],
+  controllers: [AuthController, RolesController, MenusController, RoleAccessController, UsersController],
   providers: [
     AccessService,
     LoginUseCase,
     LogoutUseCase,
     GetSessionUseCase,
     ListRolesUseCase,
+    ListUsersUseCase,
     ListMenusUseCase,
     ListRoleAccessUseCase,
     RequestRoleAccessCreateUseCase,
@@ -64,6 +69,7 @@ const LOGIN_RATE_LIMIT = { ttl: 60_000, limit: 10 };
     RolesRepository,
     SessionsRepository,
     UsersRepository,
+    UserListRepository,
     { provide: ACCESS_PORT, useExisting: AccessService },
     { provide: USER_DIRECTORY_PORT, useExisting: UserDirectory },
   ],

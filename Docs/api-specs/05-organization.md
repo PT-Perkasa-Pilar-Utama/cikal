@@ -26,6 +26,7 @@ Di POC, struktur organisasi berasal dari seed. Yang dibutuhkan layar lain hanya 
 **Purpose:** Dropdown berjenjang regional dan sub cabang.  
 **Access:** sama dengan 5.1.  
 **Output:** bentuk sama dengan 5.1 (`regionalCode`/`regionalName`, `subBranchCode`/`subBranchName`).  
+**Errors:** cabang di luar tenant atau lingkup data user: `404 NOT_FOUND`.  
 **Traceability:** US-17 (AC-17.06).
 
 ## 5.3 Operasi backlog (TODO)

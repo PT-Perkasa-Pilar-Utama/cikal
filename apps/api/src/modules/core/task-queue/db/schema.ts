@@ -5,6 +5,7 @@ import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.j
 import { applications } from "../../application/index.js";
 import { roles, users } from "../../identity/index.js";
 import { stepExecutions } from "../../orchestrator/index.js";
+import { branches } from "../../organization/index.js";
 import { companies } from "../../tenancy/index.js";
 
 export const taskqueue = pgSchema("taskqueue");
@@ -30,7 +31,7 @@ const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'
 /**
  * HUMAN_TASKS, technical-specs 06 §6.10: satu tugas manusia per langkah yang menunggu. `application_id` dan
  * `loan_id` (tetap sejak draft pertama) disalin saat tugas dibuat agar antrean bisa dicari dan diurutkan tanpa
- * membaca skema `application` (XM-02). Foreign key `branch_id` ditambahkan saat tabel `org.branches` dibuat.
+ * membaca skema `application` (XM-02).
  */
 export const humanTasks = taskqueue.table(
   "human_tasks",
@@ -47,7 +48,7 @@ export const humanTasks = taskqueue.table(
       .references(() => applications.id),
     loanId: text("loan_id").notNull(),
     queueCode: text("queue_code").$type<QueueCode>().notNull(),
-    branchId: uuid("branch_id"),
+    branchId: uuid("branch_id").references(() => branches.id),
     eligibleRoleId: uuid("eligible_role_id").references(() => roles.id),
     assignedUserId: uuid("assigned_user_id").references(() => users.id),
     assignedAt: timestamp("assigned_at", { withTimezone: true }),

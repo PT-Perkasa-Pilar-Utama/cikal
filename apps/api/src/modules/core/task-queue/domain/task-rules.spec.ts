@@ -4,7 +4,8 @@ import { allowedActions, branchScope, isEligible, type TaskFacts, type TaskViewe
 const ROLE = "0192b6a2-0008-7000-8000-000000000001";
 const BRANCH = "0192b6a9-0001-7000-8000-000000000001";
 const OTHER_BRANCH = "0192b6a9-0002-7000-8000-000000000001";
-const headOffice = { regionalId: null, branchId: null, subBranchId: null };
+const REGIONAL = "0192b6ae-0001-7000-8000-000000000001";
+const headOffice = { regionalId: null, branchId: null, subBranchId: null, regionalBranchIds: [] };
 
 const viewer = (overrides: Partial<TaskViewer> = {}): TaskViewer => ({
   userId: "veri.02",
@@ -70,10 +71,16 @@ describe("task rules", () => {
 
   it("scopes head office to every branch and a branch user to their own branch and sub branch", () => {
     expect(branchScope(headOffice)).toBe("ALL");
-    expect(branchScope({ regionalId: null, branchId: BRANCH, subBranchId: OTHER_BRANCH })).toEqual([
+    expect(branchScope({ ...headOffice, branchId: BRANCH, subBranchId: OTHER_BRANCH })).toEqual([BRANCH, OTHER_BRANCH]);
+  });
+
+  it("scopes a regional user to the branches of their regional", () => {
+    expect(branchScope({ ...headOffice, regionalId: REGIONAL, regionalBranchIds: [BRANCH, OTHER_BRANCH] })).toEqual([
       BRANCH,
       OTHER_BRANCH,
     ]);
-    expect(branchScope({ regionalId: BRANCH, branchId: null, subBranchId: null })).toEqual([]);
+    expect(
+      branchScope({ ...headOffice, regionalId: REGIONAL, branchId: BRANCH, regionalBranchIds: [BRANCH, OTHER_BRANCH] }),
+    ).toEqual([BRANCH]);
   });
 });

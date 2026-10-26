@@ -3,6 +3,7 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
+import { seedOrganizationIds } from "../src/modules/core/organization/index.js";
 import { SEED_USER_PASSWORD, startDatabase, type TestDatabase } from "./support/database.js";
 import { businessDateIn } from "./support/license.js";
 import { createLoginUser, login } from "./support/login.js";
@@ -51,6 +52,15 @@ describe("web sessions", () => {
       "DELETE",
     ]);
     expect(data.menus.map((m) => m.menuCode)).not.toContain("SYS");
+  });
+
+  it("returns the branch code of a branch user", async () => {
+    await db.owner.query("update iam.users set branch_id = $1 where username = 'sales.jkt01'", [
+      seedOrganizationIds.bandung,
+    ]);
+    const sales = await login(app, "sales.jkt01", SEED_USER_PASSWORD);
+    const { data } = sessionResponseSchema.parse((await getSession(sales.headers)).json());
+    expect(data.user.branchCode).toBe("011");
   });
 
   it("hides the Product menu from a Sales (AC-09.02 TRM_ACC_001)", async () => {
