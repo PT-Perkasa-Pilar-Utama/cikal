@@ -6,8 +6,10 @@ import type { ChangeRequestPort } from "../change-request/index.js";
 import { OrchestratorModule, StepHandlerRegistry } from "../orchestrator/index.js";
 import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
+import { TaskQueueModule } from "../task-queue/index.js";
 import { ApprovalSetups } from "./application/approval-setup.js";
 import { ApprovalStepHandler } from "./application/approval-step-handler.js";
+import { DecideApprovalUseCase } from "./application/decide-approval.use-case.js";
 import { FinancingBuilder } from "./application/financing-builder.js";
 import { GetApplicationApprovalUseCase } from "./application/get-application-approval.use-case.js";
 import { GetApplicationFinancingUseCase } from "./application/get-application-financing.use-case.js";
@@ -25,7 +27,14 @@ import { ApprovalHierarchiesController } from "./http/approval-hierarchies.contr
 
 /** Approval: level, hierarki, keputusan, auto approval, struktur kredit (technical-specs 05 §5.14). */
 @Module({
-  imports: [ApplicationModule, CalculationModule, OrchestratorModule, OrganizationModule, ProductModule],
+  imports: [
+    ApplicationModule,
+    CalculationModule,
+    OrchestratorModule,
+    OrganizationModule,
+    ProductModule,
+    TaskQueueModule,
+  ],
   controllers: [ApprovalHierarchiesController, ApplicationApprovalController],
   providers: [
     LevelsRepository,
@@ -42,6 +51,7 @@ import { ApprovalHierarchiesController } from "./http/approval-hierarchies.contr
     ApprovalStepHandler,
     GetApplicationApprovalUseCase,
     GetApplicationFinancingUseCase,
+    DecideApprovalUseCase,
   ],
 })
 export class ApprovalModule implements OnModuleInit {

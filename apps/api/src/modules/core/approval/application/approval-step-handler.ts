@@ -1,7 +1,14 @@
-import { APPROVAL_MESSAGES, type ErrorCategory, type StepContext, type StepResult } from "@cikal/contracts";
+import {
+  APPROVAL_MESSAGES,
+  approvalActionSchema,
+  type ErrorCategory,
+  type StepContext,
+  type StepResult,
+} from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import { Decimal } from "decimal.js";
 import { v7 as uuidv7 } from "uuid";
+import { z } from "zod";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationFactsReader, ApplicationProcess } from "../../application/index.js";
@@ -14,6 +21,9 @@ import { FinancingBuilder } from "./financing-builder.js";
 export const APPROVAL_QUEUE = "APPROVAL";
 const AUTO_APPROVED = "AUTO_APPROVED";
 const AUTO_APPROVED_SUMMARY = "Auto Approved";
+
+/** Payload penutupan tugas APPROVAL dari keputusan approver (api-specs 16 §16.6). */
+export const closedTaskSchema = z.object({ comment: z.string() });
 
 const failure = (errorCategory: ErrorCategory, errorMessage: string): StepResult => ({
   type: "ERROR",
@@ -76,7 +86,7 @@ export class ApprovalStepHandler implements StepHandler {
     }
     const row = { ...newRow(ctx, 1), decision: AUTO_APPROVED, decidedAt: new Date() } as const;
     await this.approvals.insertMany(tx, ctx.tenantId, [row]);
-    return this.approved(tx, ctx);
+    return this.approved(tx, ctx, AUTO_APPROVED, AUTO_APPROVED_SUMMARY);
   }
 
   /** Attempt ulang memakai rantai yang tersimpan, tanpa membentuk rantai kedua (technical-specs 12 §12.1). */
@@ -86,18 +96,34 @@ export class ApprovalStepHandler implements StepHandler {
     chain: readonly ApplicationApprovalRow[],
     branchId: string | null,
   ): Promise<StepResult> | StepResult {
-    if (chain[0]?.decision === AUTO_APPROVED) return this.approved(tx, ctx);
+    if (chain[0]?.decision === AUTO_APPROVED) return this.approved(tx, ctx, AUTO_APPROVED, AUTO_APPROVED_SUMMARY);
     const pending = chain.find((row) => row.decision === "PENDING");
     return pending && branchId ? waitFor(pending, branchId) : alreadyDecided();
   }
 
+  /**
+   * Keputusan level final yang menutup tugas (api-specs 16 §16.6 langkah 7 s.d. 9): Approve lanjut, Reject
+   * mengakhiri pengajuan dengan email penolakan lewat event, Return ke Draft dengan komentar sebagai catatan.
+   */
+  async onHumanTaskClosed(tx: Tx, ctx: StepContext, resultCode: string, payload: unknown): Promise<StepResult> {
+    const decision = approvalActionSchema.parse(resultCode);
+    const { comment } = closedTaskSchema.parse(payload);
+    switch (decision) {
+      case "APPROVE":
+        return this.approved(tx, ctx, "APPROVED", "Approved");
+      case "REJECT":
+        return { type: "FINISH", outcomeCode: "REJECTED", applicationStatus: "FINISHED_REJECTED", summary: comment };
+      case "RETURN":
+        return { type: "BACK_TO_DRAFT", outcomeCode: "RETURNED", returnNote: comment };
+    }
+  }
+
   /** Lanjut ke langkah berikutnya; tanpa langkah M15 sesudah APPROVAL proses berakhir Approved (api-specs 16 §16.6). */
-  private async approved(tx: Tx, ctx: StepContext): Promise<StepResult> {
+  private async approved(tx: Tx, ctx: StepContext, outcomeCode: string, summary: string): Promise<StepResult> {
     const next = await this.orchestrator.nextStep(tx, ctx.processInstanceId, "APPROVAL");
-    const summary = AUTO_APPROVED_SUMMARY;
     return next
-      ? { type: "CONTINUE", outcomeCode: AUTO_APPROVED, summary }
-      : { type: "FINISH", outcomeCode: AUTO_APPROVED, applicationStatus: "APPROVED", summary };
+      ? { type: "CONTINUE", outcomeCode, summary }
+      : { type: "FINISH", outcomeCode, applicationStatus: "APPROVED", summary };
   }
 }
 

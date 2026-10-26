@@ -43,6 +43,22 @@ export class HumanTasksRepository {
     return row ?? null;
   }
 
+  /** Tugas belum ditutup satu pengajuan pada satu antrean, dikunci untuk operasi penutup (api-specs 14 §14.5). */
+  async lockOpenOf(tx: Tx, applicationId: string, queueCode: QueueCode): Promise<TaskRow | null> {
+    const [row] = await tx
+      .select()
+      .from(humanTasks)
+      .where(
+        and(
+          eq(humanTasks.applicationId, applicationId),
+          eq(humanTasks.queueCode, queueCode),
+          inArray(humanTasks.status, ["OPEN", "ASSIGNED"]),
+        ),
+      )
+      .for("update");
+    return row ?? null;
+  }
+
   async list(tx: Tx, filter: TaskFilter, page: TaskPage): Promise<TaskRow[]> {
     const order = page.direction === "asc" ? asc : desc;
     const column = page.sort === "loanId" ? humanTasks.loanId : humanTasks.createdAt;

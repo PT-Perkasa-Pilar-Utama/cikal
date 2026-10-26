@@ -9,6 +9,7 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationFactsReader } from "../../application/index.js";
 import { CalculationApi, type CalculationContext, DEFAULT_FORMULA_VERSION } from "../../calculation/index.js";
 import { FinancingsRepository } from "../db/financings.repository.js";
+import type { ApprovedTermValues } from "../domain/approved-terms.js";
 
 /** Proses yang disetujui beserta snapshot parameternya (PR-06). */
 export interface ApprovedProcess {
@@ -18,10 +19,9 @@ export interface ApprovedProcess {
   parameterSnapshot: Readonly<Record<string, string>>;
 }
 
-/** Struktur kredit yang disetujui; suku bunga Approver menggantikan suku bunga produk (AC-97.06). */
-export interface ApprovedTerms {
+/** Struktur kredit yang disetujui; nilai approver menggantikan usulan pengajuan dan suku bunga produk (AC-97.06). */
+export interface ApprovedTerms extends ApprovedTermValues {
   approvalType: ApprovalType;
-  interestRate?: Decimal;
 }
 
 const MONEY_SCALE = 2;
@@ -72,12 +72,13 @@ export class FinancingBuilder {
       applicationId: process.applicationId,
       processInstanceId: process.processInstanceId,
     };
-    const loanAmount = new Decimal(facts.requestedLimit);
+    const loanAmount = terms.loanAmount ?? new Decimal(facts.requestedLimit);
+    const tenor = terms.tenor ?? facts.tenorProposed;
     const firstInstallmentDate = addMonths(new Date(`${businessDate(new Date())}T00:00:00Z`), 1, "LAST_DAY");
     const schedule = await this.calculation.schedule(ctx, {
       interestType,
       principal: loanAmount,
-      tenor: facts.tenorProposed,
+      tenor,
       interestRate: rateValue,
       firstInstallmentDate,
     });
@@ -109,7 +110,7 @@ export class FinancingBuilder {
         processInstanceId: process.processInstanceId,
         approvalType: terms.approvalType,
         loanAmount: money(loanAmount),
-        tenor: facts.tenorProposed,
+        tenor,
         interestType,
         interestRate: percent(rateValue),
         floatingRate: snapshot.PRODUCT_FLOATING_RATE ?? null,
