@@ -1,40 +1,31 @@
-import type { ParamType } from "@cikal/contracts";
-
-export type VariableType = "NUMBER" | "MONEY" | "PERCENT" | "CHOICE";
+import type { ParamType, VariableDataType } from "@cikal/contracts";
+import { formulaVariableOf } from "../../../core/calculation/index.js";
 
 export interface ScoringVariable {
   label: string;
-  dataType: VariableType;
+  dataType: VariableDataType;
   /** Jenis General Parameter untuk label kode pilihan, contoh "001" = "Karyawan Swasta". */
   paramType?: ParamType;
   /** Nama di alasan gagal RAC bila berbeda dari label, contoh "DBR max" (AC-67.02). */
   reasonName?: string;
 }
 
-/**
- * Katalog variabel kriteria RAC dan Scoring (api-specs 09 §9.2, FM-10). Katalog `formula_variables` instalasi dan
- * operasi `GET /formula-variables` dibangun bersama layar model scoring (US-37); sampai itu daftarnya tetap di sini.
- */
-export const SCORING_VARIABLES = {
-  OCCUPATION: { label: "Occupation", dataType: "CHOICE", paramType: "Occupation" },
-  MARITAL: { label: "Marital", dataType: "CHOICE", paramType: "Marital" },
-  EDUCATION: { label: "Education", dataType: "CHOICE", paramType: "Education" },
-  MONTHLY_INCOME: { label: "Monthly Income", dataType: "MONEY" },
-  TENURE_AT_CURRENT_JOB: { label: "Tenure at Current Job", dataType: "NUMBER" },
-  AGE: { label: "Age", dataType: "NUMBER" },
-  REQUESTED_LIMIT: { label: "Requested Limit", dataType: "MONEY" },
-  TENOR: { label: "Tenor", dataType: "NUMBER" },
-  INSTALLMENT_TO_INCOME_RATIO: { label: "Installment to Income Ratio", dataType: "PERCENT" },
-  PRODUCT_DBR_MAX: { label: "Product DBR Max", dataType: "PERCENT", reasonName: "DBR max" },
-} as const satisfies Record<string, ScoringVariable>;
+/** Nama alasan gagal RAC yang berbeda dari label katalog (AC-67.02). */
+const REASON_NAMES: Readonly<Record<string, string>> = { PRODUCT_DBR_MAX: "DBR max" };
 
-export type VariableCode = keyof typeof SCORING_VARIABLES;
-
-export function isVariableCode(code: string): code is VariableCode {
-  return Object.hasOwn(SCORING_VARIABLES, code);
-}
-
-/** Variabel yang tidak ada di katalog dibaca sebagai angka dengan kodenya sebagai label. */
+/** Variabel katalog rumus Calculation (FM-10); kode di luar katalog dibaca sebagai angka berlabel kodenya. */
 export function variableOf(code: string): ScoringVariable {
-  return isVariableCode(code) ? SCORING_VARIABLES[code] : { label: code, dataType: "NUMBER" };
+  const variable = formulaVariableOf(code);
+  if (!variable) return { label: code, dataType: "NUMBER" };
+  const reasonName = REASON_NAMES[code];
+  return {
+    label: variable.label,
+    dataType: variable.dataType,
+    ...("paramType" in variable ? { paramType: variable.paramType } : {}),
+    ...(reasonName ? { reasonName } : {}),
+  };
 }
+
+/** Variabel yang nilainya dibandingkan sebagai angka desimal. */
+export const isNumericType = (dataType: VariableDataType): boolean =>
+  dataType === "NUMBER" || dataType === "MONEY" || dataType === "PERCENT";

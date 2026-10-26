@@ -77,7 +77,9 @@ Body kriteria:
 | `INVALID_CRITERION_VALUE` | 422 | "Value must be a number" (AC-37.03); pesan mengikuti tipe variabel |
 | `WEIGHT_OUT_OF_RANGE` | 422 | "Weight must be between -1000 and 1000" (AC-37.04) |
 | `UNKNOWN_VARIABLE` | 422 | "Unknown field: <kode>" (teks usulan engineering) |
-| `MODEL_CODE_EXISTS` | 409 | `POST /scoring-models` dengan kode yang sudah ada |
+| `MODEL_CODE_EXISTS` | 409 | "This model code already exists" (teks usulan engineering); `POST /scoring-models` dengan kode yang sudah ada |
+
+Aturan nilai berurutan: field dari katalog `usableInScoring` modul berlisensi (`UNKNOWN_VARIABLE`); variabel bukan angka hanya `EQ`, `NE`, `IN` (`INVALID_CRITERION_VALUE` "Operator GT cannot be used for Occupation"); bentuk nilai mengikuti operator ("Value is required"); variabel pembanding bertipe sama ("The compared field must have the same type as Age"); nilai literal angka untuk `NUMBER`, `MONEY`, `PERCENT` (AC-37.03); kode CHOICE harus pilihan General Parameter aktif ("Value must be one of the Occupation options"); kriteria `WEIGHTED` tanpa bobot `400 VALIDATION_FAILED` "Weight is required for a weighted criterion", di luar -1.000 s.d. 1.000 `WEIGHT_OUT_OF_RANGE` (AC-37.04). Bobot `MANDATORY` diabaikan. Selain AC-37.03 dan AC-37.04 teksnya usulan engineering. `new-version` dari versi bukan ACTIVE atau saat kode model sudah punya draft: `409 INVALID_STATE`; saat ada versi `WAITING_APPROVAL`: `409 PENDING_CHANGE_REQUEST`. Produk yang tidak ada: `404 NOT_FOUND`.
 
 **Traceability:** US-37; AC-37.01 s.d. AC-37.04.
 
@@ -88,7 +90,7 @@ Body kriteria:
 
 **Input (body):** `effectiveFrom` (timestamp, opsional).
 
-**Behavior:** Draft tanpa kriteria: `422 MODEL_WITHOUT_CRITERIA`. Model `SCORING` tanpa `cutOff`: `400 VALIDATION_FAILED`. Status `WAITING_APPROVAL`, ChangeRequest `SCORING_MODEL`. Setelah disetujui, versi ini `ACTIVE` untuk produknya dan versi lama `SUPERSEDED`; pengajuan yang sudah disubmit tetap memakai versi yang dikunci (FM-05).
+**Behavior:** Draft tanpa kriteria: `422 MODEL_WITHOUT_CRITERIA`. Model `SCORING` tanpa `cutOff`: `400 VALIDATION_FAILED` "Cut Off is required for a scoring model" (teks usulan engineering). Status `WAITING_APPROVAL`, ChangeRequest `SCORING_MODEL`. Setelah disetujui, versi ini `ACTIVE` untuk produknya dan versi ACTIVE lama kode model yang sama `SUPERSEDED`; `effectiveFrom` nanti membuat versi tetap `WAITING_APPROVAL` sampai job `m09-scoring.model-activate` berjalan; ditolak kembali ke `DRAFT`; pengajuan yang sudah disubmit tetap memakai versi yang dikunci (FM-05).
 
 **Output 202:** `message` "Data submitted for approval" (AC-37.05).
 
@@ -150,7 +152,7 @@ Body kriteria:
 
 Kriteria wajib RAC yang gagal mengisi `failedReasons` dengan nilai aktual dan batasnya, persen dibulatkan ke bilangan bulat, contoh "Installment to Income Ratio 332% exceeds DBR max 40%" (AC-67.02); data kosong menjadi "<variabel> is not available"; rasio tepat sama dengan DBR max dinilai `isMet: true` karena operator `LE` inklusif (AC-67.03). Langkah yang belum berjalan atau dilewati bernilai `null`. Tanpa model aktif, langkah `ERROR` `BUSINESS_SETUP` "No active scoring model for product KPR Subsidi" dan tampil di timeline (AC-67.04). Nilai yang dipakai adalah snapshot produk saat submit (AC-20.08); snapshot kini juga memuat `PRODUCT_INTEREST_TYPE`. `INSTALLMENT_TO_INCOME_RATIO` = angsuran (plafon, tenor, bunga dan jenis bunga snapshot) dibagi penghasilan bulanan lewat rumus `DBR_RATIO`. Model dipilih dari versi `ACTIVE` terbaru kelompoknya yang ditautkan ke produk pengajuan; RAC tanpa model menjadi `ERROR BUSINESS_SETUP` "No active RAC model for product <nama>". Hasil langkah RAC dan SCORING selalu `CONTINUE` dengan `outcomeCode` hasilnya; Decision Matrix yang memutuskan. Satu hasil per proses dan kelompok; retry manual menghitung ulang. Pengajuan tanpa proses menjawab `rac` dan `scoring` `null`; `processInstanceId` bukan milik pengajuan `404 NOT_FOUND`.
 
-Katalog variabel kriteria di POC tetap di modul M09 (`OCCUPATION`, `MARITAL`, `EDUCATION`, `MONTHLY_INCOME`, `TENURE_AT_CURRENT_JOB`, `AGE`, `REQUESTED_LIMIT`, `TENOR`, `INSTALLMENT_TO_INCOME_RATIO`, `PRODUCT_DBR_MAX`) sampai `formula_variables` dan `GET /formula-variables` dibangun bersama layar model (US-37). Seed `dev` company 001: model `KTA-RAC` (rasio angsuran <= DBR max produk) dan `KTA-2026` (konstanta 200, Cut Off 430, empat kriteria berbobot 100, 80, 50, 40) berstatus ACTIVE tanpa produk; produk ditautkan lewat `scoring_model_products`. Seed `qa` menautkan kedua model ke produk `KTAQA` "KTA QA" (bunga efektif 12% p.a., rute Dedup sampai Decision dan langkah wajib, checklist tujuh dokumen untuk Karyawan Swasta dan Belum Kawin) untuk spec wiring FE-S4-02. Produk itu memakai kode `KTAQA` karena spec FE-S1-03 membuat produk `KTA` lewat layar.
+Katalog variabel kriteria adalah katalog Calculation `09-calculation.md` 9.2 (`OCCUPATION`, `MARITAL`, `EDUCATION`, `MONTHLY_INCOME`, `TENURE_AT_CURRENT_JOB`, `AGE`, `REQUESTED_LIMIT`, `TENOR`, `INSTALLMENT_TO_INCOME_RATIO`, `PRODUCT_DBR_MAX`). Seed `dev` company 001: model `KTA-RAC` (rasio angsuran <= DBR max produk) dan `KTA-2026` (konstanta 200, Cut Off 430, empat kriteria berbobot 100, 80, 50, 40) berstatus ACTIVE tanpa produk; produk ditautkan lewat `scoring_model_products`. Seed `qa` menautkan kedua model ke produk `KTAQA` "KTA QA" (bunga efektif 12% p.a., rute Dedup sampai Decision dan langkah wajib, checklist tujuh dokumen untuk Karyawan Swasta dan Belum Kawin) untuk spec wiring FE-S4-02. Produk itu memakai kode `KTAQA` karena spec FE-S1-03 membuat produk `KTA` lewat layar.
 
 **Errors:** `APPLICATION_NOT_FOUND` 404, `MODULE_NOT_LICENSED` 403.
 

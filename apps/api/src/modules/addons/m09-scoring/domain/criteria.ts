@@ -1,5 +1,5 @@
 import { Decimal } from "decimal.js";
-import { type ScoringVariable, variableOf } from "./scoring-variables.js";
+import { isNumericType, type ScoringVariable, variableOf } from "./scoring-variables.js";
 
 export type Operator = "EQ" | "NE" | "GT" | "GE" | "LT" | "LE" | "BETWEEN" | "IN";
 export type CriterionType = "WEIGHTED" | "MANDATORY";
@@ -48,7 +48,7 @@ const OPERATOR_TEXT: Record<Operator, string> = {
   IN: "is one of",
 };
 
-const isNumeric = (variable: ScoringVariable) => variable.dataType !== "CHOICE";
+const isNumeric = (variable: ScoringVariable) => isNumericType(variable.dataType);
 
 function compare(variable: ScoringVariable, operator: Operator, actual: string, expected: string): boolean {
   if (!isNumeric(variable)) {

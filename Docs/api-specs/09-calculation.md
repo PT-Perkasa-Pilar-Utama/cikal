@@ -66,7 +66,7 @@ Simulasi angsuran, mesin rumus, dan kalender libur. Modul pemilik: CORE Calculat
 
 **Input (query):** `usage` (`SCORING`, `FORMULA`; opsional), `q`.
 
-**Behavior:** Membaca `formula_variables` [instalasi]; variabel milik modul tak berlisensi tidak dikembalikan.
+**Behavior:** Membaca katalog FormulaVariable instalasi di kode modul Calculation (`calculation/domain/formula-variables.ts`), karena katalog dikelola tim engineer dan berubah hanya lewat rilis (data dictionary FormulaVariable). Variabel milik modul tak berlisensi tidak dikembalikan. `usage=SCORING` hanya variabel `usableInScoring`; `q` mencari kode atau label tanpa membedakan huruf besar dan kecil. Rute memakai `@Authenticated()` dan use case memeriksa kedua menu; tanpa keduanya `403 ACCESS_DENIED`. Label variabel bersatuan memuat satuannya, contoh "Installment to Income Ratio (%)"; teks kriteria memakai label tanpa satuan (AC-37.02).
 
 **Output 200**
 

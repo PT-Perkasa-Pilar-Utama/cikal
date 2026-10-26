@@ -140,7 +140,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `POST /calculations/installment-simulation` | 09 §9.1 | POC | OK |
-| `GET /formula-variables` | 09 §9.2 | POC | TODO |
+| `GET /formula-variables` | 09 §9.2 | POC | OK |
 | Formulas, versions, validate, tests, holidays | 09 §9.3 | Backlog | TODO |
 
 ### Documents
@@ -235,11 +235,11 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /applications/{id}/dedup` | 19 §19.2 | POC | OK |
 | `GET /applications/{id}/dukcapil` | 20 §20.2 | POC | OK |
 | `GET /applications/{id}/fraud` | 21 §21.2 | POC | OK |
-| `GET /scoring-models` | 22 §22.1 | POC | TODO |
-| `GET /scoring-models/{id}` | 22 §22.2 | POC | TODO |
-| `POST /scoring-models`, `POST /scoring-models/{id}/new-version`, `PUT /scoring-models/{id}` | 22 §22.3 | POC | TODO |
-| `POST`, `PUT`, `DELETE /scoring-models/{id}/criteria[/{criterionId}]` | 22 §22.3 | POC | TODO |
-| `POST /scoring-models/{id}/submit` | 22 §22.4 | POC | TODO |
+| `GET /scoring-models` | 22 §22.1 | POC | OK |
+| `GET /scoring-models/{id}` | 22 §22.2 | POC | OK |
+| `POST /scoring-models`, `POST /scoring-models/{id}/new-version`, `PUT /scoring-models/{id}` | 22 §22.3 | POC | OK |
+| `POST`, `PUT`, `DELETE /scoring-models/{id}/criteria[/{criterionId}]` | 22 §22.3 | POC | OK |
+| `POST /scoring-models/{id}/submit` | 22 §22.4 | POC | OK |
 | `POST /scoring-models/{id}/test` | 22 §22.5 | POC | TODO |
 | `GET /applications/{id}/scoring` | 22 §22.6 | POC | OK |
 | `POST /applications/{id}/credit-report` | 23 §23.2 | Backlog | TODO |
