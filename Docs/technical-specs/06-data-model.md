@@ -589,7 +589,8 @@ Kolom: `application_id`, `process_instance_id`, `verifier_user_id`, `result` (`I
 ### INTEGRATION_PROVIDERS [instalasi], INTEGRATION_CONFIGS, INTEGRATION_CALL_LOGS (`integration`)
 Kolom mengikuti data dictionary bagian Integration Registry. `secret_ref uuid` FK `platform.secrets`. `integration_configs` berversi (DM-11) dengan UQ parsial ACTIVE per (tenant_id, module_code) kecuali M14. `integration_call_logs` dipartisi per bulan (`occurred_at`) untuk retensi 1 tahun.
 
-### FORMULA_DEFINITIONS [instalasi], FORMULA_VARIABLES [instalasi], FORMULA_VERSIONS, FORMULA_TEST_CASES, FORMULA_EXECUTION_LOGS, HOLIDAY_CALENDARS (`calculation`)
+### FORMULA_DEFINITIONS [instalasi], FORMULA_VERSIONS, FORMULA_TEST_CASES, FORMULA_EXECUTION_LOGS, HOLIDAY_CALENDARS (`calculation`)
+FormulaVariable bukan tabel: katalog instalasi dikelola tim engineer dan berubah hanya lewat rilis, jadi disimpan di kode `calculation/domain/formula-variables.ts` (api-specs 09 §9.2).
 Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi (DM-11) dengan UQ parsial ACTIVE per (tenant_id, formula_id, product_id). `formula_execution_logs` dipartisi per bulan. `holiday_calendars.holiday_date` UQ(tenant_id, holiday_date).
 
 ## 6.11 Modul tambahan
