@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { and, eq, isNotNull } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
-import { applicationDocuments, applications } from "./schema.js";
+import { applicationDocuments, applications, type DocumentVerificationStatus } from "./schema.js";
 import type { SectionOwner } from "./section-owner.js";
 
 export type ApplicationDocumentRow = typeof applicationDocuments.$inferSelect;
@@ -36,6 +36,38 @@ export class ApplicationDocumentsRepository {
           updatedBy: userId,
         },
       });
+  }
+
+  /** Status dan remarks verifikasi satu dokumen terunggah (api-specs 15 §15.2). */
+  async setVerification(
+    tx: Tx,
+    applicationId: string,
+    review: { documentType: string; verificationStatus: DocumentVerificationStatus; remarks: string | null },
+    userId: string,
+  ): Promise<void> {
+    await tx
+      .update(applicationDocuments)
+      .set({
+        verificationStatus: review.verificationStatus,
+        verificationRemarks: review.remarks,
+        updatedAt: new Date(),
+        updatedBy: userId,
+      })
+      .where(
+        and(
+          eq(applicationDocuments.applicationId, applicationId),
+          eq(applicationDocuments.documentType, review.documentType),
+        ),
+      );
+  }
+
+  /** Pengajuan pemilik file dokumen; `null` bila file bukan dokumen pengajuan tenant transaksi. */
+  async applicationOfFile(tx: Tx, fileId: string): Promise<string | null> {
+    const [row] = await tx
+      .select({ applicationId: applicationDocuments.applicationId })
+      .from(applicationDocuments)
+      .where(eq(applicationDocuments.fileId, fileId));
+    return row?.applicationId ?? null;
   }
 
   /** File terpasang di slot draft milik `createdBy` (aturan lihat file api-specs 10 §10.1). */

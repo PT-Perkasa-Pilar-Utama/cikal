@@ -1,5 +1,11 @@
 export { ApplicationContacts } from "./application/application-contacts.js";
 export {
+  type ApplicantSummary,
+  ApplicationDocumentReview,
+  type DocumentReview,
+  type ReviewDocument,
+} from "./application/application-document-review.js";
+export {
   APPLICATION_REJECTED_EVENT,
   APPLICATION_SUBMITTED_EVENT,
   type ApplicationEventPayload,

@@ -3,6 +3,7 @@ import { DocumentModule } from "../document/index.js";
 import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
 import { ApplicationContacts } from "./application/application-contacts.js";
+import { ApplicationDocumentReview } from "./application/application-document-review.js";
 import { ApplicationFactsReader } from "./application/application-facts.js";
 import { ApplicationFileAccess } from "./application/application-file-access.js";
 import { ApplicationIdentities } from "./application/application-identities.js";
@@ -49,6 +50,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationDocumentsRepository,
     ApplicationProcess,
     ApplicationContacts,
+    ApplicationDocumentReview,
     ApplicationIdentities,
     ApplicantLookupRepository,
     ApplicationFactsReader,
@@ -72,6 +74,12 @@ import { ApplicationsController } from "./http/applications.controller.js";
     UploadApplicationDocumentUseCase,
     SubmitApplicationUseCase,
   ],
-  exports: [ApplicationProcess, ApplicationContacts, ApplicationIdentities, ApplicationFactsReader],
+  exports: [
+    ApplicationProcess,
+    ApplicationContacts,
+    ApplicationIdentities,
+    ApplicationFactsReader,
+    ApplicationDocumentReview,
+  ],
 })
 export class ApplicationModule {}
