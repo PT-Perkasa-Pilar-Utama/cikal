@@ -75,9 +75,14 @@ export function packageHandler(entityType: ChangeRequestEntityType, auditModule:
   };
 }
 
+/** Handler uji menggantikan handler asli modul pemilik jenis entity yang sama, contoh `SCORING_MODEL` M09. */
 export function registerHandlers(app: NestFastifyApplication, handlers: EntityHandler[]): void {
   const registry = app.get(ChangeRequestRegistry);
-  for (const handler of handlers) registry.register(handler);
+  const installed = Reflect.get(registry, "handlers") as Map<ChangeRequestEntityType, EntityHandler>;
+  for (const handler of handlers) {
+    installed.delete(handler.entityType);
+    registry.register(handler);
+  }
 }
 
 /** Pengajuan Maker seperti dari modul pemilik, di transaksi tenant company 001. */
