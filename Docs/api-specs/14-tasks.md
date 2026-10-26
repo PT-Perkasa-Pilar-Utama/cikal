@@ -113,3 +113,5 @@ Setiap operasi penutup di file modul menegakkan aturan ini sebelum logika moduln
 | Tugas langkah ini ada dan `ASSIGNED` ke user sesi (untuk `APPROVAL`: `assignedUserId` = user sesi) | `403 TASK_NOT_ASSIGNED_TO_YOU` "This task is assigned to another user" (AC-58.02) |
 | Tugas sudah `CLOSED` | `409 ALREADY_PROCESSED` dengan teks AC modul |
 | Penutupan dan `orchestrator.completeHumanStep` dalam satu transaksi | |
+
+Penyerahan tugas (`taskQueue.handOver`) memakai aturan yang sama, menutup tugas user sesi, dan membuat tugas `ASSIGNED` untuk user berikutnya pada StepExecution yang sama tanpa menyelesaikan langkah. Dipakai approval level bukan final (`16-approvals.md` 16.6 langkah 7).

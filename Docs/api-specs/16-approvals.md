@@ -135,13 +135,13 @@ Semua ERROR di atas tanpa retry otomatis (`retryable: false`). Error rumus struk
 
 **Behavior**
 
-1. Kunci baris `application_approvals` level ini. Sudah diputuskan: `409 ALREADY_PROCESSED` (AC-72.07).
+1. Kunci rantai `application_approvals` ProcessInstance terbaru. User sesi tidak punya posisi di rantai: `403 TASK_NOT_ASSIGNED_TO_YOU` "This task is assigned to another user". Posisinya sudah diputuskan atau langkah APPROVAL tidak lagi `WAITING_HUMAN`: `409 ALREADY_PROCESSED` "This application has already been processed" (AC-72.07). Satu posisi rantai punya satu approver (keputusan TL 2026-10-26), jadi AC-72.07 dibuktikan dengan dua keputusan bersamaan pada posisi yang sama: yang pertama menang dan keputusan tercatat sekali.
 2. User sesi = penginput pengajuan: `403 SUBMITTER_CANNOT_APPROVE` (AC-72.05).
 3. Level bawah belum memutuskan: `409 WAITING_LOWER_LEVEL` (AC-72.03).
 4. `decision` tidak ada di flag level: `403 ACTION_DENIED` (AC-73.03).
 5. Komentar kosong: `422 COMMENT_REQUIRED`; lebih dari 1.000: `422 COMMENT_TOO_LONG` (AC-72.04, AC-73.04, AC-73.05).
-6. `interestRate` di luar rentang: `422 RATE_OUT_OF_RANGE` (AC-97.05). Perubahan dicatat di riwayat dengan nilai lama dan baru (AC-97.06).
-7. `APPROVE` di level bukan final: tugas level berikutnya (`upLevel`) dibuat; timeline approval menandai level ini "Approved" (AC-72.02). `APPROVE` di level final: `buildFinancing` (RM-07, RM-08, jadwal angsuran dengan sisa pokok baris terakhir 0); SP3K dibuat untuk KPR lewat Document dengan nomor dari format aktif (AC-102.02); StepResult `CONTINUE` atau `FINISH APPROVED` bila tidak ada langkah M15 (AC-72.01).
+6. `interestRate` di luar rentang: `422 RATE_OUT_OF_RANGE` (AC-97.05); SubProduct tanpa rentang Approver: `403 ACTION_DENIED`. `loanAmount` di atas `requestedLimit` atau tenor di luar batas produk: `400 VALIDATION_FAILED` dengan detail "Loan amount must not exceed the requested limit" atau "Tenor must be between 6 and 60 months" (teks usulan engineering). Setiap keputusan dicatat di Audit Trail modul `Approval` (`APPROVE`, `REJECT`, `REVISE` untuk Return); perubahan suku bunga mengisi `oldData` dan `newData` (AC-97.06).
+7. `APPROVE` di level bukan final: Task Queue menutup tugas user sesi dan membuat tugas `APPROVAL` `ASSIGNED` untuk approver posisi berikutnya pada StepExecution yang sama; langkah tetap `WAITING_HUMAN`; rantai menandai posisi ini `APPROVE` (AC-72.02). `APPROVE` di level final: `buildFinancing` (RM-07, RM-08, jadwal angsuran dengan sisa pokok baris terakhir 0) dengan `interestRate`, `tenorApproved`, dan `loanAmount` bila diisi; SP3K untuk KPR dibentuk BE-S6-05 (AC-102.02); tugas ditutup lewat `taskQueue.close`, StepResult `CONTINUE` atau `FINISH APPROVED` bila tidak ada langkah sesudah APPROVAL (AC-72.01). Struktur kredit di keputusan lain diabaikan.
 8. `REJECT`: StepResult `FINISH` dengan `FINISHED_REJECTED`; email penolakan lewat event (AC-73.01).
 9. `RETURN`: StepResult `BACK_TO_DRAFT` dengan `returnNote` = komentar; pengajuan kembali ke Draft Sales (AC-73.02).
 

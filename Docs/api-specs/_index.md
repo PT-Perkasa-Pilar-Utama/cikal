@@ -214,7 +214,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `POST /approval-hierarchies` | 16 §16.2 | POC | OK |
 | `PUT /approval-hierarchies/{id}` | 16 §16.3 | POC | OK |
 | `GET /applications/{id}/approval` | 16 §16.5 | POC | OK |
-| `POST /applications/{id}/approval/decision` | 16 §16.6 | POC | TODO |
+| `POST /applications/{id}/approval/decision` | 16 §16.6 | POC | OK |
 | `GET /applications/{id}/financing` | 16 §16.7 | POC | OK |
 | Approval levels, import setup | 16 §16.8 | Backlog | TODO |
 
