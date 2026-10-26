@@ -43,6 +43,11 @@ export class OrchestratorApi {
     return this.outlook.outcomes(tx, processInstanceId);
   }
 
+  /** Snapshot parameter proses, contoh suku bunga dan rentang Approver untuk detail approval (api-specs 16 §16.5). */
+  parameterSnapshot(tx: Tx, processInstanceId: string): Promise<Readonly<Record<string, string>> | null> {
+    return this.outlook.parameterSnapshot(tx, processInstanceId);
+  }
+
   /** Proses dan status langkah untuk endpoint hasil langkah modul; `null` bila proses tidak ada. */
   stepOf(
     tx: Tx,

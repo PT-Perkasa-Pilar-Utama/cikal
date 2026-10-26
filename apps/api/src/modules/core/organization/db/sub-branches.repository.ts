@@ -36,6 +36,12 @@ export class SubBranchesRepository {
       .offset(page.offset);
   }
 
+  /** Cabang induk sub cabang; `null` bila sub cabang tidak ada di tenant transaksi. */
+  async findBranchId(tx: Tx, id: string): Promise<string | null> {
+    const [row] = await tx.select({ branchId: subBranches.branchId }).from(subBranches).where(eq(subBranches.id, id));
+    return row?.branchId ?? null;
+  }
+
   async count(tx: Tx, filter: SubBranchFilter): Promise<number> {
     const [row] = await tx.select({ total: count() }).from(subBranches).where(this.matching(filter));
     return row?.total ?? 0;

@@ -26,6 +26,11 @@ export class ProcessOutlook {
     return stepOutcomes(await this.steps.listLatest(tx, processInstanceId));
   }
 
+  /** Parameter yang dikunci saat submit (PR-06); `null` bila proses tidak ada di tenant transaksi. */
+  async parameterSnapshot(tx: Tx, processInstanceId: string): Promise<Readonly<Record<string, string>> | null> {
+    return (await this.processes.findById(tx, processInstanceId))?.parameterSnapshot ?? null;
+  }
+
   /**
    * Status langkah `stepCode` pada proses terpilih atau terbaru pengajuan, untuk endpoint hasil langkah modul
    * (api-specs 19 §19.2). `null` bila pengajuan belum punya proses atau proses itu bukan miliknya.

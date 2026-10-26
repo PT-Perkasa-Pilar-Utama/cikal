@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DocumentModule } from "../document/index.js";
+import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
 import { ApplicationContacts } from "./application/application-contacts.js";
 import { ApplicationFactsReader } from "./application/application-facts.js";
@@ -37,7 +38,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
 
 /** Application: draft, section, submit, detail (technical-specs 05 §5.10). */
 @Module({
-  imports: [DocumentModule, ProductModule],
+  imports: [DocumentModule, OrganizationModule, ProductModule],
   controllers: [ApplicationsController, ApplicationSectionsController, ApplicationDocumentsController],
   providers: [
     ApplicationsRepository,

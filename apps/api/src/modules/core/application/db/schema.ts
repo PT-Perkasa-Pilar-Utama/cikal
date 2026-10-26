@@ -4,6 +4,7 @@ import { bigint, check, index, inet, integer, numeric, text, timestamp, unique, 
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { users } from "../../identity/index.js";
 import { insurances } from "../../masterdata/index.js";
+import { branches } from "../../organization/index.js";
 import { products } from "../../product/index.js";
 import { companies } from "../../tenancy/index.js";
 import { application } from "./pg-schema.js";
@@ -62,8 +63,8 @@ const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'
 const money = (name: string) => numeric(name, { precision: 18, scale: 2 });
 
 /**
- * APPLICATIONS, technical-specs 06 §6.9: kolom orchestrator dan section Application. `branch_id` menunggu tabel
- * `org.branches`; kolom pencairan dan mitra ditambahkan kartu yang memakainya.
+ * APPLICATIONS, technical-specs 06 §6.9: kolom orchestrator dan section Application. Kolom pencairan dan mitra
+ * ditambahkan kartu yang memakainya.
  */
 export const applications = application.table(
   "applications",
@@ -80,6 +81,8 @@ export const applications = application.table(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id),
+    /** Cabang pembuat draft untuk routing approval (api-specs 12 §12.2); kosong bila pembuatnya role pusat. */
+    branchId: uuid("branch_id").references(() => branches.id),
     applicationType: text("application_type"),
     segment: text("segment"),
     purposeOfLoan: text("purpose_of_loan"),

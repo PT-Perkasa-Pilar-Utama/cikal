@@ -37,6 +37,7 @@ export async function insertProduct(
     productName?: string;
     productCategory?: ProductCategory;
     maxTenor?: number;
+    limitAutoApproval?: string;
     isActive?: boolean;
     validTo?: string;
     tenantId?: string;
@@ -47,7 +48,7 @@ export async function insertProduct(
     `insert into product.products (id, tenant_id, product_code, product_name, product_category, interest_type,
        min_plafond, max_plafond, min_tenor, max_tenor, min_age, max_age, dbr_max, limit_auto_approval, valid_from,
        valid_to, is_active)
-     values ($1, $2, $3, $4, $5, 'EFFECTIVE', 5000000, 300000000, 6, $6, 21, 55, 40, 10000000, '2026-10-01', $7, $8)`,
+     values ($1, $2, $3, $4, $5, 'EFFECTIVE', 5000000, 300000000, 6, $6, 21, 55, 40, $9, '2026-10-01', $7, $8)`,
     [
       id,
       overrides.tenantId ?? seedCompanyIds.company001,
@@ -57,6 +58,7 @@ export async function insertProduct(
       overrides.maxTenor ?? ktaProduct.maxTenor,
       overrides.validTo ?? null,
       overrides.isActive ?? true,
+      overrides.limitAutoApproval ?? ktaProduct.limitAutoApproval,
     ],
   );
   return id;
@@ -66,12 +68,28 @@ export async function insertProduct(
 export async function insertSubProduct(
   owner: pg.Pool,
   productId: string,
-  period: { interestRate: string; validFrom: string; validTo?: string },
+  period: {
+    interestRate: string;
+    validFrom: string;
+    validTo?: string;
+    approverRateMin?: string;
+    approverRateMax?: string;
+  },
 ): Promise<void> {
   await owner.query(
-    `insert into product.sub_products (id, tenant_id, product_id, interest_rate, valid_from, valid_to)
-     values ($1, $2, $3, $4, $5, $6)`,
-    [uuidv7(), seedCompanyIds.company001, productId, period.interestRate, period.validFrom, period.validTo ?? null],
+    `insert into product.sub_products (id, tenant_id, product_id, interest_rate, valid_from, valid_to,
+       approver_rate_min, approver_rate_max)
+     values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [
+      uuidv7(),
+      seedCompanyIds.company001,
+      productId,
+      period.interestRate,
+      period.validFrom,
+      period.validTo ?? null,
+      period.approverRateMin ?? null,
+      period.approverRateMax ?? null,
+    ],
   );
 }
 

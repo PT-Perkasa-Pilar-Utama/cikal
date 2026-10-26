@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { and, eq, type SQL } from "drizzle-orm";
+import { and, asc, eq, type SQL } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { hierarchies } from "./schema.js";
 
@@ -44,6 +44,15 @@ export class HierarchiesRepository {
   /** Semua baris yang cocok filter; diurutkan dan dipotong per halaman oleh use case karena kode cabang ada di Organization. */
   async list(tx: Tx, filter: HierarchyFilter): Promise<HierarchyRow[]> {
     return tx.select(columns).from(hierarchies).where(this.matching(filter));
+  }
+
+  /** Baris satu cabang dan produk menurut urutan pembuatan (id UUID v7), untuk routing approval (RM-06). */
+  async listFor(tx: Tx, branchId: string, productId: string): Promise<HierarchyRow[]> {
+    return tx
+      .select(columns)
+      .from(hierarchies)
+      .where(this.matching({ branchId, productId }))
+      .orderBy(asc(hierarchies.id));
   }
 
   async findById(tx: Tx, id: string): Promise<HierarchyRow | null> {
