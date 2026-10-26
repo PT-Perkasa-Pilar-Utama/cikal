@@ -1,4 +1,4 @@
-import type { ApplicationApprovalResponse } from "./application-approval.schema.js";
+import type { ApplicationApprovalResponse, ApprovalDecisionResponse } from "./application-approval.schema.js";
 
 /** Approver level 1 KTA QA menunggu keputusan level 2 (AC-72.03), dengan rentang suku bunga Approver (AC-97.05). */
 export const applicationApprovalResponseMock = {
@@ -36,3 +36,9 @@ export const applicationApprovalResponseMock = {
     blockedReason: "Waiting for level 2 approval",
   },
 } satisfies ApplicationApprovalResponse;
+
+/** Approver level 2 menyetujui; rantai lanjut ke level 1 (AC-72.02). */
+export const approvalDecisionResponseMock = {
+  data: { decision: "APPROVE", jobLevel: 2, isFinal: false, applicationStatus: "ON_PROGRESS", nextStep: "APPROVAL" },
+  message: "Loan application is successfully approved",
+} satisfies ApprovalDecisionResponse;
