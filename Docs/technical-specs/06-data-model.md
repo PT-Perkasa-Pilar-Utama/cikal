@@ -545,7 +545,7 @@ Tabel `application_spouses`, `application_businesses`, `application_collaterals`
 | version | int | no | penguncian optimistis untuk Assign to Me (AC-58.04) |
 
 ### DOCUMENT_VERIFICATIONS (`verification`)
-Kolom: `application_id`, `process_instance_id`, `verifier_user_id`, `result` (`IN_PROGRESS`, `ALL_MATCH`, `HAS_NOT_MATCH`), `submitted_at`.
+Kolom: `application_id`, `process_instance_id` (UQ; tanpa foreign key, seperti tabel hasil langkah lain), `verifier_user_id`, `result` (`IN_PROGRESS`, `ALL_MATCH`, `HAS_NOT_MATCH`), `submitted_at`. Status dan remarks per dokumen ada di `application.application_documents`; Verification menulisnya lewat `ApplicationDocumentReview` (XM-02).
 
 ### APPROVAL_LEVELS, APPROVAL_HIERARCHIES, APPLICATION_APPROVALS (`approval`)
 | table.column | type | nullable | notes |

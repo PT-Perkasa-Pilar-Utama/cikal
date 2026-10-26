@@ -49,7 +49,7 @@ export interface StepContext {
 
 export type StepResult =
   | { type: "CONTINUE"; outcomeCode: string; summary: string }
-  | { type: "WAIT_HUMAN"; queueCode: string; branchId: string; eligibleRoleId?: string; assigneeUserId?: string; summary: string }
+  | { type: "WAIT_HUMAN"; queueCode: string; branchId: string | null; eligibleRoleId?: string; assigneeUserId?: string; summary: string }
   | { type: "WAIT_EXTERNAL"; externalReference: string; waitDeadline: Date; summary: string }
   | { type: "BACK_TO_DRAFT"; outcomeCode: string; returnNote: string }
   | { type: "RECONTEST"; outcomeCode: string; summary: string }
