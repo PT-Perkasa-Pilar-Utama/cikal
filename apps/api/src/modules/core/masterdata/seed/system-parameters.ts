@@ -13,6 +13,7 @@ export const seedSystemParameterIds = {
   selfEmployedOccupations: "0192b6a7-0006-7000-8000-000000000001",
   employedIncomeSources: "0192b6a7-0007-7000-8000-000000000001",
   dueDateEndOfMonth: "0192b6a7-0008-7000-8000-000000000001",
+  approvalRangeBoundary: "0192b6a7-0009-7000-8000-000000000001",
 } as const;
 
 /** Batas tenor contoh produk KTA 60 bulan (AC-20.01); AC-20.07 menguji nilai 24 secara terpisah. */
@@ -126,6 +127,19 @@ export async function seedSystemParameterDefinitions(db: NodePgDatabase): Promis
         valueType: "CHOICE",
         allowedValues: ["LAST_DAY", "NEXT_MONTH_FIRST_DAY"],
         defaultValue: "LAST_DAY",
+        scope: "TENANT",
+        lockOnSubmit: true,
+      },
+      {
+        id: seedSystemParameterIds.approvalRangeBoundary,
+        paramKey: "APPROVAL_RANGE_BOUNDARY",
+        label: "Approval Range Boundary",
+        description: "Whether the amount end of an approval level range is inclusive or exclusive",
+        moduleCode: "CORE",
+        category: "BUSINESS",
+        valueType: "CHOICE",
+        allowedValues: ["BOTH_INCLUSIVE", "END_EXCLUSIVE"],
+        defaultValue: "BOTH_INCLUSIVE",
         scope: "TENANT",
         lockOnSubmit: true,
       },

@@ -1,6 +1,22 @@
+import type { ApprovalDecision, ApprovalType, InterestType } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { boolean, check, foreignKey, integer, numeric, pgSchema, text, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  date,
+  foreignKey,
+  index,
+  integer,
+  jsonb,
+  numeric,
+  pgSchema,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
+import { applications } from "../../application/index.js";
 import { users } from "../../identity/index.js";
 import { branches } from "../../organization/index.js";
 import { products } from "../../product/index.js";
@@ -89,4 +105,107 @@ export const hierarchies = approval.table(
     check("hierarchies_up_level_check", sql`(${table.upLevel} is null) = (${table.upSubLevel} is null)`),
     tenantIsolation(),
   ],
+);
+
+// drizzle-kit memuat file ini sebagai CommonJS, jadi daftar nilai tidak diimpor dari paket kontrak (ESM).
+const DECISIONS = ["PENDING", "APPROVE", "REJECT", "RETURN", "AUTO_APPROVED"] as const satisfies ApprovalDecision[];
+const APPROVAL_TYPES = ["AUTO", "MANUAL"] as const satisfies ApprovalType[];
+const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'${value}'`).join(", "));
+const applicationId = () =>
+  uuid("application_id")
+    .notNull()
+    .references(() => applications.id);
+const money = (name: string) => numeric(name, { precision: 18, scale: 2 });
+const percent = (name: string) => numeric(name, { precision: 9, scale: 4 });
+
+/**
+ * APPLICATION_APPROVALS, technical-specs 06 §6.10: rantai approval satu ProcessInstance berurutan dari level terendah
+ * (RM-06), dibentuk sekali saat langkah APPROVAL berjalan. Auto approval satu baris `AUTO_APPROVED` tanpa level dan
+ * approver (RM-05).
+ */
+export const applicationApprovals = approval.table(
+  "application_approvals",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    applicationId: applicationId(),
+    processInstanceId: uuid("process_instance_id").notNull(),
+    sequence: integer("sequence").notNull(),
+    jobLevel: integer("job_level"),
+    subLevel: integer("sub_level"),
+    description: text("description"),
+    approverUserId: uuid("approver_user_id").references(() => users.id),
+    decision: text("decision").$type<ApprovalDecision>().notNull(),
+    comment: text("comment"),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("application_approvals_sequence_unique").on(table.processInstanceId, table.sequence),
+    index("application_approvals_application_idx").on(table.applicationId),
+    check("application_approvals_decision_check", sql`${table.decision} in (${textList(DECISIONS)})`),
+    check(
+      "application_approvals_level_check",
+      sql`(${table.decision} = 'AUTO_APPROVED') = (${table.jobLevel} is null and ${table.approverUserId} is null)`,
+    ),
+    check("application_approvals_comment_check", sql`char_length(${table.comment}) <= 1000`),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * FINANCINGS, technical-specs 06 §6.10: struktur kredit RM-07, RM-08 satu pengajuan saat disetujui. Persetujuan ulang
+ * sesudah Recontest atau kembali ke Draft mengganti baris ini.
+ */
+export const financings = approval.table(
+  "financings",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    applicationId: applicationId(),
+    processInstanceId: uuid("process_instance_id").notNull(),
+    approvalType: text("approval_type").$type<ApprovalType>().notNull(),
+    loanAmount: money("loan_amount").notNull(),
+    tenor: integer("tenor").notNull(),
+    interestType: text("interest_type").$type<InterestType>().notNull(),
+    interestRate: percent("interest_rate").notNull(),
+    floatingRate: percent("floating_rate"),
+    capRate: percent("cap_rate"),
+    tenorFixed: integer("tenor_fixed"),
+    adminFee: money("admin_fee").notNull(),
+    salesFee: money("sales_fee"),
+    provisionFee: money("provision_fee").notNull(),
+    insuranceValue: money("insurance_value").notNull(),
+    netDisbursement: money("net_disbursement").notNull(),
+    monthlyInstallment: money("monthly_installment").notNull(),
+    dbrRatio: percent("dbr_ratio"),
+    dsrRatio: percent("dsr_ratio"),
+    formulaVersions: jsonb("formula_versions").$type<Record<string, string>>().notNull(),
+    firstInstallmentDate: date("first_installment_date").notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("financings_application_unique").on(table.applicationId),
+    check("financings_approval_type_check", sql`${table.approvalType} in (${textList(APPROVAL_TYPES)})`),
+    tenantIsolation(),
+  ],
+);
+
+/** INSTALLMENTS, technical-specs 06 §6.10: jadwal angsuran; sisa pokok baris terakhir 0 (RM-19). */
+export const installments = approval.table(
+  "installments",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: tenantId(),
+    financingId: uuid("financing_id")
+      .notNull()
+      .references(() => financings.id, { onDelete: "cascade" }),
+    installmentNo: integer("installment_no").notNull(),
+    dueDate: date("due_date").notNull(),
+    principalAmount: money("principal_amount").notNull(),
+    interestAmount: money("interest_amount").notNull(),
+    outstandingAmount: money("outstanding_amount").notNull(),
+    ...auditColumns(),
+  },
+  (table) => [unique("installments_number_unique").on(table.financingId, table.installmentNo), tenantIsolation()],
 );
