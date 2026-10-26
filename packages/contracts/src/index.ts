@@ -25,3 +25,4 @@ export * from "./scoring/index.js";
 export * from "./system/index.js";
 export * from "./task/index.js";
 export * from "./tenancy/index.js";
+export * from "./verification/index.js";
