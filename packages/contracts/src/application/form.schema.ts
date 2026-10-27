@@ -93,6 +93,14 @@ const emergencyContactSectionSchema = z.object({
   address: addressSchema,
 });
 
+/** Isi section form yang tersimpan; dipakai form draft dan detail pengajuan (api-specs 12 §12.5, §12.9). */
+export const applicationFormSectionsSchema = z.object({
+  application: applicationSectionSchema,
+  personal: personalSectionSchema,
+  occupation: occupationSectionSchema.nullable(),
+  "emergency-contact": emergencyContactSectionSchema.nullable(),
+});
+
 /**
  * Respons `GET /applications/{id}/form` (api-specs 12 §12.5). Section yang belum disimpan bernilai `null`.
  * `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan dari pekerjaan dan status kawin.
@@ -104,15 +112,10 @@ export const applicationFormResponseSchema = dataEnvelope(
     status: applicationStatusSchema,
     currentSection: formSectionSchema,
     steps: z.array(formSectionSchema),
-    sections: z.object({
-      application: applicationSectionSchema,
-      personal: personalSectionSchema,
-      occupation: occupationSectionSchema.nullable(),
-      "emergency-contact": emergencyContactSectionSchema.nullable(),
-    }),
+    sections: applicationFormSectionsSchema,
     documentCompleteness: documentCompletenessSchema.nullable(),
     returnNote: z.string().nullable(),
   }),
 );
 export type ApplicationFormResponse = z.infer<typeof applicationFormResponseSchema>;
-export type ApplicationFormSections = ApplicationFormResponse["data"]["sections"];
+export type ApplicationFormSections = z.infer<typeof applicationFormSectionsSchema>;

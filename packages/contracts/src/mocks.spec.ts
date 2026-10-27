@@ -19,6 +19,8 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["productPricing", c.productPricingResponseSchema, c.productPricingResponseMock],
   ["productRoute", c.productRouteResponseSchema, c.productRouteResponseMock],
   ["availableProducts", c.availableProductsResponseSchema, c.availableProductsResponseMock],
+  ["applicationInquiry", c.applicationInquiryResponseSchema, c.applicationInquiryResponseMock],
+  ["applicationDetail", c.applicationDetailResponseSchema, c.applicationDetailResponseMock],
   ["processTimeline", c.processTimelineResponseSchema, c.processTimelineResponseMock],
   ["processMonitoring", c.processMonitoringResponseSchema, c.processMonitoringResponseMock],
   ["stepRetry", c.stepRetryResponseSchema, c.stepRetryResponseMock],
