@@ -22,7 +22,7 @@ Verifikasi dokumen pengajuan oleh Verifikator. Modul pemilik: CORE Verification 
 }
 ```
 
-Pratinjau file memakai `10-documents.md` 10.1 (AC-64.05). `editable = false` bila tugas bukan milik user sesi.
+Pratinjau file memakai `10-documents.md` 10.1 (AC-64.05): pemilik tugas `VERIFICATION` yang `ASSIGNED` boleh melihat file dokumen pengajuan itu. `editable = false` bila tugas bukan milik user sesi. `documents` hanya dokumen yang sudah diunggah, urut checklist; `isMandatory` dari item checklist pengajuan. Tugas `VERIFICATION` dibuat di cabang pengajuan, atau tanpa cabang bila pengajuan tidak punya cabang.
 
 **Errors:** `APPLICATION_NOT_FOUND` 404; `INVALID_STATE` 409 bila langkah saat ini bukan `VERIFICATION`.
 
@@ -42,7 +42,7 @@ Pratinjau file memakai `10-documents.md` 10.1 (AC-64.05). `editable = false` bil
 | documents[].verificationStatus | enum | ya | `PENDING`, `MATCH`, `NOT_MATCH` |
 | documents[].remarks | string | tidak | maks 500 |
 
-**Behavior:** Simpan status per dokumen tanpa menutup tugas; `DOCUMENT_VERIFICATIONS.result = IN_PROGRESS`. Remarks belum diwajibkan saat simpan sebagian.
+**Behavior:** Simpan status per dokumen tanpa menutup tugas; `DOCUMENT_VERIFICATIONS.result = IN_PROGRESS`. Remarks belum diwajibkan saat simpan sebagian. Dokumen yang tidak dikirim dan `remarks` yang tidak dikirim tetap; `remarks` kosong menghapusnya. `savedCount` = dokumen yang statusnya bukan `PENDING`. Dokumen yang tidak diunggah: `400 VALIDATION_FAILED` dengan detail "Document BPJS is not uploaded" (teks usulan engineering). Langkah VERIFICATION tidak lagi menunggu: `409 ALREADY_PROCESSED`.
 
 **Output 200:** `{"data":{"savedCount":4,"pendingCount":3},"message":"Verification saved"}` (AC-64.04).
 
@@ -63,7 +63,8 @@ Pratinjau file memakai `10-documents.md` 10.1 (AC-64.05). `editable = false` bil
 1. Ada dokumen masih `PENDING`: `422 VERIFICATION_INCOMPLETE`.
 2. Ada `NOT_MATCH` tanpa remarks: `422 REMARKS_REQUIRED`, `details` per dokumen (AC-64.03).
 3. Semua `MATCH`: `result = ALL_MATCH`; tutup tugas; StepResult `CONTINUE` outcome `ALL_MATCH` (AC-64.01).
-4. Ada `NOT_MATCH`: `result = HAS_NOT_MATCH`; tutup tugas; StepResult `BACK_TO_DRAFT` dengan `returnNote` berisi daftar dokumen dan remarks; pengajuan kembali ke Draft milik Sales (AC-64.02).
+4. Ada `NOT_MATCH`: `result = HAS_NOT_MATCH`; tutup tugas; StepResult `BACK_TO_DRAFT` dengan `returnNote` berisi satu baris `<label dokumen>: <remarks>` per dokumen Not Match, contoh "NPWP: Nama di NPWP tidak sesuai KTP"; pengajuan kembali ke Draft milik Sales (AC-64.02). Status dan remarks tetap di dokumennya; unggahan ulang mengembalikan dokumen ke `PENDING` (AC-47.05).
+5. Langkah VERIFICATION tidak lagi menunggu, atau tugas sudah ditutup: `409 ALREADY_PROCESSED`.
 
 **Output 200**
 

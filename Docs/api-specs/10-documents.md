@@ -7,7 +7,7 @@ Unggahan dokumen pengajuan memakai `12-applications.md` 12.7 karena aturan slot 
 ## 10.1 GET /files/{fileId}/download-url
 
 **Purpose:** Pratinjau atau unduhan file (dokumen pengajuan, akad, laporan iDeb).  
-**Access:** Sesi aktif; server memeriksa bahwa user berhak melihat pemilik file (pengajuan dalam lingkup datanya dengan `APP-INQUIRY` VIEW, atau tugas yang sedang ia kerjakan).
+**Access:** Sesi aktif; server memeriksa bahwa user berhak melihat pemilik file (pengajuan dalam lingkup datanya dengan `APP-INQUIRY` VIEW, atau tugas yang sedang ia kerjakan, contoh tugas `VERIFICATION` yang `ASSIGNED` kepadanya).
 
 **Input (query):** `disposition` (`inline` default, atau `attachment`).
 

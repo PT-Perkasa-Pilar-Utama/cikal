@@ -79,7 +79,8 @@ export class DraftDocuments {
     return { slots, completeness: documentCompleteness(items, new Set(uploaded.map((row) => row.documentType))) };
   }
 
-  private async matchingItems(tx: Tx, draft: DraftRow): Promise<ChecklistItem[] | null> {
+  /** Item checklist yang cocok; `null` selama pekerjaan atau status kawin belum diisi. */
+  async matchingItems(tx: Tx, draft: Pick<DraftRow, "id" | "productId">): Promise<ChecklistItem[] | null> {
     const personal = await this.personals.findByApplication(tx, draft.id);
     const occupation = await this.occupations.findByApplication(tx, draft.id);
     if (!personal?.marital || !occupation?.occupation) return null;

@@ -202,9 +202,9 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /applications/{id}/verification` | 15 §15.1 | POC | TODO |
-| `PUT /applications/{id}/verification` | 15 §15.2 | POC | TODO |
-| `POST /applications/{id}/verification/submit` | 15 §15.3 | POC | TODO |
+| `GET /applications/{id}/verification` | 15 §15.1 | POC | OK |
+| `PUT /applications/{id}/verification` | 15 §15.2 | POC | OK |
+| `POST /applications/{id}/verification/submit` | 15 §15.3 | POC | OK |
 
 ### Approvals
 

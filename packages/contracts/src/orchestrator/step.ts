@@ -138,7 +138,8 @@ export type StepResult =
   | {
       type: "WAIT_HUMAN";
       queueCode: string;
-      branchId: string;
+      /** `null`: pengajuan tanpa cabang, tugas terlihat di seluruh company (technical-specs 06 §6.10 HUMAN_TASKS). */
+      branchId: string | null;
       eligibleRoleId?: string;
       assigneeUserId?: string;
       summary: string;

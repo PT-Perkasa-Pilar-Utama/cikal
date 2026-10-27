@@ -186,13 +186,13 @@ describe("process advance", () => {
   });
 
   it("stops at ERROR when a licensed step in the route has no handler installed", async () => {
-    const { processId } = await submitted({ DATA_ENTRY: true, VERIFICATION: true, APPROVAL: true });
+    const { processId } = await submitted({ DATA_ENTRY: true, VALIDITY_CHECK: true });
     await drainProcessJobs(app, db.owner, { includeDelayed: true });
 
-    expect((await latestSteps(db.owner, processId)).get("VERIFICATION")).toMatchObject({
+    expect((await latestSteps(db.owner, processId)).get("VALIDITY_CHECK")).toMatchObject({
       status: "ERROR",
       error_category: "CONFIG",
-      error_message: "No step handler is installed for VERIFICATION",
+      error_message: "No step handler is installed for VALIDITY_CHECK",
     });
     expect(await processStatus(db.owner, processId)).toBe("WAITING");
   });

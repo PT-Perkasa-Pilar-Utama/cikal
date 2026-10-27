@@ -21,6 +21,13 @@ export interface TaskScope {
   queueCode: QueueCode;
 }
 
+/** Tugas belum ditutup yang dilihat modul penutup, contoh `editable` layar verifikasi (api-specs 15 §15.1). */
+export interface OpenTask {
+  id: string;
+  status: "OPEN" | "ASSIGNED";
+  assignedUserId: string | null;
+}
+
 /** Antarmuka publik Task Queue untuk modul penutup tugas (technical-specs 05 §5.12). */
 @Injectable()
 export class TaskQueue {
@@ -35,6 +42,22 @@ export class TaskQueue {
    */
   async close(tx: Tx, taskId: string, closing: TaskClosing): Promise<void> {
     await this.complete(tx, this.checked(await this.tasks.lock(tx, taskId), closing), closing);
+  }
+
+  /** Tugas belum ditutup pengajuan pada antrean itu, tanpa kunci; `null` bila tidak ada. */
+  async openTaskOf(tx: Tx, scope: TaskScope): Promise<OpenTask | null> {
+    const task = await this.tasks.findOpenOf(tx, scope.applicationId, scope.queueCode);
+    if (!task || task.status === "CLOSED") return null;
+    return { id: task.id, status: task.status, assignedUserId: task.assignedUserId };
+  }
+
+  /** Aturan pemilik tugas api-specs 14 §14.5 tanpa menutup tugas, contoh simpan sebagian verifikasi (§15.2). */
+  async assertWorking(
+    tx: Tx,
+    scope: TaskScope,
+    closing: Pick<TaskClosing, "userId" | "alreadyProcessedMessage">,
+  ): Promise<void> {
+    await this.openOf(tx, scope, { ...closing, resultCode: "", payload: null });
   }
 
   /** `close` untuk tugas belum ditutup pengajuan pada antrean itu; tanpa tugas = sudah diproses. */
