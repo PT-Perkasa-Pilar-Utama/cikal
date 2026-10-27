@@ -1,6 +1,7 @@
 import {
   type ApplicationSectionInput,
   applicationDraftResponseSchema,
+  applicationSubmitResponseSchema,
   documentUploadResponseSchema,
   type EmergencyContactSectionInput,
   type OccupationSectionInput,
@@ -35,9 +36,17 @@ const applicationSection = (productId: string): ApplicationSectionInput => ({
   requestedLimit: "20000000.00",
 });
 
-const personalSection = (marital: string, email: string): PersonalSectionInput => ({
-  fullName: "Rudi Hartono",
-  fullNameId: "RUDI HARTONO",
+/** Identitas pemohon; pemohon lain dipakai bila nama yang sama melewati aturan velocity Fraud dalam satu hari. */
+export interface Applicant {
+  fullName: string;
+  idCardNumber: string;
+}
+
+const RUDI: Applicant = { fullName: "Rudi Hartono", idCardNumber: "3273011402900001" };
+
+const personalSection = (marital: string, email: string, applicant: Applicant): PersonalSectionInput => ({
+  fullName: applicant.fullName,
+  fullNameId: applicant.fullName.toUpperCase(),
   placeOfBirth: "Bandung",
   dateOfBirth: "1990-02-14",
   gender: "L",
@@ -47,7 +56,7 @@ const personalSection = (marital: string, email: string): PersonalSectionInput =
   marital,
   motherMaidenName: "Siti",
   idType: "KTP",
-  idCardNumber: "3273011402900001",
+  idCardNumber: applicant.idCardNumber,
   mobileNumber: "081298765432",
   email,
   addresses: { id: { address: "Jl. Merdeka No. 10" }, residence: { sameAsId: true } },
@@ -87,6 +96,7 @@ interface DraftOptions {
   /** Section terakhir yang disimpan dengan "Save as Draft", sehingga draft dibuka di step itu. */
   draft?: SavableSection;
   documents?: readonly string[];
+  applicant?: Applicant;
 }
 
 /**
@@ -98,9 +108,10 @@ export async function salesDraft(
   options: DraftOptions = {},
 ): Promise<{ id: string; loanId: string }> {
   const marital = options.marital ?? BELUM_KAWIN;
+  const applicant = options.applicant ?? RUDI;
   const bodies: Record<SavableSection, object> = {
     application: applicationSection(productId),
-    personal: personalSection(marital, options.email ?? "rudi@contoh.com"),
+    personal: personalSection(marital, options.email ?? "rudi@contoh.com", applicant),
     occupation: occupationSection,
     "emergency-contact": emergencyContactSection,
   };
@@ -109,9 +120,9 @@ export async function salesDraft(
       application: bodies.application,
       personal: {
         idType: "KTP",
-        idCardNumber: "3273011402900001",
-        fullName: "Rudi Hartono",
-        fullNameId: "RUDI HARTONO",
+        idCardNumber: applicant.idCardNumber,
+        fullName: applicant.fullName,
+        fullNameId: applicant.fullName.toUpperCase(),
       },
       strict: true,
     });
@@ -133,6 +144,18 @@ export async function salesDraft(
     }
     return { id, loanId };
   });
+}
+
+/** Submit draft lengkap oleh `sales.jkt01` lewat API (api-specs 12 §12.8). */
+export async function submitApplication(applicationId: string): Promise<void> {
+  await ApiSession.as("sales.jkt01", (sales) =>
+    sales.post(
+      applicationSubmitResponseSchema,
+      `/api/v1/applications/${applicationId}/submit`,
+      {},
+      { "Idempotency-Key": crypto.randomUUID() },
+    ),
+  );
 }
 
 /** Timeline proses terbaru pengajuan (api-specs 13 §13.2), dibaca Sales lewat hak APP-INQUIRY View. */

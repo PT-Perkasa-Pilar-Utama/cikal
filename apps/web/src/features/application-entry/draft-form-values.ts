@@ -116,6 +116,8 @@ export interface DraftStart {
   steps: FormSection[];
   current: FormSection;
   values: SectionValues;
+  /** Catatan pengembalian verifikator atau approver yang tampil di atas form (AC-64.02, AC-73.02). */
+  returnNote: string | null;
 }
 
 export function draftStart({ data }: ApplicationFormResponse): DraftStart {
@@ -129,5 +131,6 @@ export function draftStart({ data }: ApplicationFormResponse): DraftStart {
       occupation: occupationValues(data.sections),
       "emergency-contact": emergencyContactValues(data.sections),
     },
+    returnNote: data.returnNote,
   };
 }

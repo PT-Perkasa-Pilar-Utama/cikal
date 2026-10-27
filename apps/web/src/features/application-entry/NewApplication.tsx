@@ -20,7 +20,7 @@ interface NewApplicationProps {
 /**
  * Form "New Application" bertahap (api-specs 12 §12.1): stepper dari `steps[]` dan satu section per step. "Back"
  * membuang isi step yang belum disimpan tanpa memanggil API; dari step pertama kembali ke "Application List"
- * (AC-39.04).
+ * (AC-39.04). Draft yang dikembalikan menampilkan `returnNote` di atas form (AC-64.02, AC-73.02).
  */
 export function NewApplication({ onExit, onSubmitted, start }: NewApplicationProps) {
   const flow = useEntryFlow({ onExit, onSubmitted, start });
@@ -33,6 +33,11 @@ export function NewApplication({ onExit, onSubmitted, start }: NewApplicationPro
         <h1 className="text-2xl font-bold text-primary">New Application</h1>
         {draft && <span className="font-semibold text-neutral-6">Loan ID: {draft.loanId}</span>}
       </div>
+      {start?.returnNote && (
+        <section aria-label="Return Note">
+          <FeedbackMessage type="warning">{start.returnNote}</FeedbackMessage>
+        </section>
+      )}
       {flow.notice && <FeedbackMessage type={flow.notice.type}>{flow.notice.text}</FeedbackMessage>}
       <div className="flex flex-col gap-6 rounded-lg bg-neutral-0 p-6 shadow-s">
         <ApplicationStepper steps={flow.steps} current={current} completed={flow.completed} errored={flow.errored} />
