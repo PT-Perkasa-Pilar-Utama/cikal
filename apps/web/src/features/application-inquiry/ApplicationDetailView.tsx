@@ -4,6 +4,7 @@ import { formatMoney } from "../../lib/format";
 import { ApplicationWorkflow } from "../application-workflow/ApplicationWorkflow";
 import { APPLICATION_STATUS_LABELS } from "../application-workflow/labels";
 import { ResultFields } from "../application-workflow/ResultLayout";
+import { ApprovalPanel } from "./ApprovalPanel";
 import { DocumentsPanel } from "./DocumentsPanel";
 import { DASH, orDash, TAB_LABELS } from "./labels";
 import { ModulePanel } from "./ModulePanels";
@@ -24,6 +25,8 @@ function TabPanel({ tab, detail }: { tab: ApplicationTab; detail: ApplicationDet
       return <DocumentsPanel applicationId={detail.id} />;
     case "workflow":
       return <ApplicationWorkflow applicationId={detail.id} />;
+    case "approval":
+      return <ApprovalPanel applicationId={detail.id} approved={detail.summary.tenorApproved !== null} />;
     default: {
       const latest = detail.processInstances.at(-1);
       return latest ? <ModulePanel tab={tab} applicationId={detail.id} processInstanceId={latest.id} /> : null;

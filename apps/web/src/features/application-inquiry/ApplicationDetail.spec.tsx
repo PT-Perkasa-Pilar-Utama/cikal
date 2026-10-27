@@ -1,4 +1,9 @@
-import { applicationDocumentsResponseMock, fileDownloadUrlResponseMock } from "@cikal/contracts";
+import {
+  applicationApprovalResponseMock,
+  applicationDocumentsResponseMock,
+  fileDownloadUrlResponseMock,
+  financingResponseMock,
+} from "@cikal/contracts";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DETAIL_KEY, DETAIL_LOAN_ID, detailResponse, inquiryRoutes } from "../../test/application-inquiry";
@@ -86,6 +91,31 @@ describe("Application Detail", () => {
     for (const hidden of ["Spouse", "Business", "LKN", "Collateral"]) {
       expect(screen.queryByRole("tab", { name: hidden })).not.toBeInTheDocument();
     }
+  });
+
+  it("AC-74.01 shows the financing with an installment schedule ending at 0 in the Approval tab", async () => {
+    const autoApproved = detailResponse({
+      status: "ON_PROGRESS",
+      summary: { ...detailResponse().body.data.summary, tenorApproved: 36, loanAmount: "8000000.00" },
+    });
+    const approval = { ...applicationApprovalResponseMock.data, applicationId: APPLICATION_ID, chain: [] };
+    stubApi(
+      inquiryRoutes({
+        [DETAIL_KEY]: autoApproved,
+        [`GET /api/v1/applications/${APPLICATION_ID}/approval`]: { status: 200, body: { data: approval } },
+        [`GET /api/v1/applications/${APPLICATION_ID}/financing`]: { status: 200, body: financingResponseMock },
+      }),
+    );
+    renderApp(`/applications/loan/${DETAIL_LOAN_ID}`);
+
+    fireEvent.click(await screen.findByRole("tab", { name: "Approval" }));
+
+    const panel = await screen.findByRole("tabpanel", { name: "Approval" });
+    for (const label of ["Plafond", "Tenor", "Interest Rate", "Installment"]) {
+      expect(await within(panel).findByText(label)).toBeInTheDocument();
+    }
+    const rows = within(within(panel).getByRole("table", { name: "Installment Schedule" })).getAllByRole("row");
+    expect(rows.at(-1)?.lastElementChild).toHaveTextContent(/^0$/);
   });
 
   it("AC-84.04 shows Application not found for an application of another company", async () => {
