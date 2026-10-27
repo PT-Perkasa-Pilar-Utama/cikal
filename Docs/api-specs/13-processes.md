@@ -76,7 +76,7 @@ Server mengirim kode; klien menampilkan label berikut.
 | status | enum | tidak | status langkah saat ini: `ERROR`, `WAITING_HUMAN`, `WAITING_EXTERNAL`, `RUNNING` |
 | stepCode | enum | tidak | |
 | branchId | uuid | tidak | |
-| q | string | tidak | Loan ID atau nama |
+| q | string | tidak | Potongan Loan ID atau nama lengkap pemohon, tanpa membedakan huruf besar dan kecil; `%`, `_`, dan `\` dibaca harfiah |
 | page, pageSize, sort | | tidak | `sort`: `stepStartedAt`, `loanId` |
 
 **Output 200**
@@ -88,7 +88,7 @@ Server mengirim kode; klien menampilkan label berikut.
   "meta": { "page": 1, "pageSize": 20, "totalItems": 1, "totalPages": 1 } }
 ```
 
-Filter `status=ERROR` hanya mengembalikan pengajuan yang langkah saat ininya `ERROR` beserta pesan error (AC-86.04). Tanpa `status`, keempat status dikembalikan. `sort` bawaan `stepStartedAt,asc`. Di POC `q` mencari Loan ID; pencarian nama dan `fullName` ikut data debitur (BE-S3-01), filter `branchId` dan `branchCode` ikut tabel cabang (TL-S5-04).
+Filter `status=ERROR` hanya mengembalikan pengajuan yang langkah saat ininya `ERROR` beserta pesan error (AC-86.04). Tanpa `status`, keempat status dikembalikan. `sort` bawaan `stepStartedAt,asc`. `fullName` berisi nama lengkap pemohon dari section Personal pengajuan, atau `null` bila section itu belum diisi. Filter `branchId` dan `branchCode` ikut tabel cabang (TL-S5-04).
 
 **Traceability:** US-86; AC-86.04.
 

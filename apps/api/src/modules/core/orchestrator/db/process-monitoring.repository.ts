@@ -1,13 +1,14 @@
 import type { ErrorCategory, MonitoringStatus, StepCode, StepStatus } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { and, asc, count, desc, eq, ilike, inArray, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, type SQL, sql } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { processInstances, stepExecutions } from "./schema.js";
 
 export interface MonitoringFilter {
   statuses: readonly MonitoringStatus[];
   stepCode?: StepCode;
-  loanId?: string;
+  /** Potongan Loan ID tanpa membedakan huruf besar dan kecil, atau pengajuan yang nama pemohonnya cocok. */
+  search?: { loanId: string; applicationIds: string[] };
 }
 
 export interface MonitoringPage {
@@ -102,10 +103,20 @@ function matching(filter: MonitoringFilter, latest: ReturnType<typeof latestStep
     inArray(processInstances.status, ACTIVE),
     inArray(latest.status, filter.statuses),
     filter.stepCode ? eq(latest.stepCode, filter.stepCode) : undefined,
-    filter.loanId ? ilike(processInstances.loanId, `%${escapeLike(filter.loanId)}%`) : undefined,
+    filter.search ? searching(filter.search) : undefined,
+  );
+}
+
+/** Daftar id pengajuan dikirim sebagai satu parameter array agar jumlah nama yang cocok tidak dibatasi parameter. */
+function searching(search: NonNullable<MonitoringFilter["search"]>): SQL | undefined {
+  return or(
+    ilike(processInstances.loanId, `%${escapeLike(search.loanId)}%`),
+    search.applicationIds.length > 0
+      ? sql`${processInstances.applicationId} = any(${sql.param(search.applicationIds)}::uuid[])`
+      : undefined,
   );
 }
 
 function escapeLike(value: string): string {
-  return value.replace(/[%_]/g, (char) => `\\${char}`);
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }

@@ -13,7 +13,7 @@ import {
   type ScriptedStepHandler,
 } from "./support/process.js";
 import { createRole, createSession, type TestSession } from "./support/session.js";
-import { TASK_BRANCH_ID } from "./support/task.js";
+import { setApplicantName, TASK_BRANCH_ID } from "./support/task.js";
 
 const UNKNOWN_ID = "0192b6b1-ffff-7000-8000-000000000001";
 const FOUR_TIMEOUTS = [DUKCAPIL_TIMEOUT, DUKCAPIL_TIMEOUT, DUKCAPIL_TIMEOUT, DUKCAPIL_TIMEOUT];
@@ -68,6 +68,7 @@ describe("process monitoring", () => {
       branchId: TASK_BRANCH_ID,
       summary: "Waiting for Dukcapil review",
     });
+    await setApplicantName(db.owner, failed.applicationId, "Rudi Hartono");
 
     const errors = await listOf("status=ERROR&pageSize=100");
 
@@ -75,7 +76,7 @@ describe("process monitoring", () => {
     expect(errors.data.find((item) => item.applicationId === failed.applicationId)).toEqual({
       applicationId: failed.applicationId,
       loanId: failed.loanId,
-      fullName: null,
+      fullName: "Rudi Hartono",
       branchCode: null,
       processInstanceId: failed.processId,
       currentStep: {
@@ -90,8 +91,50 @@ describe("process monitoring", () => {
     });
     expect(errors.data.some((item) => item.applicationId === waiting.applicationId)).toBe(false);
     const all = await listOf(`q=${waiting.loanId}`);
-    expect(all.data.map((item) => item.currentStep.status)).toEqual(["WAITING_HUMAN"]);
+    expect(all.data.map((item) => [item.currentStep.status, item.fullName])).toEqual([["WAITING_HUMAN", null]]);
     expect(all.meta).toEqual({ page: 1, pageSize: 20, totalItems: 1, totalPages: 1 });
+  });
+
+  it("searches by part of the applicant name, ignoring case", async () => {
+    const sinta = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    const other = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    await setApplicantName(db.owner, sinta.applicationId, "Sinta Kurniawati Monitorsearch");
+    await setApplicantName(db.owner, other.applicationId, "Budi Santoso");
+
+    const found = await listOf("q=kurniawati%20MONITOR&pageSize=100");
+
+    expect(found.data.map((item) => [item.applicationId, item.fullName])).toEqual([
+      [sinta.applicationId, "Sinta Kurniawati Monitorsearch"],
+    ]);
+    expect(found.meta.totalItems).toBe(1);
+  });
+
+  it("treats %, _ and \\ in the Loan ID and name search as literal characters", async () => {
+    const wildcardLoan = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    const backslashLoan = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    const named = await atDukcapil(app, db.owner, dukcapil, ...FOUR_TIMEOUTS);
+    // Loan ID dan nama asli tidak memuat %, _, atau \, jadi hanya pengajuan ini yang boleh cocok.
+    for (const [suffix, processId] of [
+      ["%_", wildcardLoan.processId],
+      ["\\", backslashLoan.processId],
+    ]) {
+      await db.owner.query("update orchestrator.process_instances set loan_id = loan_id || $1 where id = $2", [
+        suffix,
+        processId,
+      ]);
+    }
+    await setApplicantName(db.owner, named.applicationId, "Rina 100%_\\ Literal");
+
+    for (const [q, expected] of [
+      ["%", [wildcardLoan, named]],
+      ["_", [wildcardLoan, named]],
+      ["\\", [backslashLoan, named]],
+    ] as const) {
+      const found = await listOf(`q=${encodeURIComponent(q)}&pageSize=100`);
+      expect(found.data.map((item) => item.applicationId).sort(), q).toEqual(
+        expected.map((item) => item.applicationId).sort(),
+      );
+    }
   });
 
   it("AC-86.01 retries the error step and drops the application from the Error filter when it passes", async () => {
