@@ -20,6 +20,8 @@ Antrean tugas manusia: daftar, ambil, dan lepas. Penutupan tugas tidak ada di si
 
 Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disbursement, US-101) dan `WAIT_CORE` dilewati (grooming v2 N-05, grooming v3).
 
+Hak kerja antrean (`ASSIGN`, `PROCEED`, `RELEASE`, dan Access 14.3, 14.4) adalah aksi operasi penutupnya pada menu antrean: APPROVE untuk `APPROVAL` (`16-approvals.md` 16.6, menu `OPS-APPROVAL` VA), UPDATE untuk antrean lain.
+
 ## 14.2 GET /tasks
 
 **Purpose:** Daftar tugas satu antrean, contoh halaman "Verification" atau "Validity Check".  
@@ -59,7 +61,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 ## 14.3 POST /tasks/{id}/assign
 
 **Purpose:** Ambil tugas ("Assign to Me").  
-**Access:** UPDATE pada menu antrean; user memenuhi aturan 14.2.
+**Access:** hak kerja pada menu antrean (14.1); user memenuhi aturan 14.2.
 
 **Input (body)**
 
@@ -88,7 +90,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 ## 14.4 POST /tasks/{id}/release
 
 **Purpose:** Lepas tugas ("Release Me" oleh pemilik, atau "Release" oleh Supervisor untuk tugas orang lain).  
-**Access:** pemilik dengan UPDATE pada menu antrean; atau `OPS-PRESCREEN-L2` UPDATE untuk tugas orang lain di cabangnya.
+**Access:** pemilik dengan hak kerja pada menu antrean (14.1); atau `OPS-PRESCREEN-L2` UPDATE untuk tugas orang lain di cabangnya.
 
 **Input (body):** `version` (int, wajib).
 

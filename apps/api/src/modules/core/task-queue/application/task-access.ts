@@ -21,10 +21,10 @@ export class TaskAccess {
   ) {}
 
   async viewer(ctx: RequestContext, queueCode: QueueCode): Promise<TaskViewer> {
-    const { menuCode } = QUEUE_CATALOG[queueCode];
+    const { menuCode, workAction } = QUEUE_CATALOG[queueCode];
     const [canView, canWork, isSupervisor, scope] = await Promise.all([
       this.access.allows(ctx, menuCode, "VIEW"),
-      this.access.allows(ctx, menuCode, "UPDATE"),
+      this.access.allows(ctx, menuCode, workAction),
       this.access.allows(ctx, SUPERVISOR_MENU, "UPDATE"),
       this.db.withTenantTx(ctx, async (tx) => {
         const user = await this.users.scope(tx, ctx.userId);
@@ -49,7 +49,8 @@ export class TaskAccess {
   /** Melempar error hak menu antrean dari guard, contoh `ACTION_DENIED` atau `MODULE_NOT_LICENSED`. */
   async requireWork(ctx: RequestContext, viewer: TaskViewer, queueCode: QueueCode): Promise<void> {
     if (viewer.canWork) return;
-    await this.access.authorize(ctx, QUEUE_CATALOG[queueCode].menuCode, "UPDATE");
+    const { menuCode, workAction } = QUEUE_CATALOG[queueCode];
+    await this.access.authorize(ctx, menuCode, workAction);
     throw DomainError.standard("ACTION_DENIED");
   }
 }
