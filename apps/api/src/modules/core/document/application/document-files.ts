@@ -5,7 +5,7 @@ import { SYSTEM_PARAMETER_PORT, type SystemParameterPort } from "../../../../pla
 import { StorageService } from "../../../../platform/storage/storage.module.js";
 import { DocumentFilesRepository } from "../db/document-files.repository.js";
 import { STORED_CONTENT_TYPE } from "../domain/file-download.js";
-import { checkUpload, type UploadCandidate } from "../domain/upload-rules.js";
+import { checkUpload, type UploadCandidate, type UploadExtension } from "../domain/upload-rules.js";
 import { PDF_CONVERTER_PORT, type PdfConverterPort } from "../ports/pdf-converter.port.js";
 
 /** File tersimpan seperti ditampilkan slot dokumen (api-specs 12 §12.7). */
@@ -14,6 +14,14 @@ export interface StoredFile {
   fileName: string;
   sizeBytes: number;
   uploadedAt: Date;
+}
+
+/** PDF yang disimpan beserta nama, ekstensi, dan ukuran berkas asalnya. */
+export interface PdfToStore {
+  fileName: string;
+  originalExtension: UploadExtension;
+  sizeBytes: number;
+  pdf: Buffer;
 }
 
 /**
@@ -33,15 +41,25 @@ export class DocumentFiles {
   async upload(tx: Tx, actor: TenantContext, file: UploadCandidate): Promise<StoredFile> {
     const extension = await checkUpload(file, await this.uploadMaxMb(tx));
     const pdf = extension === "pdf" ? file.data : await this.converter.toPdf(extension, file.data);
+    return this.storePdf(tx, actor, {
+      fileName: file.fileName,
+      originalExtension: extension,
+      sizeBytes: file.data.length,
+      pdf,
+    });
+  }
+
+  /** Menyimpan PDF hasil unggah atau hasil generate dengan kunci objek tanpa nama file (technical-specs 07 §7.7). */
+  async storePdf(tx: Tx, actor: TenantContext, file: PdfToStore): Promise<StoredFile> {
     const id = uuidv7();
     const storageKey = `tenants/${actor.tenantId}/document/${id}`;
-    await this.storage.putObject(storageKey, pdf, STORED_CONTENT_TYPE);
+    await this.storage.putObject(storageKey, file.pdf, STORED_CONTENT_TYPE);
     const row = await this.files.insert(tx, {
       id,
       tenantId: actor.tenantId,
       fileName: file.fileName,
-      originalExtension: extension,
-      sizeBytes: file.data.length,
+      originalExtension: file.originalExtension,
+      sizeBytes: file.sizeBytes,
       storageKey,
       userId: actor.userId,
     });

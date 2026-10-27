@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, pgSchema, text, uuid } from "drizzle-orm/pg-core";
+import { bigint, check, jsonb, pgSchema, text, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { companies } from "../../tenancy/index.js";
 
@@ -7,11 +7,12 @@ export const document = pgSchema("document");
 
 // drizzle-kit memuat file ini sebagai CommonJS, jadi daftar nilai ditulis ulang dari `domain/upload-rules.ts`.
 const EXTENSIONS = ["png", "jpg", "jpeg", "pdf", "docx"] as const;
+const STORED_FORMATS = ["PDF", "DOCX"] as const;
 const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'${value}'`).join(", "));
 
 /**
- * DOCUMENT_FILES, technical-specs 06 §6.8. Semua unggahan disimpan sebagai PDF (DC-02); `size_bytes` adalah ukuran
- * berkas yang diunggah user. Objek di `storage_key` tidak memuat nama file asli (technical-specs 07 §7.7).
+ * DOCUMENT_FILES, technical-specs 06 §6.8. Semua unggahan disimpan sebagai PDF (DC-02); template Word disimpan
+ * sebagai DOCX. `size_bytes` adalah ukuran berkas yang diunggah user. Objek di `storage_key` tidak memuat nama file asli (technical-specs 07 §7.7).
  */
 export const documentFiles = document.table(
   "document_files",
@@ -29,8 +30,35 @@ export const documentFiles = document.table(
   },
   (table) => [
     check("document_files_original_extension_check", sql`${table.originalExtension} in (${textList(EXTENSIONS)})`),
-    check("document_files_stored_format_check", sql`${table.storedFormat} = 'PDF'`),
+    check("document_files_stored_format_check", sql`${table.storedFormat} in (${textList(STORED_FORMATS)})`),
     check("document_files_size_bytes_check", sql`${table.sizeBytes} > 0`),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * DOCUMENT_TEMPLATES, technical-specs 06 §6.8. Template Word per kode dokumen, contoh `AKAD-KPR`; `product_id` kosong
+ * berarti semua produk. `placeholders` adalah tag hasil deteksi di isi template.
+ */
+export const documentTemplates = document.table(
+  "document_templates",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    documentCode: text("document_code").notNull(),
+    productId: uuid("product_id"),
+    fileId: uuid("file_id")
+      .notNull()
+      .references(() => documentFiles.id),
+    placeholders: jsonb("placeholders").$type<string[]>().notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("document_templates_code_product_unique")
+      .on(table.tenantId, table.documentCode, table.productId)
+      .nullsNotDistinct(),
     tenantIsolation(),
   ],
 );
