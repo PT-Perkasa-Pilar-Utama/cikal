@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { ProductCodes } from "../../product/index.js";
-import { ApplicationsRepository } from "../db/applications.repository.js";
+import { DraftListRepository } from "../db/draft-list.repository.js";
 
 /**
  * "Application List" Sales (api-specs 12 §12.4): hanya draft yang dibuatnya, termasuk pengajuan yang dikembalikan
@@ -13,7 +13,7 @@ import { ApplicationsRepository } from "../db/applications.repository.js";
 export class ListDraftsUseCase {
   constructor(
     private readonly db: TenantTx,
-    private readonly applications: ApplicationsRepository,
+    private readonly drafts: DraftListRepository,
     private readonly productCodes: ProductCodes,
   ) {}
 
@@ -22,8 +22,8 @@ export class ListDraftsUseCase {
     const direction = query.sort === "updatedAt,asc" ? "asc" : "desc";
     const page = { offset: (query.page - 1) * query.pageSize, limit: query.pageSize, direction } as const;
     return this.db.withTenantTx(ctx, async (tx) => {
-      const rows = await this.applications.listDrafts(tx, filter, page);
-      const totalItems = await this.applications.countDrafts(tx, filter);
+      const rows = await this.drafts.listDrafts(tx, filter, page);
+      const totalItems = await this.drafts.countDrafts(tx, filter);
       const codes = await this.productCodes.describe(
         tx,
         rows.map((row) => row.productId),

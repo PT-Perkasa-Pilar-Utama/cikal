@@ -35,6 +35,16 @@ export class ApplicationProcess {
     return this.applications.updateCurrentStep(tx, id, step);
   }
 
+  /** Tenor dan plafon level approval final untuk ringkasan "Application Detail" (AC-84.01); ditulis modul Approval. */
+  recordApprovedTerms(
+    tx: Tx,
+    id: string,
+    terms: { tenorApproved: number; loanAmount: string },
+    userId: string | null,
+  ): Promise<void> {
+    return this.applications.updateApprovedTerms(tx, id, terms, userId);
+  }
+
   /**
    * Status dari hasil langkah dan aksi proses. Transisi di luar technical-specs 06 §6.13 ditolak `INVALID_STATE`.
    * Kembali ke Draft menyimpan catatan pengembalian dan mengosongkan langkah saat ini. Penolakan menulis event
