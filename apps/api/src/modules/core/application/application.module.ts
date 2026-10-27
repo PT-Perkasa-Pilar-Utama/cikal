@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { DocumentModule } from "../document/index.js";
 import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
+import { ApplicantNames } from "./application/applicant-names.js";
 import { ApplicationContacts } from "./application/application-contacts.js";
 import { ApplicationDocumentReview } from "./application/application-document-review.js";
 import { ApplicationFactsReader } from "./application/application-facts.js";
@@ -56,6 +57,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationContacts,
     ApplicationDocumentReview,
     ApplicationIdentities,
+    ApplicantNames,
     ApplicantLookupRepository,
     ApplicationFactsReader,
     ApplicationFactsRepository,
@@ -84,6 +86,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationProcess,
     ApplicationContacts,
     ApplicationIdentities,
+    ApplicantNames,
     ApplicationFactsReader,
     ApplicationDocumentReview,
   ],

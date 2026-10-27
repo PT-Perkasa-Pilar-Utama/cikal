@@ -3,7 +3,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
 import { ACCESS_PORT, type AccessPort, type RequestContext } from "../../../../platform/http/access-port.js";
 import { USER_DIRECTORY_PORT, type UserDirectoryPort } from "../../../../platform/http/user-directory-port.js";
-import { ApplicationProcess } from "../../application/index.js";
+import { ApplicantNames, ApplicationProcess } from "../../application/index.js";
 import { BranchDirectory } from "../../organization/index.js";
 import { ProductCodes } from "../../product/index.js";
 import { HumanTasksRepository, type TaskFilter, type TaskPage, type TaskRow } from "../db/human-tasks.repository.js";
@@ -29,6 +29,7 @@ export class ListTasksUseCase {
     private readonly tasks: HumanTasksRepository,
     private readonly access: TaskAccess,
     private readonly applications: ApplicationProcess,
+    private readonly names: ApplicantNames,
     private readonly products: ProductCodes,
     @Inject(ACCESS_PORT) private readonly menus: AccessPort,
     @Inject(USER_DIRECTORY_PORT) private readonly users: UserDirectoryPort,
@@ -41,16 +42,16 @@ export class ListTasksUseCase {
     if (!viewer.canView && !(selfAssign && viewer.isSupervisor)) await this.menus.authorize(ctx, menuCode, "VIEW");
 
     const [sort, direction] = SORTS[query.sort];
-    const filter: TaskFilter = {
-      queueCode: query.queueCode,
-      statuses: query.status,
-      ...(query.assignedToMe ? { assignedTo: ctx.userId } : {}),
-      ...(query.q ? { loanId: query.q } : {}),
-      scope: visibilityScope(query.queueCode, viewer),
-    };
     const page = { offset: (query.page - 1) * query.pageSize, limit: query.pageSize, sort, direction };
 
     return this.db.withTenantTx(ctx, async (tx) => {
+      const filter: TaskFilter = {
+        queueCode: query.queueCode,
+        statuses: query.status,
+        ...(query.assignedToMe ? { assignedTo: ctx.userId } : {}),
+        ...(query.q ? { search: { loanId: query.q, applicationIds: await this.names.matching(tx, query.q) } } : {}),
+        scope: visibilityScope(query.queueCode, viewer),
+      };
       const rows = await this.tasks.list(tx, filter, page);
       const totalItems = await this.tasks.count(tx, filter);
       return {
@@ -65,7 +66,7 @@ export class ListTasksUseCase {
     });
   }
 
-  /** Data pengajuan, produk, cabang, dan pengambil dibaca lewat antarmuka modul pemiliknya (XM-02). */
+  /** Data pengajuan, nama pemohon, produk, cabang, dan pengambil dibaca lewat antarmuka modul pemiliknya (XM-02). */
   private async items(tx: Tx, rows: TaskRow[], viewer: TaskViewer): Promise<TaskItem[]> {
     const applications = new Map(
       (
@@ -74,6 +75,10 @@ export class ListTasksUseCase {
           rows.map((row) => row.applicationId),
         )
       ).map((app) => [app.id, app]),
+    );
+    const fullNames = await this.names.namesOf(
+      tx,
+      rows.map((row) => row.applicationId),
     );
     const productCodes = await this.products.describe(
       tx,
@@ -95,7 +100,7 @@ export class ListTasksUseCase {
         queueCode: row.queueCode,
         applicationId: row.applicationId,
         loanId: row.loanId,
-        fullName: null,
+        fullName: fullNames.get(row.applicationId) ?? null,
         productCode: productCodes.get(productId) ?? "",
         branchCode: row.branchId ? (branches.get(row.branchId)?.branchCode ?? null) : null,
         status: row.status,

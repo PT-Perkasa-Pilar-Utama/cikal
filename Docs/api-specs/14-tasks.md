@@ -32,7 +32,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 | queueCode | enum | ya | |
 | status | enum | tidak | default `OPEN,ASSIGNED` |
 | assignedToMe | boolean | tidak | |
-| q | string | tidak | Loan ID atau nama; pencarian nama ditambahkan bersama data debitur di BE-S3-01 |
+| q | string | tidak | Potongan Loan ID atau nama lengkap pemohon, tanpa membedakan huruf besar dan kecil; `%` dan `_` dibaca harfiah |
 | page, pageSize, sort | | tidak | `sort`: `createdAt` (default `createdAt,asc`), `loanId` |
 
 **Behavior:** Tugas yang boleh dilihat user: role sama dengan `eligibleRoleId` dan unit kerja mencakup cabang tugas; antrean `APPROVAL` hanya tugas dengan `assignedUserId` = user sesi (`../technical-specs/09-authentication-authorization.md` 9.4). Supervisor dengan `OPS-PRESCREEN-L2` melihat tugas antrean cabangnya untuk dilepas.
@@ -50,7 +50,7 @@ Di Rilis 1, langkah `DISBURSEMENT` berjalan dalam mode MANUAL (Record Disburseme
 }
 ```
 
-`fullName` bernilai `null` sampai data debitur ada (BE-S3-01); `branchCode` bernilai `null` sampai tabel cabang ada (TL-S5-04).
+`fullName` berisi nama lengkap pemohon dari section Personal pengajuan; `branchCode` bernilai `null` sampai tabel cabang ada (TL-S5-04).
 
 `allowedActions` dihitung server untuk user sesi: `ASSIGN` (tugas `OPEN`, antrean dengan Assign to Me), `PROCEED` dan `RELEASE` (pemilik), `RELEASE_OTHER` (Supervisor). Tugas milik orang lain tidak punya `ASSIGN` dan `PROCEED` (AC-58.02, AC-58.06).
 

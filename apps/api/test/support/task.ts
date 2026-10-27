@@ -55,6 +55,16 @@ export async function verificationTask(
   return { ...task, processInstanceId };
 }
 
+/** Section Personal pengajuan uji dengan nama pemohon saja; NIK berupa byte palsu karena antrean tidak membacanya. */
+export async function setApplicantName(owner: pg.Pool, applicationId: string, fullName: string): Promise<void> {
+  await owner.query(
+    `insert into application.application_personals (application_id, tenant_id, full_name, full_name_id, id_type,
+       id_card_number_enc, id_card_number_key_version, id_card_number_bidx)
+     select id, tenant_id, $2, upper($2), 'KTP', '\\x00', 1, '\\x00' from application.applications where id = $1`,
+    [applicationId, fullName],
+  );
+}
+
 /** Unit kerja dan username user uji, ditulis langsung karena API User ada di sprint lain. */
 export async function setUser(
   owner: pg.Pool,

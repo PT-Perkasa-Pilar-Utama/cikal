@@ -6,7 +6,7 @@ import { seedRoleIds } from "../src/modules/core/identity/index.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 import { registerStepHandlers, type ScriptedStepHandler } from "./support/process.js";
 import { createSession, type TestSession } from "./support/session.js";
-import { setUser, TASK_BRANCH_ID, taskRow, verificationTask } from "./support/task.js";
+import { setApplicantName, setUser, TASK_BRANCH_ID, taskRow, verificationTask } from "./support/task.js";
 import { taskApi } from "./support/task-api.js";
 
 const UNKNOWN_ID = "0192b6c0-ffff-7000-8000-000000000001";
@@ -171,7 +171,29 @@ describe("task queue", () => {
     expect(byLoan.data.map((item) => item.loanId)).toEqual([other.loanId]);
   });
 
-  it("treats % and _ in the Loan ID search as literal characters", async () => {
+  it("shows the applicant's full name from the Personal section", async () => {
+    const named = await verificationTask(app, db.owner, verification);
+    const unnamed = await verificationTask(app, db.owner, verification);
+    await setApplicantName(db.owner, named.applicationId, "Rudi Hartono");
+
+    expect(await api.rowOf(veri02, named)).toMatchObject({ loanId: named.loanId, fullName: "Rudi Hartono" });
+    expect(await api.rowOf(veri02, unnamed)).toMatchObject({ fullName: null });
+  });
+
+  it("searches the queue by part of the applicant name, ignoring case", async () => {
+    const sinta = await verificationTask(app, db.owner, verification);
+    const other = await verificationTask(app, db.owner, verification);
+    await setApplicantName(db.owner, sinta.applicationId, "Sinta Kurniawati Queuesearch");
+    await setApplicantName(db.owner, other.applicationId, "Budi Santoso");
+
+    const res = await api.send(veri02, "GET", "/tasks?queueCode=VERIFICATION&q=kurniawati%20QUEUE&pageSize=100");
+    expect(res.statusCode, res.body).toBe(200);
+    const body = taskListResponseSchema.parse(res.json());
+    expect(body.data.map((item) => [item.id, item.fullName])).toEqual([[sinta.id, "Sinta Kurniawati Queuesearch"]]);
+    expect(body.meta.totalItems).toBe(1);
+  });
+
+  it("treats % and _ in the Loan ID and name search as literal characters", async () => {
     await verificationTask(app, db.owner, verification);
     const wildcard = await verificationTask(app, db.owner, verification);
     // Loan ID asli tidak pernah memuat % atau _, jadi hanya tugas ini yang boleh cocok.
