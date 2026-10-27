@@ -1,6 +1,6 @@
 import { standardErrors } from "@cikal/contracts";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Workflow } from "lucide-react";
+import { ArrowLeft, FileText, Workflow } from "lucide-react";
 import { FeedbackMessage } from "../../../components/ui/FeedbackMessage";
 import { useApplicationForm } from "../../../features/application-entry/api";
 import { draftStart } from "../../../features/application-entry/draft-form-values";
@@ -10,7 +10,7 @@ import { MenuGuard } from "../../../features/session/MenuGuard";
 /**
  * Melanjutkan draft dari "Application List" pada step terakhir yang disimpan (api-specs 12 §12.5, AC-49.05).
  * Pengajuan yang sudah disubmit tidak bisa diubah lagi oleh Sales (AC-50.01); tombol "Workflow" membuka timeline
- * prosesnya sampai layar Application Detail dibangun di kartu FE-S5-04.
+ * prosesnya dan "Application Detail" membuka detailnya (AC-84.01).
  */
 function DraftApplicationPage() {
   const { applicationId } = Route.useParams();
@@ -39,6 +39,14 @@ function DraftApplicationPage() {
           >
             <Workflow size={20} aria-hidden />
             Workflow
+          </Link>
+          <Link
+            to="/applications/loan/$loanId"
+            params={{ loanId: data.data.loanId }}
+            className="inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-semibold text-neutral-0 hover:bg-primary/90"
+          >
+            <FileText size={20} aria-hidden />
+            Application Detail
           </Link>
         </div>
       </section>
