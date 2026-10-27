@@ -158,6 +158,16 @@ export async function submitApplication(applicationId: string): Promise<void> {
   );
 }
 
+/** Draft lengkap yang langsung disubmit Sales, sehingga prosesnya dimulai worker. */
+export async function submittedApplication(
+  productId: string,
+  options: Omit<DraftOptions, "next" | "draft">,
+): Promise<{ id: string; loanId: string }> {
+  const draft = await salesDraft(productId, { ...options, next: ["personal", "occupation", "emergency-contact"] });
+  await submitApplication(draft.id);
+  return draft;
+}
+
 /** Timeline proses terbaru pengajuan (api-specs 13 §13.2), dibaca Sales lewat hak APP-INQUIRY View. */
 export function processTimeline(applicationId: string) {
   return ApiSession.as("sales.jkt01", (sales) =>

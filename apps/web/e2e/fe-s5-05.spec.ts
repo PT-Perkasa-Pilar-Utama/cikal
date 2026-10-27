@@ -7,8 +7,7 @@ import {
   KARYAWAN_SWASTA,
   processTimeline,
   SEVEN_DOCUMENTS,
-  salesDraft,
-  submitApplication,
+  submittedApplication,
 } from "./support/application";
 import { expect, test } from "./support/fixtures";
 import { approve, availableProduct, submitChecklist } from "./support/master-data";
@@ -37,17 +36,6 @@ const KTA_QA = "0192b6ca-0001-7000-8000-000000000001";
 const KTA_QA_DOCUMENTS = ["KTP", "KK", "NPWP", "SLIP_GAJI", "REKENING_KORAN", "SURAT_KETERANGAN_KERJA", "PBB"];
 const NPWP_REMARKS = "Nama di NPWP tidak sesuai KTP";
 
-/** Draft lengkap yang langsung disubmit Sales. */
-async function submitted(productId: string, documents: readonly string[], applicant?: Applicant) {
-  const draft = await salesDraft(productId, {
-    next: ["personal", "occupation", "emergency-contact"],
-    documents,
-    applicant,
-  });
-  await submitApplication(draft.id);
-  return draft;
-}
-
 async function stepStatus(applicationId: string, stepCode: StepCode): Promise<string | undefined> {
   return (await processTimeline(applicationId)).data.steps.find((step) => step.stepCode === stepCode)?.status;
 }
@@ -75,7 +63,7 @@ test("AC-64.02 a Not Match NPWP returns the application to Sales as Draft with t
     "checker.001",
     await submitChecklist("maker.01", { productId, occupation: KARYAWAN_SWASTA, marital: BELUM_KAWIN, items }),
   );
-  const application = await submitted(productId, SEVEN_DOCUMENTS);
+  const application = await submittedApplication(productId, { documents: SEVEN_DOCUMENTS });
   await expect
     .poll(() => stepStatus(application.id, "VERIFICATION"), { message: WORKER_HINT, timeout: WORKER_TIMEOUT_MS })
     .toBe("WAITING_HUMAN");
@@ -107,7 +95,7 @@ test("AC-37.05 the active model scores until the new version is approved, then i
   pageAs,
 }) => {
   const scoreOf = async (applicant: Applicant) => {
-    const { id } = await submitted(KTA_QA, KTA_QA_DOCUMENTS, applicant);
+    const { id } = await submittedApplication(KTA_QA, { documents: KTA_QA_DOCUMENTS, applicant });
     let score: string | null = null;
     await expect
       .poll(
