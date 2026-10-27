@@ -165,7 +165,7 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 | `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan; server block `files.${DOMAIN}` ke storage yang meneruskan header `Host` apa adanya, dan CSP aplikasi mengizinkan host itu untuk pratinjau dokumen (issue #102) | TL-S6-01 | Belum ada |
 | `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
 | Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
-| `POST /api/admin/reset-state` lengkap | Drop, migrasi, seed, kosongkan bucket, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
+| `POST /api/admin/reset-state` lengkap | Drop, migrasi, kosongkan bucket, seed, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
 | `tools/license-cli` | `keygen`, `issue`, `verify` file lisensi Ed25519 (3.11) | TL-S2-02 | Ada |
 | `deploy/license/ppu-license-public-key.pem` dan build image dengan `--license-key` kunci itu | Kunci publik PPU tertanam di image rilis | TL-S6-01 | Belum ada (8, F-09) |
 | Pemasangan `license.json` saat instalasi (`LICENSE_FILE`, `create-admin`) | Lisensi pertama company tanpa lewat halaman License | TL-S6-01 | Belum ada (8, F-09) |
@@ -980,7 +980,7 @@ docker compose exec -T db pg_dump -U postgres -Fc cikal > backups/cikal-uat-pre-
 
 # 3. Wipe, migrasi ulang, dan seed dalam satu perintah runner, urutan sama dengan API:
 #    DROP semua skema aplikasi dan pgboss (pakai DATABASE_MIGRATION_URL),
-#    migrasi per modul berlisensi, seed base + qa, kosongkan bucket ${S3_BUCKET}.
+#    migrasi per modul berlisensi, kosongkan bucket ${S3_BUCKET}, seed base + qa (seed qa menulis template akad).
 docker compose run --rm migrate reset --seed=qa
 
 # 4. Nyalakan kembali; proses baru berarti cache memori dan pool kosong

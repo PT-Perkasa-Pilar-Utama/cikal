@@ -1,7 +1,8 @@
 import { CreateBucketCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { GenericContainer, type StartedTestContainer, Wait } from "testcontainers";
 import type { AppConfig } from "../../src/platform/config/config.js";
-import { createS3Client } from "../../src/platform/storage/storage.module.js";
+import type { SeedContext } from "../../src/platform/migrate/module-data.js";
+import { createS3Client, putObject } from "../../src/platform/storage/storage.module.js";
 
 const S3_PORT = 9000;
 const BUCKET = "cikal-test";
@@ -24,6 +25,8 @@ export interface TestStorage {
   config: AppConfig["storage"];
   /** Isi objek di bucket uji. */
   read(key: string): Promise<Buffer>;
+  /** Penulis objek seed ke bucket uji. */
+  putObject: SeedContext["putObject"];
   stop(): Promise<void>;
 }
 
@@ -62,6 +65,7 @@ export async function startStorage(): Promise<TestStorage> {
       const object = await client.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
       return Buffer.from((await object.Body?.transformToByteArray()) ?? []);
     },
+    putObject: (object) => putObject(client, BUCKET, object),
     async stop() {
       client.destroy();
       await container.stop();

@@ -181,7 +181,8 @@ async function notify(db: Queryable, signal: OpsSignal): Promise<void> {
 
 /**
  * Mengembalikan database ke keadaan awal (api-specs 27 §27.4): kunci advisory, sinyal `reset_started`,
- * DROP skema modul dan antrean, migrasi, seed, kosongkan bucket, sinyal `reset_finished`.
+ * DROP skema modul dan antrean, migrasi, kosongkan bucket, seed, sinyal `reset_finished`. Bucket dikosongkan sebelum
+ * seed agar objek seed, contoh template akad, tetap ada.
  * `pool` wajib memakai role pemilik skema. Production sudah ditolak di registrasi rute dan CLI; pemeriksaan
  * di sini lapisan terakhir.
  */
@@ -207,9 +208,9 @@ export async function resetState(options: {
         await client.query(`drop schema if exists ${ident(schema)} cascade`);
       }
       const migrationsApplied = await migrateModules(pool, modules, appRole);
+      const bucketObjectsDeleted = await options.emptyBucket();
       await seedModules(pool, modules, seed, options.seedContext);
       const tenantsSeeded = await listTenants(pool);
-      const bucketObjectsDeleted = await options.emptyBucket();
       return {
         seed,
         durationMs: Math.round(performance.now() - started),

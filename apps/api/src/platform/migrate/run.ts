@@ -3,9 +3,9 @@ import { parseArgs } from "node:util";
 import pg from "pg";
 import { loadConfig } from "../config/config.js";
 import { readMasterKey } from "../config/master-key.js";
-import { createS3Client, emptyBucket } from "../storage/storage.module.js";
+import { createS3Client, emptyBucket, putObject } from "../storage/storage.module.js";
 import { installedModuleData } from "./installed-modules.js";
-import type { SeedName } from "./module-data.js";
+import type { SeedContext, SeedName } from "./module-data.js";
 import { appRoleFor, migrateModules, resetState, seedModules } from "./runner.js";
 
 /**
@@ -39,7 +39,23 @@ if (!migrationUrl) fail("DATABASE_MIGRATION_URL is required");
 const appRole = appRoleFor(process.env.DATABASE_URL, migrationUrl);
 const pool = new pg.Pool({ connectionString: migrationUrl, max: 2 });
 const passwordFile = process.env.SEED_USER_PASSWORD_FILE;
-const seedContext = { userPassword: passwordFile ? readFileSync(passwordFile, "utf8").trim() : null };
+
+/** Klien storage dibuat saat seed pertama menulis objek, sehingga `migrate` dan seed `base` tidak butuh konfigurasi S3. */
+function seedStorage(): SeedContext["putObject"] {
+  let target: { client: ReturnType<typeof createS3Client>; bucket: string } | null = null;
+  return (object) => {
+    if (!target) {
+      const { storage } = loadConfig();
+      target = { client: createS3Client(storage), bucket: storage.bucket };
+    }
+    return putObject(target.client, target.bucket, object);
+  };
+}
+
+const seedContext = {
+  userPassword: passwordFile ? readFileSync(passwordFile, "utf8").trim() : null,
+  putObject: seedStorage(),
+};
 
 try {
   switch (command) {
@@ -68,7 +84,11 @@ try {
         modules: installedModuleData,
         appRole,
         seed,
-        seedContext: { ...seedContext, masterKey: config.masterKey },
+        seedContext: {
+          ...seedContext,
+          masterKey: config.masterKey,
+          putObject: (object) => putObject(s3, config.storage.bucket, object),
+        },
         emptyBucket: () => emptyBucket(s3, config.storage.bucket),
       });
       console.log(JSON.stringify(result));

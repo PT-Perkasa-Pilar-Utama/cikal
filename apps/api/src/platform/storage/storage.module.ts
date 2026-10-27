@@ -37,6 +37,17 @@ export async function emptyBucket(client: S3Client, bucket: string): Promise<num
   }
 }
 
+/** Menyimpan satu objek; dipakai `StorageService` dan seed di runner migrasi yang berjalan tanpa Nest. */
+export async function putObject(
+  client: S3Client,
+  bucket: string,
+  object: { key: string; body: Buffer; contentType: string },
+): Promise<void> {
+  await client.send(
+    new PutObjectCommand({ Bucket: bucket, Key: object.key, Body: object.body, ContentType: object.contentType }),
+  );
+}
+
 /** Header respons yang ditanam di URL bertanda tangan. */
 export interface SignedDownload {
   expiresInSeconds: number;
@@ -59,15 +70,19 @@ export class StorageService {
 
   /** Storage tidak terjangkau dijawab `503 SERVICE_UNAVAILABLE` (api-specs 12 §12.7). */
   async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
-    const command = new PutObjectCommand({
-      Bucket: this.config.storage.bucket,
-      Key: key,
-      Body: body,
-      ContentType: contentType,
-    });
-    await this.client.send(command).catch(() => {
+    await putObject(this.client, this.config.storage.bucket, { key, body, contentType }).catch(() => {
       throw DomainError.standard("SERVICE_UNAVAILABLE");
     });
+  }
+
+  /** Isi objek, contoh template Word; storage tidak terjangkau dijawab `503 SERVICE_UNAVAILABLE`. */
+  async getObject(key: string): Promise<Buffer> {
+    const command = new GetObjectCommand({ Bucket: this.config.storage.bucket, Key: key });
+    const object = await this.client.send(command).catch(() => {
+      throw DomainError.standard("SERVICE_UNAVAILABLE");
+    });
+    if (!object.Body) throw new Error(`Storage object ${key} has no body`);
+    return Buffer.from(await object.Body.transformToByteArray());
   }
 
   /**

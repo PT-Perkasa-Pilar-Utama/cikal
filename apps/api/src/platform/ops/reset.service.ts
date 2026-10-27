@@ -36,7 +36,11 @@ export class ResetService implements OnModuleDestroy {
         modules: installedModuleData,
         appRole: appRoleFor(this.config.database.url, migrationUrl),
         seed: seed ?? this.config.resetApi.defaultSeed,
-        seedContext: { userPassword: this.config.resetApi.seedUserPassword, masterKey: this.config.masterKey },
+        seedContext: {
+          userPassword: this.config.resetApi.seedUserPassword,
+          masterKey: this.config.masterKey,
+          putObject: ({ key, body, contentType }) => this.storage.putObject(key, body, contentType),
+        },
         emptyBucket: () => this.storage.emptyBucket(),
       });
     } catch (error) {
