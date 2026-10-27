@@ -1,6 +1,6 @@
 import type { ApplicationStatus } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { and, eq, ne, or, type SQL } from "drizzle-orm";
+import { and, eq, ilike, inArray, ne, or, type SQL } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { applicationPersonals, applications } from "./schema.js";
 
@@ -33,6 +33,13 @@ const identityColumns = {
   motherMaidenNameKeyVersion: applicationPersonals.motherMaidenNameKeyVersion,
 };
 
+export interface ApplicantNameRow {
+  applicationId: string;
+  fullName: string;
+}
+
+const escapeLike = (value: string) => value.replace(/[\\%_]/g, (char) => `\\${char}`);
+
 /** Bacaan identitas pemohon `application.application_personals` untuk modul langkah (technical-specs 05 §5.10). */
 @Injectable()
 export class ApplicantLookupRepository {
@@ -61,5 +68,22 @@ export class ApplicantLookupRepository {
         and(ne(applicationPersonals.applicationId, subject.applicationId), ne(applications.status, "DRAFT"), similar),
       )
       .orderBy(applications.createdAt, applications.id);
+  }
+
+  async findFullNames(tx: Tx, applicationIds: readonly string[]): Promise<ApplicantNameRow[]> {
+    if (applicationIds.length === 0) return [];
+    return tx
+      .select({ applicationId: applicationPersonals.applicationId, fullName: applicationPersonals.fullName })
+      .from(applicationPersonals)
+      .where(inArray(applicationPersonals.applicationId, [...applicationIds]));
+  }
+
+  /** Pengajuan yang nama lengkap pemohonnya memuat `text`, tanpa membedakan huruf besar dan kecil. */
+  async findIdsByFullName(tx: Tx, text: string): Promise<string[]> {
+    const rows = await tx
+      .select({ applicationId: applicationPersonals.applicationId })
+      .from(applicationPersonals)
+      .where(ilike(applicationPersonals.fullName, `%${escapeLike(text)}%`));
+    return rows.map((row) => row.applicationId);
   }
 }

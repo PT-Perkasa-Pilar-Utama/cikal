@@ -12,8 +12,8 @@ export interface TaskFilter {
   queueCode: QueueCode;
   statuses: TaskStatus[];
   assignedTo?: string;
-  /** Potongan Loan ID, tanpa membedakan huruf besar dan kecil. */
-  loanId?: string;
+  /** Potongan Loan ID tanpa membedakan huruf besar dan kecil, atau pengajuan yang nama pemohonnya cocok. */
+  search?: { loanId: string; applicationIds: string[] };
   scope: VisibilityScope;
 }
 
@@ -164,8 +164,18 @@ function matching(filter: TaskFilter): SQL | undefined {
     eq(humanTasks.queueCode, filter.queueCode),
     inArray(humanTasks.status, filter.statuses),
     filter.assignedTo ? eq(humanTasks.assignedUserId, filter.assignedTo) : undefined,
-    filter.loanId ? ilike(humanTasks.loanId, `%${escapeLike(filter.loanId)}%`) : undefined,
+    filter.search ? searching(filter.search) : undefined,
     visible(filter.scope),
+  );
+}
+
+/** Daftar id pengajuan dikirim sebagai satu parameter array agar jumlah nama yang cocok tidak dibatasi parameter. */
+function searching(search: NonNullable<TaskFilter["search"]>): SQL | undefined {
+  return or(
+    ilike(humanTasks.loanId, `%${escapeLike(search.loanId)}%`),
+    search.applicationIds.length > 0
+      ? sql`${humanTasks.applicationId} = any(${sql.param(search.applicationIds)}::uuid[])`
+      : undefined,
   );
 }
 
@@ -191,5 +201,5 @@ function inBranches(branches: "ALL" | string[]): SQL {
 }
 
 function escapeLike(value: string): string {
-  return value.replace(/[%_]/g, (char) => `\\${char}`);
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
