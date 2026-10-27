@@ -1,5 +1,6 @@
 import { Global, Module } from "@nestjs/common";
 import { PROCESS_START_PORT } from "../../../platform/http/process-start-port.js";
+import { PROCESS_VIEW_PORT } from "../../../platform/http/process-view-port.js";
 import { ApplicationModule } from "../application/index.js";
 import { AuditModule } from "../audit/index.js";
 import { ProductModule } from "../product/index.js";
@@ -29,7 +30,8 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
 
 /**
  * Orchestrator: rute langkah, retry, recontest (technical-specs 05 §5.11, 12). Global karena mendaftarkan port
- * platform `PROCESS_START_PORT`: submit pengajuan memulai proses tanpa modul Application mengimpor modul ini.
+ * platform `PROCESS_START_PORT` dan `PROCESS_VIEW_PORT`: submit pengajuan memulai proses dan detail pengajuan
+ * membaca proses tanpa modul Application mengimpor modul ini.
  */
 @Global()
 @Module({
@@ -57,7 +59,8 @@ import { WaitDeadlineJob } from "./jobs/wait-deadline.job.js";
     AdvanceJob,
     WaitDeadlineJob,
     { provide: PROCESS_START_PORT, useExisting: OrchestratorApi },
+    { provide: PROCESS_VIEW_PORT, useExisting: OrchestratorApi },
   ],
-  exports: [OrchestratorApi, StepHandlerRegistry, PROCESS_START_PORT],
+  exports: [OrchestratorApi, StepHandlerRegistry, PROCESS_START_PORT, PROCESS_VIEW_PORT],
 })
 export class OrchestratorModule {}

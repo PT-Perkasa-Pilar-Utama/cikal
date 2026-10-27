@@ -176,8 +176,8 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /applications/{id}/documents` | 12 §12.6 | POC | OK |
 | `PUT /applications/{id}/documents/{documentType}` | 12 §12.7 | POC | OK |
 | `POST /applications/{id}/submit` | 12 §12.8 | POC | OK |
-| `GET /applications/{id}` | 12 §12.9 | POC | TODO |
-| `GET /applications/by-loan-id/{loanId}` | 12 §12.10 | POC | TODO |
+| `GET /applications/{id}` | 12 §12.9 | POC | OK |
+| `GET /applications/by-loan-id/{loanId}` | 12 §12.10 | POC | OK |
 | Sections spouse, business, collateral; OCR; pension | 12 §12.11 | Backlog | TODO |
 
 ### Processes
@@ -222,7 +222,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
-| `GET /applications` | 17 §17.1 | POC | TODO |
+| `GET /applications` | 17 §17.1 | POC | OK |
 | `GET /audit-logs` | 17 §17.2 | POC | TODO |
 | `GET /audit-logs/{id}` | 17 §17.3 | POC | TODO |
 | Dashboard, export | 17 §17.4 | Backlog | TODO |

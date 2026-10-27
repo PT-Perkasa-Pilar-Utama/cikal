@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
+import { USER_DIRECTORY_PORT, type UserDirectoryPort } from "../../../../platform/http/user-directory-port.js";
 import { type BranchCode, BranchesRepository } from "../db/branches.repository.js";
 import { SubBranchesRepository } from "../db/sub-branches.repository.js";
 
@@ -9,6 +10,7 @@ export class BranchDirectory {
   constructor(
     private readonly branches: BranchesRepository,
     private readonly subBranches: SubBranchesRepository,
+    @Inject(USER_DIRECTORY_PORT) private readonly users: UserDirectoryPort,
   ) {}
 
   /** Cabang tenant transaksi `tx`, aktif atau tidak; id yang tidak ditemukan tidak ada di hasil. */
@@ -26,5 +28,19 @@ export class BranchDirectory {
   async branchOf(tx: Tx, unit: { branchId: string | null; subBranchId: string | null }): Promise<string | null> {
     if (unit.branchId) return unit.branchId;
     return unit.subBranchId ? this.subBranches.findBranchId(tx, unit.subBranchId) : null;
+  }
+
+  /**
+   * Cabang pengajuan yang boleh dilihat user (TN-02, technical-specs 09 §9.4): seluruh company untuk role pusat,
+   * cabang regionalnya, atau cabang unit kerjanya. User yang tidak ada di tenant tidak melihat cabang apa pun.
+   */
+  async dataScope(tx: Tx, userId: string): Promise<"ALL" | string[]> {
+    const unit = await this.users.scope(tx, userId);
+    if (!unit) return [];
+    if (unit.branchId || unit.subBranchId) {
+      const branchId = await this.branchOf(tx, unit);
+      return branchId ? [branchId] : [];
+    }
+    return unit.regionalId ? this.idsInRegional(tx, unit.regionalId) : "ALL";
   }
 }

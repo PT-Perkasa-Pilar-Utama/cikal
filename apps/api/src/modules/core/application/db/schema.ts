@@ -87,7 +87,10 @@ export const applications = application.table(
     segment: text("segment"),
     purposeOfLoan: text("purpose_of_loan"),
     tenorProposed: integer("tenor_proposed"),
+    /** Tenor dan plafon level approval final (api-specs 16 §16.6); kosong sampai pengajuan disetujui. */
+    tenorApproved: integer("tenor_approved"),
     requestedLimit: money("requested_limit"),
+    loanAmount: money("loan_amount"),
     insuranceId: uuid("insurance_id").references(() => insurances.id),
     sourceCode: text("source_code"),
     salesCode: text("sales_code"),
@@ -112,6 +115,8 @@ export const applications = application.table(
     check("applications_current_step_check", sql`${table.currentStep} in (${textList(STEP_CODES)})`),
     check("applications_current_section_check", sql`${table.currentSection} in (${textList(SECTIONS)})`),
     index("applications_created_by_status_idx").on(table.tenantId, table.createdBy, table.status),
+    // Pencarian Loan ID cocok sebagian di Application Inquiry (technical-specs 06 §6.9, AC-83.01).
+    index("applications_loan_id_trgm").using("gin", table.loanId.op("gin_trgm_ops")),
     tenantIsolation(),
   ],
 );

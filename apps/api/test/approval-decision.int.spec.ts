@@ -92,6 +92,11 @@ describe("approval decision: approve", () => {
     expect(financing).toMatchObject({ loanAmount: "600000000.00", interestRate: "14.0000", approvalType: "MANUAL" });
     expect(financing.schedule.at(-1)?.outstandingAmount).toBe("0.00");
     expect(await openTasks(db.owner, applicationId)).toEqual([]);
+    const { rows } = await db.owner.query(
+      "select tenor_approved, loan_amount from application.applications where id = $1",
+      [applicationId],
+    );
+    expect(rows[0]).toEqual({ tenor_approved: 36, loan_amount: "600000000.00" });
   });
 
   it("AC-97.06 approves with 13% and records the rate change from 14% to 13%", async () => {

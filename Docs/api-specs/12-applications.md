@@ -241,7 +241,7 @@ Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pemb
 **Purpose:** Slot unggah step "Document" dari checklist yang cocok (produk, pekerjaan, status kawin).  
 **Access:** `APP-ENTRY` VIEW untuk draft miliknya; `APP-INQUIRY` VIEW untuk pengajuan dalam lingkup data.
 
-**Behavior:** Checklist ACTIVE untuk kombinasi pengajuan (AC-25.04). Tidak ada checklist, atau Occupation dan Marital belum disimpan sehingga belum bisa dicocokkan: `422 CHECKLIST_NOT_CONFIGURED`; submit juga diblokir (AC-25.05). Label slot dari General Parameter `Document`. Akses `APP-INQUIRY` sesuai lingkup data dipasang di kartu FE-S5-04; sampai saat itu hanya pembuat draft.
+**Behavior:** Checklist ACTIVE untuk kombinasi pengajuan (AC-25.04). Tidak ada checklist, atau Occupation dan Marital belum disimpan sehingga belum bisa dicocokkan: `422 CHECKLIST_NOT_CONFIGURED`; submit juga diblokir (AC-25.05). Label slot dari General Parameter `Document`. Pembuat draft dengan `APP-ENTRY` VIEW, atau user `APP-INQUIRY` VIEW untuk pengajuan dalam lingkup datanya (draft hanya pembuatnya); user tanpa View di kedua menu `403 ACCESS_DENIED`, pengajuan di luar lingkup `404 NOT_FOUND`.
 
 **Output 200**
 
@@ -349,7 +349,9 @@ Langkah otomatis berjalan di belakang; respons tidak menunggunya (NFR submit < 3
 
 1. Pengajuan di tenant lain atau di luar lingkup data: `404 APPLICATION_NOT_FOUND` (AC-84.04).
 2. Catat audit `VIEW_APPLICATION` (Data Access) dengan user, waktu, dan Loan ID (AC-84.06).
-3. `tabs[]` hanya berisi tab yang relevan: section yang tidak ada di `steps[]` dan modul yang dilewati rute tidak tampil (AC-84.03).
+3. `tabs[]` hanya berisi tab yang relevan: section yang tidak ada di `steps[]` dan modul yang dilewati rute tidak tampil (AC-84.03). Urutan tetap: `detail` (section Application), `personal`, `spouse`, `occupation`, `business`, `lkn` (langkah SURVEY), `collateral`, `documents`, `emergency-contact`, `workflow` (History, setelah proses dimulai), lalu tab modul `dedup`, `dukcapil`, `fraud`, `scoring` (RAC dan SCORING), `credit-bureau`, `decision`, `approval`. Tab modul tampil untuk langkah proses terbaru yang tidak `SKIPPED` dan tidak dilewati rute atau lisensi. Orchestrator memberi proses dan langkah aktif lewat port platform `PROCESS_VIEW_PORT` (XM-01, tanpa impor modul Orchestrator).
+4. Draft hanya terlihat oleh pembuatnya. Lingkup data (TN-02): role pusat seluruh company, role regional cabang regionalnya, unit cabang atau sub cabang cabang induknya.
+5. `summary.loanAmount` dan `summary.tenorApproved` diisi modul Approval saat struktur kredit level final dibentuk (`application.applications.loan_amount`, `tenor_approved`); sebelum itu `loanAmount` adalah `requestedLimit`.
 
 **Output 200**
 
@@ -358,7 +360,7 @@ Langkah otomatis berjalan di belakang; respons tidak menunggunya (NFR submit < 3
   "data": {
     "id": "0192...", "loanId": "20102026KTA0000013", "status": "ON_PROGRESS", "currentStep": "APPROVAL", "currentStepStatus": "WAITING_HUMAN",
     "summary": { "applicationType": "NTB", "loanAmount": "20000000.00", "tenorApproved": null, "productCode": "KTA", "branchCode": "011", "submittedAt": "2026-10-20T07:30:00Z" },
-    "tabs": ["detail", "documents", "workflow", "dedup", "dukcapil", "fraud", "scoring", "credit-bureau", "decision", "approval"],
+    "tabs": ["detail", "personal", "occupation", "documents", "emergency-contact", "workflow", "dedup", "dukcapil", "fraud", "scoring", "credit-bureau", "decision", "approval"],
     "sections": { "application": {}, "personal": { "idCardNumber": "3273011402900001" }, "occupation": {}, "emergency-contact": {} },
     "processInstances": [ { "id": "0192...", "recontestNumber": 0, "status": "WAITING" } ]
   }

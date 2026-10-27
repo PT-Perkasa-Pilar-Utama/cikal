@@ -65,6 +65,8 @@ export const applicationPersonals = application.table(
   (table) => [
     check("application_personals_id_type_check", sql`${table.idType} in ('KTP')`),
     index("application_personals_id_card_number_bidx_idx").on(table.tenantId, table.idCardNumberBidx),
+    // Pencarian nama pemohon cocok sebagian di Application Inquiry (technical-specs 06 §6.9, AC-83.01).
+    index("application_personals_full_name_trgm").using("gin", table.fullName.op("gin_trgm_ops")),
     tenantIsolation(),
   ],
 );

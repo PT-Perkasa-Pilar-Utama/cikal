@@ -10,6 +10,7 @@ import { menuGroupIcon } from "./menu-icons";
  */
 const menuRoutes = new Map<string, LinkProps["to"]>([
   ["APP-ENTRY", "/applications/drafts"],
+  ["APP-INQUIRY", "/applications"],
   ["APP-SIMULATION", "/applications/simulation"],
   ["MST-PRODUCT", "/master/products"],
   ["MST-ROUTE", "/master/routes"],

@@ -1,8 +1,8 @@
 import type { ApplicationStatus, FormSection, ProductCategory, StepCode } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
-import { and, asc, count, desc, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
-import { applicationPersonals, applications } from "./schema.js";
+import { applications } from "./schema.js";
 
 export interface ApplicationProcessRow {
   id: string;
@@ -50,6 +50,19 @@ export interface DraftRow {
   returnNote: string | null;
 }
 
+/** Pengajuan untuk "Application Detail" (api-specs 12 §12.9): section Application, ringkasan, dan lingkup data. */
+export interface DetailRow extends DraftRow {
+  createdBy: string | null;
+  branchId: string | null;
+  currentStep: StepCode | null;
+  tenorApproved: number | null;
+  loanAmount: string | null;
+  submittedAt: Date | null;
+}
+
+/** Pengajuan dicari dari id atau Loan ID (api-specs 12 §12.9, §12.10). */
+export type ApplicationKey = { id: string } | { loanId: string };
+
 /** Kolom section Application, persetujuan pemohon, dan posisi form yang diubah simpan section. */
 export type DraftChanges = Partial<
   Pick<
@@ -72,23 +85,6 @@ export type DraftChanges = Partial<
   >
 >;
 
-export interface DraftListRow {
-  id: string;
-  loanId: string;
-  fullName: string;
-  productId: string;
-  requestedLimit: string | null;
-  currentSection: FormSection;
-  returnNote: string | null;
-  updatedAt: Date;
-}
-
-/** Draft milik pembuatnya, dengan pencarian Loan ID atau nama (api-specs 12 §12.4, AC-49.06). */
-export interface DraftFilter {
-  createdBy: string;
-  q?: string;
-}
-
 const draftColumns = {
   id: applications.id,
   loanId: applications.loanId,
@@ -110,7 +106,15 @@ const draftColumns = {
   returnNote: applications.returnNote,
 };
 
-const escapeLike = (value: string) => value.replace(/[\\%_]/g, (char) => `\\${char}`);
+const detailColumns = {
+  ...draftColumns,
+  createdBy: applications.createdBy,
+  branchId: applications.branchId,
+  currentStep: applications.currentStep,
+  tenorApproved: applications.tenorApproved,
+  loanAmount: applications.loanAmount,
+  submittedAt: applications.submittedAt,
+};
 
 /** Akses tabel `application.applications` (technical-specs 06 §6.9). */
 @Injectable()
@@ -126,6 +130,12 @@ export class ApplicationsRepository {
       .select(processColumns)
       .from(applications)
       .where(inArray(applications.id, [...ids]));
+  }
+
+  async findDetail(tx: Tx, key: ApplicationKey): Promise<DetailRow | null> {
+    const where = "id" in key ? eq(applications.id, key.id) : eq(applications.loanId, key.loanId);
+    const [row] = await tx.select(detailColumns).from(applications).where(where);
+    return row ?? null;
   }
 
   async insert(tx: Tx, row: typeof applications.$inferInsert): Promise<void> {
@@ -173,40 +183,6 @@ export class ApplicationsRepository {
       .where(eq(applications.id, id));
   }
 
-  async listDrafts(
-    tx: Tx,
-    filter: DraftFilter,
-    page: { offset: number; limit: number; direction: "asc" | "desc" },
-  ): Promise<DraftListRow[]> {
-    const order = page.direction === "asc" ? asc : desc;
-    return tx
-      .select({
-        id: applications.id,
-        loanId: applications.loanId,
-        fullName: applicationPersonals.fullName,
-        productId: applications.productId,
-        requestedLimit: applications.requestedLimit,
-        currentSection: applications.currentSection,
-        returnNote: applications.returnNote,
-        updatedAt: applications.updatedAt,
-      })
-      .from(applications)
-      .innerJoin(applicationPersonals, eq(applicationPersonals.applicationId, applications.id))
-      .where(this.draftsOf(filter))
-      .orderBy(order(applications.updatedAt), asc(applications.id))
-      .limit(page.limit)
-      .offset(page.offset);
-  }
-
-  async countDrafts(tx: Tx, filter: DraftFilter): Promise<number> {
-    const [row] = await tx
-      .select({ total: count() })
-      .from(applications)
-      .innerJoin(applicationPersonals, eq(applicationPersonals.applicationId, applications.id))
-      .where(this.draftsOf(filter));
-    return row?.total ?? 0;
-  }
-
   /** Mengunci baris sampai transaksi selesai agar perubahan status tidak saling menimpa. */
   async lockStatus(tx: Tx, id: string): Promise<ApplicationStatus | null> {
     const [row] = await tx
@@ -233,14 +209,15 @@ export class ApplicationsRepository {
     await tx.update(applications).set({ currentStep, updatedAt: new Date() }).where(eq(applications.id, id));
   }
 
-  private draftsOf(filter: DraftFilter): SQL | undefined {
-    const pattern = filter.q === undefined ? undefined : `%${escapeLike(filter.q)}%`;
-    return and(
-      eq(applications.status, "DRAFT"),
-      eq(applications.createdBy, filter.createdBy),
-      pattern === undefined
-        ? undefined
-        : or(ilike(applications.loanId, pattern), ilike(applicationPersonals.fullName, pattern)),
-    );
+  async updateApprovedTerms(
+    tx: Tx,
+    id: string,
+    terms: { tenorApproved: number; loanAmount: string },
+    userId: string | null,
+  ): Promise<void> {
+    await tx
+      .update(applications)
+      .set({ ...terms, updatedAt: new Date(), updatedBy: userId })
+      .where(eq(applications.id, id));
   }
 }

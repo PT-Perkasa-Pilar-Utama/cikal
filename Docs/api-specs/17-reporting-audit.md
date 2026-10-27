@@ -29,7 +29,7 @@ Inquiry pengajuan, dashboard, ekspor, dan jejak audit. Modul pemilik: CORE Repor
 }
 ```
 
-Klien menampilkan "41 items" dari `meta.totalItems` (AC-83.05) dan memanggil ulang setiap 30 detik agar perubahan langkah tampil (AC-83.06). Hasil kosong: `data: []`, klien menampilkan "No applications found" (AC-83.04).
+Data dibaca dari view `reporting.application_inquiry` (`security_invoker`, XM-07); NIK didekripsi lalu disamarkan 4 digit awal dan akhir. `submittedFrom` dan `submittedTo` adalah tanggal bisnis Asia/Jakarta. Klien menampilkan "41 items" dari `meta.totalItems` (AC-83.05) dan memanggil ulang setiap 30 detik agar perubahan langkah tampil (AC-83.06). Hasil kosong: `data: []`, klien menampilkan "No applications found" (AC-83.04).
 
 **Errors:** `INVALID_DATE_RANGE` 422 "End date must be on or after start date" (AC-83.07).
 

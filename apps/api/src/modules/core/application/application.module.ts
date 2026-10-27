@@ -9,9 +9,11 @@ import { ApplicationFileAccess } from "./application/application-file-access.js"
 import { ApplicationIdentities } from "./application/application-identities.js";
 import { ApplicationProcess } from "./application/application-process.js";
 import { ApplicationSectionChecks } from "./application/application-section-checks.js";
+import { ApplicationVisibility } from "./application/application-visibility.js";
 import { DraftDocuments } from "./application/draft-documents.js";
 import { DraftFormSections } from "./application/draft-form-sections.js";
 import { DraftSections } from "./application/draft-sections.js";
+import { GetApplicationDetailUseCase } from "./application/get-application-detail.use-case.js";
 import { GetDraftFormUseCase } from "./application/get-draft-form.use-case.js";
 import { ListApplicationDocumentsUseCase } from "./application/list-application-documents.use-case.js";
 import { ListDraftsUseCase } from "./application/list-drafts.use-case.js";
@@ -32,6 +34,7 @@ import { ApplicationFactsRepository } from "./db/application-facts.repository.js
 import { ApplicationOccupationsRepository } from "./db/application-occupations.repository.js";
 import { ApplicationPersonalsRepository } from "./db/application-personals.repository.js";
 import { ApplicationsRepository } from "./db/applications.repository.js";
+import { DraftListRepository } from "./db/draft-list.repository.js";
 import { LoanIdCountersRepository } from "./db/loan-id-counters.repository.js";
 import { ApplicationDocumentsController } from "./http/application-documents.controller.js";
 import { ApplicationSectionsController } from "./http/application-sections.controller.js";
@@ -43,6 +46,7 @@ import { ApplicationsController } from "./http/applications.controller.js";
   controllers: [ApplicationsController, ApplicationSectionsController, ApplicationDocumentsController],
   providers: [
     ApplicationsRepository,
+    DraftListRepository,
     ApplicationPersonalsRepository,
     ApplicationAddressesRepository,
     ApplicationOccupationsRepository,
@@ -70,6 +74,8 @@ import { ApplicationsController } from "./http/applications.controller.js";
     SaveEmergencyContactSectionUseCase,
     ListDraftsUseCase,
     GetDraftFormUseCase,
+    ApplicationVisibility,
+    GetApplicationDetailUseCase,
     ListApplicationDocumentsUseCase,
     UploadApplicationDocumentUseCase,
     SubmitApplicationUseCase,

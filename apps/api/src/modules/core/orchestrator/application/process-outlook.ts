@@ -2,6 +2,7 @@ import { type StepCode, type StepStatus, stepCodes } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import { v7 as uuidv7 } from "uuid";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
+import type { ApplicationProcessView } from "../../../../platform/http/process-view-port.js";
 import { ProductRoutes } from "../../product/index.js";
 import { Licensing } from "../../tenancy/index.js";
 import { ProcessInstancesRepository } from "../db/process-instances.repository.js";
@@ -48,6 +49,27 @@ export class ProcessOutlook {
     if (!process) return null;
     const step = (await this.steps.listLatest(tx, process.id)).find((candidate) => candidate.stepCode === stepCode);
     return { processInstanceId: process.id, status: step?.status ?? "PENDING" };
+  }
+
+  /**
+   * Proses pengajuan untuk "Application Detail" (api-specs 12 §12.9): langkah aktif adalah langkah proses terbaru
+   * yang tidak `SKIPPED` dan tidak dilewati rute atau lisensi, termasuk yang belum dijalankan (AC-84.03).
+   */
+  async view(tx: Tx, applicationId: string): Promise<ApplicationProcessView> {
+    const processes = await this.processes.listByApplication(tx, applicationId);
+    const latest = processes.at(-1);
+    const processInstances = processes.map(({ id, recontestNumber, status }) => ({ id, recontestNumber, status }));
+    if (!latest) return { processInstances, stepStatuses: {}, activeSteps: [] };
+    const steps = await this.steps.listLatest(tx, latest.id);
+    const route = await this.routes.version(tx, latest.routeVersionId);
+    const licensed = (await this.licensing.state(tx)).modules;
+    return {
+      processInstances,
+      stepStatuses: Object.fromEntries(steps.map((step) => [step.stepCode, step.status])),
+      activeSteps: steps
+        .filter((step) => step.status !== "SKIPPED" && !routeSkipReason(step.stepCode, route.steps, licensed))
+        .map((step) => step.stepCode),
+    };
   }
 
   /**

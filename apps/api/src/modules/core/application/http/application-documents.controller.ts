@@ -2,7 +2,7 @@ import type { ApplicationDocumentsResponse, DocumentUploadResponse } from "@cika
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Put } from "@nestjs/common";
 import { RouteConfig } from "@nestjs/platform-fastify";
 import { createZodDto } from "nestjs-zod";
-import { Requires } from "../../../../platform/http/access.js";
+import { Authenticated, Requires } from "../../../../platform/http/access.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { CurrentContext } from "../../../../platform/http/current-context.js";
 import { fileUploadSchema } from "../../../../platform/http/multipart.js";
@@ -26,7 +26,7 @@ export class ApplicationDocumentsController {
   ) {}
 
   @Get()
-  @Requires("APP-ENTRY", "VIEW")
+  @Authenticated()
   list(
     @CurrentContext() ctx: RequestContext,
     @Param("id", ParseUUIDPipe) id: string,

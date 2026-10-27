@@ -6,7 +6,7 @@ import { v7 as uuidv7 } from "uuid";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
-import { ApplicationFactsReader } from "../../application/index.js";
+import { ApplicationFactsReader, ApplicationProcess } from "../../application/index.js";
 import { CalculationApi, type CalculationContext, DEFAULT_FORMULA_VERSION } from "../../calculation/index.js";
 import { FinancingsRepository } from "../db/financings.repository.js";
 import type { ApprovedTermValues } from "../domain/approved-terms.js";
@@ -51,6 +51,7 @@ function decimalOf(value: unknown, code: string): Decimal {
 export class FinancingBuilder {
   constructor(
     private readonly facts: ApplicationFactsReader,
+    private readonly applications: ApplicationProcess,
     private readonly calculation: CalculationApi,
     private readonly financings: FinancingsRepository,
   ) {}
@@ -137,6 +138,12 @@ export class FinancingBuilder {
         interestAmount: money(row.interestAmount),
         outstandingAmount: money(row.outstandingAmount),
       })),
+      actorId,
+    );
+    await this.applications.recordApprovedTerms(
+      tx,
+      process.applicationId,
+      { tenorApproved: tenor, loanAmount: money(loanAmount) },
       actorId,
     );
   }

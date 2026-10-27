@@ -158,6 +158,7 @@ export interface OrchestratorApi {
   recontest(applicationId: string, reason: string, changedFields: unknown, by: string): Promise<{ processInstanceId: string }>;
   outcomes(processInstanceId: string): Promise<Partial<Record<StepCode, string>>>;  // COMPLETED: outcomeCode, SKIPPED: "SKIP"
   nextStep(processInstanceId: string, after: StepCode): Promise<StepCode | null>;    // dipakai GET /applications/{id}/decision
+  view(applicationId: string): Promise<ApplicationProcessView>;                     // PROCESS_VIEW_PORT, dipakai GET /applications/{id}
   stepOf(applicationId: string, stepCode: StepCode, processInstanceId?: string): Promise<{ processInstanceId: string; status: StepStatus } | null>;  // endpoint hasil langkah modul (api 19 s.d. 23)
   timeline(applicationId: string): Promise<TimelineEntry[]>;
 }

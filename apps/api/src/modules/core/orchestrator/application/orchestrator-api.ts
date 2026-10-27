@@ -1,6 +1,7 @@
 import type { StepCode, StepStatus } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
+import type { ApplicationProcessView } from "../../../../platform/http/process-view-port.js";
 import { ProcessOutlook } from "./process-outlook.js";
 import { StartProcess } from "./start-process.js";
 import { type ExternalMatch, WaitingSteps } from "./waiting-steps.js";
@@ -56,6 +57,11 @@ export class OrchestratorApi {
     processInstanceId?: string,
   ): Promise<{ processInstanceId: string; status: StepStatus } | null> {
     return this.outlook.stepOf(tx, applicationId, stepCode, processInstanceId);
+  }
+
+  /** Proses dan langkah aktif untuk "Application Detail", lewat `PROCESS_VIEW_PORT` (api-specs 12 §12.9). */
+  view(tx: Tx, applicationId: string): Promise<ApplicationProcessView> {
+    return this.outlook.view(tx, applicationId);
   }
 
   /** Langkah sesudah `after` menurut rute proses, contoh SIKP atau APPROVAL sesudah DECISION (AC-69.01). */

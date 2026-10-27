@@ -12,3 +12,12 @@ const formatter = new Intl.DateTimeFormat("en-CA", {
 export function businessDate(at: Date): string {
   return formatter.format(at);
 }
+
+const BUSINESS_UTC_OFFSET = "+07:00";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Rentang waktu satu tanggal bisnis `YYYY-MM-DD`: awal inklusif, akhir eksklusif. Asia/Jakarta tanpa DST. */
+export function businessDayRange(date: string): { start: Date; end: Date } {
+  const start = new Date(`${date}T00:00:00${BUSINESS_UTC_OFFSET}`);
+  return { start, end: new Date(start.getTime() + DAY_MS) };
+}
