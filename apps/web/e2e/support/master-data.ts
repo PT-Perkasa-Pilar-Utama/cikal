@@ -60,20 +60,31 @@ const pricingRequest = (): ProductPricingUpdateRequest => ({
 });
 
 /** Rute dengan Dedup sebagai langkah otomatis pertama setelah Data Entry, ditambah langkah wajib (RT-03). */
-const ROUTE_STEPS: StepCode[] = ["DATA_ENTRY", "DEDUP", "APPROVAL", "VALIDITY_CHECK", "PRINT_AKAD", "DISBURSEMENT"];
-const routeRequest: ProductRouteUpdateRequest = {
-  steps: ROUTE_STEPS.map((stepCode) => ({ stepCode, isEnabled: true })),
-};
+const ROUTE_STEPS: readonly StepCode[] = [
+  "DATA_ENTRY",
+  "DEDUP",
+  "APPROVAL",
+  "VALIDITY_CHECK",
+  "PRINT_AKAD",
+  "DISBURSEMENT",
+];
+const routeRequest = (steps: readonly StepCode[]): ProductRouteUpdateRequest => ({
+  steps: steps.map((stepCode) => ({ stepCode, isEnabled: true })),
+});
 
 /**
  * Produk yang tersedia untuk pengajuan baru (api-specs 08 §8.7): produk, pricing, dan rute masing-masing diajukan
- * Maker lalu disetujui Checker. Hasilnya id produk.
+ * Maker lalu disetujui Checker dengan langkah rute `routeSteps`. Hasilnya id produk.
  */
-export async function availableProduct(productCode: string, productName: string): Promise<string> {
+export async function availableProduct(
+  productCode: string,
+  productName: string,
+  routeSteps: readonly StepCode[] = ROUTE_STEPS,
+): Promise<string> {
   const productId = (await approve("checker.001", await submitProduct("maker.01", productCode, productName))) ?? "";
   for (const [path, body] of [
     [`/api/v1/products/${productId}/pricing`, pricingRequest()],
-    [`/api/v1/products/${productId}/route`, routeRequest],
+    [`/api/v1/products/${productId}/route`, routeRequest(routeSteps)],
   ] as const) {
     const accepted = await ApiSession.as("maker.01", (maker) => maker.put(changeRequestAcceptedSchema, path, body));
     await approve("checker.001", accepted.data.changeRequestId);
