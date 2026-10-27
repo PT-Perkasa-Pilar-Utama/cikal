@@ -14,6 +14,8 @@ const RELEASE_CONFIRMATION = "Are you sure you want to release this task?";
 
 interface TaskQueueProps {
   queueCode: QueueCode;
+  /** Label tombol Proceed menurut layar antrean, contoh "Proceed to Verification" (AC-64.01). */
+  proceedLabel?: string;
   /** Membuka layar kerja tugas milik user sesi; isinya milik layar antrean pemakai komponen ini. */
   onProceed: (task: TaskItem) => void;
 }
@@ -23,7 +25,7 @@ interface TaskQueueProps {
  * "Assign to Me" (AC-58.01), "Release Me" (AC-58.03), dan "Release" Supervisor dengan konfirmasi "Yes"
  * (AC-58.05). Pesan error server, contoh tugas sudah diambil orang lain (AC-58.04), tampil di atas tabel.
  */
-export function TaskQueue({ queueCode, onProceed }: TaskQueueProps) {
+export function TaskQueue({ queueCode, proceedLabel = "Proceed", onProceed }: TaskQueueProps) {
   const [page, setPage] = useState(1);
   const [releasing, setReleasing] = useState<TaskItem | null>(null);
   const { data, isPending, error } = useTasks(queueCode, page);
@@ -70,6 +72,7 @@ export function TaskQueue({ queueCode, onProceed }: TaskQueueProps) {
                   <TaskActions
                     task={task}
                     busy={busy}
+                    proceedLabel={proceedLabel}
                     onAssign={() => {
                       release.reset();
                       assign.mutate(task);

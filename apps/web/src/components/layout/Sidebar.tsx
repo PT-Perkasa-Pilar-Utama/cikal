@@ -16,6 +16,7 @@ const menuRoutes = new Map<string, LinkProps["to"]>([
   ["MST-CHECKLIST", "/master/checklists"],
   ["MST-DECISION", "/master/decision"],
   ["IAM-ROLE-ACCESS", "/access/role-access"],
+  ["OPS-VERIFICATION", "/operations/verification"],
   ["OPS-MONITORING", "/operations/monitoring"],
 ]);
 

@@ -8,6 +8,7 @@ const actionButton =
 interface TaskActionsProps {
   task: TaskItem;
   busy: boolean;
+  proceedLabel: string;
   onAssign: () => void;
   onProceed: () => void;
   onRelease: () => void;
@@ -26,7 +27,15 @@ function ActionButton({ busy, onClick, children }: { busy: boolean; onClick: () 
  * Tombol aksi satu tugas, hanya dari `allowedActions` server (api-specs 14 §14.2): tugas milik orang lain tidak
  * punya Assign to Me, Proceed, dan Release Me (AC-58.02, AC-58.06).
  */
-export function TaskActions({ task, busy, onAssign, onProceed, onRelease, onReleaseOther }: TaskActionsProps) {
+export function TaskActions({
+  task,
+  busy,
+  proceedLabel,
+  onAssign,
+  onProceed,
+  onRelease,
+  onReleaseOther,
+}: TaskActionsProps) {
   const allowed = new Set(task.allowedActions);
   return (
     <div className="flex justify-end gap-1">
@@ -39,7 +48,7 @@ export function TaskActions({ task, busy, onAssign, onProceed, onRelease, onRele
       {allowed.has("PROCEED") && (
         <ActionButton busy={busy} onClick={onProceed}>
           <ArrowRight size={16} aria-hidden />
-          Proceed
+          {proceedLabel}
         </ActionButton>
       )}
       {allowed.has("RELEASE") && (
