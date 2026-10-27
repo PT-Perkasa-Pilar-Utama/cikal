@@ -35,6 +35,21 @@ describe(
       expect(screen.getByRole("checkbox", { name: "Same as ID Address" })).toBeChecked();
     });
 
+    it("AC-64.02 AC-73.02 shows the return note above the form of a returned draft", async () => {
+      const returned = {
+        data: { ...applicationFormResponseMock.data, returnNote: "NPWP: Nama di NPWP tidak sesuai KTP" },
+      };
+      stubApi(stepRoutes({ [FORM]: { status: 200, body: returned } }));
+      renderApp(`/applications/${DRAFT_ID}`);
+
+      const note = await screen.findByRole("region", { name: "Return Note" });
+
+      expect(note).toHaveTextContent("NPWP: Nama di NPWP tidak sesuai KTP");
+      expect(note.compareDocumentPosition(screen.getByRole("form", { name: "Occupation" }))).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+
     it("AC-50.01 does not open a submitted application for editing", async () => {
       const submitted = { data: { ...applicationFormResponseMock.data, status: "ON_PROGRESS" } };
       stubApi(stepRoutes({ [FORM]: { status: 200, body: submitted } }));
