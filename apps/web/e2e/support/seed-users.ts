@@ -5,7 +5,14 @@ import { expect, type Page } from "@playwright/test";
 export const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:5173";
 
 /** User seed yang sesinya disiapkan global setup dan dipakai ulang oleh spec. */
-export const SESSION_USERS = ["maker.01", "checker.001", "admin.sistem", "sales.jkt01", "verifikator.01"] as const;
+export const SESSION_USERS = [
+  "maker.01",
+  "checker.001",
+  "admin.sistem",
+  "sales.jkt01",
+  "verifikator.01",
+  "kepala.cabang",
+] as const;
 export type SessionUser = (typeof SESSION_USERS)[number];
 
 const secretFile = (name: string) =>

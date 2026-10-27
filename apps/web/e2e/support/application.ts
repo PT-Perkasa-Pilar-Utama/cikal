@@ -27,13 +27,13 @@ const PDF = Buffer.from(
     "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n",
 );
 
-const applicationSection = (productId: string): ApplicationSectionInput => ({
+const applicationSection = (productId: string, requestedLimit: string): ApplicationSectionInput => ({
   applicationType: "NTB",
   productCategory: "NON_COLLATERAL",
   productId,
   segment: "MIKRO",
   tenorProposed: 36,
-  requestedLimit: "20000000.00",
+  requestedLimit,
 });
 
 /** Identitas pemohon; pemohon lain dipakai bila nama yang sama melewati aturan velocity Fraud dalam satu hari. */
@@ -97,6 +97,8 @@ interface DraftOptions {
   draft?: SavableSection;
   documents?: readonly string[];
   applicant?: Applicant;
+  /** Plafon yang diminta; bawaan 20.000.000 di atas Limit Auto Approval produk uji (AC-74.03). */
+  requestedLimit?: string;
 }
 
 /**
@@ -110,7 +112,7 @@ export async function salesDraft(
   const marital = options.marital ?? BELUM_KAWIN;
   const applicant = options.applicant ?? RUDI;
   const bodies: Record<SavableSection, object> = {
-    application: applicationSection(productId),
+    application: applicationSection(productId, options.requestedLimit ?? "20000000.00"),
     personal: personalSection(marital, options.email ?? "rudi@contoh.com", applicant),
     occupation: occupationSection,
     "emergency-contact": emergencyContactSection,

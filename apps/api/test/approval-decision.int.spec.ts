@@ -1,4 +1,4 @@
-import { approvalDecisionResponseSchema, financingResponseSchema } from "@cikal/contracts";
+import { approvalDecisionResponseSchema, financingResponseSchema, taskListResponseSchema } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.factory.js";
@@ -71,6 +71,20 @@ describe("approval decision: approve", () => {
       { queue_code: "APPROVAL", status: "ASSIGNED", assigned_user_id: actors.regionalHead.userId },
     ]);
     expect((await latestSteps(db.owner, processId)).get("APPROVAL")).toMatchObject({ status: "WAITING_HUMAN" });
+  });
+
+  it("AC-72.01 shows Detail on the approver's own task to a role with Approval View and Approve only", async () => {
+    const { applicationId } = await waitingApproval(app, db.owner, actors, "600000000.00");
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/v1/tasks?queueCode=APPROVAL&assignedToMe=true",
+      headers: actors.branchHead.headers,
+    });
+
+    expect(res.statusCode, res.body).toBe(200);
+    const task = taskListResponseSchema.parse(res.json()).data.find((item) => item.applicationId === applicationId);
+    expect(task).toMatchObject({ status: "ASSIGNED", allowedActions: ["PROCEED"] });
   });
 
   it("AC-72.01 approves at the final level and builds the schedule with the last outstanding at Rp0", async () => {

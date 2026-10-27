@@ -1,5 +1,4 @@
 import {
-  applicationApprovalResponseSchema,
   applicationDetailResponseSchema,
   applicationInquiryResponseSchema,
   fileDownloadUrlResponseSchema,
@@ -29,15 +28,6 @@ export function useApplicationDetail(loanId: string) {
       (await apiRequest(applicationDetailResponseSchema, `/v1/applications/by-loan-id/${encodeURIComponent(loanId)}`))
         .data,
     retry: false,
-  });
-}
-
-/** Rantai approval untuk tab "Approval" (api-specs 16 §16.5). */
-export function useApprovalChain(applicationId: string) {
-  return useQuery({
-    queryKey: ["application-approval", applicationId],
-    queryFn: async () =>
-      (await apiRequest(applicationApprovalResponseSchema, `/v1/applications/${applicationId}/approval`)).data.chain,
   });
 }
 

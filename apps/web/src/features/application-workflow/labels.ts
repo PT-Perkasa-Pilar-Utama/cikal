@@ -15,13 +15,14 @@ import {
 
 export const EMPTY_VALUE = "-";
 
-/** Hasil langkah di luar nilai Decision Matrix; teksnya mengikuti MRTM US-59, US-61, dan US-65. */
+/** Hasil langkah di luar nilai Decision Matrix; teksnya mengikuti MRTM US-59, US-61, US-65, dan AC-74.01. */
 const OUTCOME_LABELS: Readonly<Record<string, string>> = {
   ...MATRIX_VALUE_LABELS,
   DUPLICATE_IN_FLIGHT: "Duplicate In-Flight",
   FAILED: "Failed",
   SUSPICIOUS: "Suspicious",
   HIGH_FRAUD_POTENTIAL: "High Fraud Potential",
+  AUTO_APPROVED: "Auto Approved",
 };
 
 /** Label `outcomeCode`; kode yang belum punya label tampil apa adanya agar hasil baru tetap terbaca. */

@@ -3,6 +3,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   APPLICATION_ID,
+  goSteps,
   INITIAL_PROCESS_ID,
   initialSteps,
   LOAN_ID,
@@ -10,6 +11,7 @@ import {
   processOf,
   RECONTEST_PROCESS_ID,
   timeline,
+  timelineStep,
   workflowRoutes,
 } from "../../test/application-workflow";
 import { renderApp, standardError, stubApi } from "../../test/render-app";
@@ -49,6 +51,18 @@ describe("Application Workflow", () => {
     expect(cells(stepRow("Dedup"))).toEqual(expect.arrayContaining(["System", "UnMatch"]));
     expect(cells(stepRow("SLIK"))).toEqual(expect.arrayContaining(["Collect 1"]));
     expect(cells(stepRow("Decision"))).toEqual(expect.arrayContaining(["Go"]));
+  });
+
+  it("AC-74.01 shows the Approval step Auto Approved by System", async () => {
+    const autoApproved = goSteps.map((step) =>
+      step.stepCode === "APPROVAL" ? timelineStep("APPROVAL", { outcomeCode: "AUTO_APPROVED" }) : step,
+    );
+    stubApi(workflowRoutes({ [PROCESS]: timeline(RECONTEST_PROCESS_ID, autoApproved) }));
+    renderApp(WORKFLOW);
+
+    await screen.findByRole("table", { name: "Timeline" });
+
+    expect(cells(stepRow("Approval"))).toEqual(expect.arrayContaining(["System", "Auto Approved"]));
   });
 
   it("AC-85.01 lists the route modules of the locked route version with the current step highlighted", async () => {
