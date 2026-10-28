@@ -35,8 +35,7 @@ export class GetApplicationFinancingUseCase {
           dsrRatio: financing.dsrRatio,
           firstInstallmentDate: financing.firstInstallmentDate,
           approvalType: financing.approvalType,
-          // Nomor SP3K dipasang di kartu BE-S6-05 (api-specs 16 §16.6 langkah 7, AC-102.02).
-          sp3kNumber: null,
+          sp3kNumber: financing.sp3kNumber,
           schedule,
         },
       };

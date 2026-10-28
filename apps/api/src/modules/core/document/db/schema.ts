@@ -1,5 +1,17 @@
+import type { CounterScope, DocumentType, NumberFormatStatus, ResetPeriod } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { bigint, check, jsonb, pgSchema, text, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  check,
+  integer,
+  jsonb,
+  pgSchema,
+  text,
+  timestamp,
+  unique,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { companies } from "../../tenancy/index.js";
 
@@ -8,6 +20,10 @@ export const document = pgSchema("document");
 // drizzle-kit memuat file ini sebagai CommonJS, jadi daftar nilai ditulis ulang dari `domain/upload-rules.ts`.
 const EXTENSIONS = ["png", "jpg", "jpeg", "pdf", "docx"] as const;
 const STORED_FORMATS = ["PDF", "DOCX"] as const;
+const DOCUMENT_TYPES = ["SP3K", "CONTRACT"] as const;
+const RESET_PERIODS = ["NONE", "YEARLY", "MONTHLY", "DAILY"] as const;
+const COUNTER_SCOPES = ["COMPANY", "BRANCH", "PRODUCT", "BRANCH_PRODUCT"] as const;
+const FORMAT_STATUSES = ["DRAFT", "WAITING_APPROVAL", "ACTIVE", "SUPERSEDED"] as const;
 const textList = (values: readonly string[]) => sql.raw(values.map((value) => `'${value}'`).join(", "));
 
 /**
@@ -59,6 +75,70 @@ export const documentTemplates = document.table(
     unique("document_templates_code_product_unique")
       .on(table.tenantId, table.documentCode, table.productId)
       .nullsNotDistinct(),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * DOCUMENT_NUMBER_FORMATS, technical-specs 06 §6.8: pola nomor berversi per jenis dokumen (grooming v3 DN-01, DN-05).
+ * `effective_from` diisi saat disetujui; satu versi ACTIVE per tenant dan jenis dokumen.
+ */
+export const documentNumberFormats = document.table(
+  "document_number_formats",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    documentType: text("document_type").$type<DocumentType>().notNull(),
+    pattern: text("pattern").notNull(),
+    resetPeriod: text("reset_period").$type<ResetPeriod>().notNull(),
+    counterScope: text("counter_scope").$type<CounterScope>().notNull(),
+    versionNumber: integer("version_number").notNull(),
+    status: text("status").$type<NumberFormatStatus>().notNull(),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("document_number_formats_version_unique").on(table.tenantId, table.documentType, table.versionNumber),
+    uniqueIndex("document_number_formats_active_unique")
+      .on(table.tenantId, table.documentType)
+      .where(sql`${table.status} = 'ACTIVE'`),
+    check("document_number_formats_document_type_check", sql`${table.documentType} in (${textList(DOCUMENT_TYPES)})`),
+    check("document_number_formats_reset_period_check", sql`${table.resetPeriod} in (${textList(RESET_PERIODS)})`),
+    check("document_number_formats_counter_scope_check", sql`${table.counterScope} in (${textList(COUNTER_SCOPES)})`),
+    check("document_number_formats_status_check", sql`${table.status} in (${textList(FORMAT_STATUSES)})`),
+    check("document_number_formats_version_number_check", sql`${table.versionNumber} >= 1`),
+    check(
+      "document_number_formats_effective_from_check",
+      sql`${table.status} <> 'ACTIVE' or ${table.effectiveFrom} is not null`,
+    ),
+    tenantIsolation(),
+  ],
+);
+
+/**
+ * DOCUMENT_NUMBER_COUNTERS, technical-specs 06 §6.8: nomor urut terakhir per format, cakupan, dan periode (DN-04,
+ * DN-07). Dinaikkan dengan `UPDATE ... RETURNING` sehingga permintaan bersamaan mendapat nomor berbeda.
+ */
+export const documentNumberCounters = document.table(
+  "document_number_counters",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    formatId: uuid("format_id")
+      .notNull()
+      .references(() => documentNumberFormats.id),
+    scopeKey: text("scope_key").notNull(),
+    periodKey: text("period_key").notNull(),
+    lastNumber: bigint("last_number", { mode: "number" }).notNull(),
+    ...auditColumns(),
+  },
+  (table) => [
+    unique("document_number_counters_key_unique").on(table.formatId, table.scopeKey, table.periodKey),
+    check("document_number_counters_last_number_check", sql`${table.lastNumber} >= 0`),
     tenantIsolation(),
   ],
 );
