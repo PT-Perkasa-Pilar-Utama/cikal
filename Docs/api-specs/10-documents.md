@@ -69,7 +69,7 @@ Teks lain di pola disalin apa adanya. Daftar ini mengikuti grooming v3; token ba
 
 **Input (body):** `documentType` (`SP3K`, `CONTRACT`), `pattern` (string, maks 100), `resetPeriod`, `counterScope`.
 
-**Behavior:** Validasi pola seperti 10.5 langkah 1 dan 2; render dengan contoh cabang `011`, produk dari seed, tanggal hari ini, dan nomor urut 1. Tidak menyentuh counter.
+**Behavior:** Validasi pola seperti 10.5 langkah 1 dan 2; render dengan contoh cabang `011`, produk `KPR`, kode company tenant sesi, tanggal bisnis hari ini, dan nomor urut 1. Tidak menyentuh counter.
 
 **Output 200:** `{"data":{"preview":"SP3K-011-202610-00001"}}` (AC-102.01).
 
@@ -118,7 +118,9 @@ Teks lain di pola disalin apa adanya. Daftar ini mengikuti grooming v3; token ba
 
 ## 10.6 Pembentukan nomor (internal)
 
-Tidak ada endpoint publik. `document.nextNumber(documentType, scope, date)` dipanggil saat SP3K dibuat (`16-approvals.md`) dan saat akad dicetak (`25-disbursement.md` 25.3).
+Tidak ada endpoint publik. `document.nextNumber(documentType, scope, date)` dipanggil di transaksi pemanggil saat SP3K dibuat (`16-approvals.md` 16.6) dan saat akad dicetak (`25-disbursement.md` 25.3); nomor batal bersama operasinya. Pemanggil menyimpan nomor dan memakainya lagi untuk cetak ulang.
+
+Format default DN-10 (SP3K `{SEQ:4}/SP3K/{BRANCH_CODE}/{MM_ROMAN}/{YYYY}` reset `MONTHLY`, kontrak `{BRANCH_CODE}/PK/{YYYY}/{SEQ:6}` reset `YEARLY`, keduanya cakupan `BRANCH`) dipasang sebagai versi 1 ACTIVE oleh `create-admin` untuk company baru dan oleh seed `dev` untuk company 001. Counter: `scope_key` = kode company, kode cabang, kode produk, atau `<cabang>-<produk>`; `period_key` = `ALL`, `YYYY`, `YYYYMM`, atau `YYYYMMDD`. Pengajuan tanpa cabang (dibuat role pusat) memakai kode cabang `000`.
 
 | Aturan | Rujukan |
 |---|---|
@@ -126,6 +128,7 @@ Tidak ada endpoint publik. `document.nextNumber(documentType, scope, date)` dipa
 | `UPDATE ... SET last_number = last_number + 1 RETURNING` pada baris counter; dua dokumen bersamaan mendapat nomor berbeda dan berurutan | AC-102.07 |
 | Periode berganti membuat baris counter baru | AC-102.03 |
 | Nomor melewati kapasitas `{SEQ:n}`: operasi pemanggil gagal `422 DOCUMENT_NUMBER_EXHAUSTED` "Document number sequence for SP3K has reached its limit. Please contact your administrator" | AC-102.06 |
+| Jenis dokumen tanpa format ACTIVE: operasi pemanggil gagal `422 DOCUMENT_NUMBER_FORMAT_NOT_SET` "Document number format for SP3K is not set. Please contact your administrator" (teks usulan engineering) | Keputusan TL 2026-10-28 |
 
 ## 10.7 Operasi backlog (TODO)
 

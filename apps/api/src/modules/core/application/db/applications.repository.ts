@@ -9,6 +9,7 @@ export interface ApplicationProcessRow {
   tenantId: string;
   loanId: string;
   productId: string;
+  productCategory: ProductCategory;
   /** Cabang pembuat draft; kosong bila pembuatnya role pusat. */
   branchId: string | null;
   status: ApplicationStatus;
@@ -23,6 +24,7 @@ const processColumns = {
   tenantId: applications.tenantId,
   loanId: applications.loanId,
   productId: applications.productId,
+  productCategory: applications.productCategory,
   branchId: applications.branchId,
   status: applications.status,
   currentStep: applications.currentStep,

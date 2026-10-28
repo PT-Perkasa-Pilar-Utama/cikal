@@ -405,7 +405,8 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | formats.pattern | text | no | `{SEQ:4}/SP3K/{BRANCH_CODE}/{MM_ROMAN}/{YYYY}` |
 | formats.reset_period | text | no | `NONE`, `YEARLY`, `MONTHLY`, `DAILY` |
 | formats.counter_scope | text | no | `COMPANY`, `BRANCH`, `PRODUCT`, `BRANCH_PRODUCT` |
-| formats.version_number, status, effective_from | | no | berversi, UQ parsial ACTIVE per (tenant_id, document_type) |
+| formats.version_number, status | | no | berversi, UQ(tenant_id, document_type, version_number), UQ parsial ACTIVE per (tenant_id, document_type) |
+| formats.effective_from | timestamptz | yes | diisi saat disetujui; wajib untuk ACTIVE (CHECK) |
 | counters.format_id | uuid | no | FK formats |
 | counters.scope_key | text | no | `011` |
 | counters.period_key | text | no | `202610`; UQ(format_id, scope_key, period_key) |
@@ -581,6 +582,7 @@ Kolom: `application_id`, `process_instance_id` (UQ; tanpa foreign key, seperti t
 | financings.dbr_ratio, dsr_ratio | numeric(9,4) | yes | persen RM-08; kosong bila penghasilan atau angsuran berjalan tidak ada |
 | financings.formula_versions | jsonb | no | |
 | financings.first_installment_date | date | no | |
+| financings.sp3k_number | text | yes | nomor SP3K produk kategori `COLLATERAL` dari penomoran dokumen `SP3K` (AC-102.02); kosong untuk kategori lain |
 | installments.financing_id | uuid | no | FK financings, ON DELETE CASCADE |
 | installments.installment_no | int | no | UQ(financing_id, installment_no) |
 | installments.due_date | date | no | |

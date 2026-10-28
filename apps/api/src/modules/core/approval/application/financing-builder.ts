@@ -10,6 +10,7 @@ import { ApplicationFactsReader, ApplicationProcess } from "../../application/in
 import { CalculationApi, type CalculationContext, DEFAULT_FORMULA_VERSION } from "../../calculation/index.js";
 import { FinancingsRepository } from "../db/financings.repository.js";
 import type { ApprovedTermValues } from "../domain/approved-terms.js";
+import { Sp3kNumbers } from "./sp3k-numbers.js";
 
 /** Proses yang disetujui beserta snapshot parameternya (PR-06). */
 export interface ApprovedProcess {
@@ -44,7 +45,8 @@ function decimalOf(value: unknown, code: string): Decimal {
 
 /**
  * `buildFinancing(appId)` technical-specs 05 §5.14: rumus RM-07 (biaya dan pencairan bersih), angsuran per jenis
- * bunga, jadwal dengan sisa pokok baris terakhir 0 (RM-19), dan DBR RM-08. Asuransi 0 sampai e-polis menghitung ulang.
+ * bunga, jadwal dengan sisa pokok baris terakhir 0 (RM-19), DBR RM-08, dan nomor SP3K produk COLLATERAL (AC-102.02).
+ * Asuransi 0 sampai e-polis menghitung ulang.
  * Error rumus dilempar `FORMULA_ERROR` tanpa nilai pengganti (FM-09).
  */
 @Injectable()
@@ -54,6 +56,7 @@ export class FinancingBuilder {
     private readonly applications: ApplicationProcess,
     private readonly calculation: CalculationApi,
     private readonly financings: FinancingsRepository,
+    private readonly sp3kNumbers: Sp3kNumbers,
   ) {}
 
   async build(tx: Tx, process: ApprovedProcess, terms: ApprovedTerms, actorId: string | null): Promise<void> {
@@ -102,6 +105,9 @@ export class FinancingBuilder {
         })
       : null;
     const usedFormulas = income ? FEE_FORMULAS : FEE_FORMULAS.filter((code) => code !== "DBR_RATIO");
+    const application = await this.applications.find(tx, process.applicationId);
+    if (!application) throw new Error(`Application ${process.applicationId} does not exist`);
+    const sp3kNumber = await this.sp3kNumbers.issue(tx, application, actorId);
     await this.financings.replace(
       tx,
       process.tenantId,
@@ -130,6 +136,7 @@ export class FinancingBuilder {
           ...Object.fromEntries(usedFormulas.map((code) => [code, DEFAULT_FORMULA_VERSION])),
         },
         firstInstallmentDate: isoDate(firstInstallmentDate),
+        sp3kNumber,
       },
       schedule.rows.map((row) => ({
         installmentNo: row.installmentNo,

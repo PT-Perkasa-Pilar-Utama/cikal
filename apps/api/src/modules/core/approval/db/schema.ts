@@ -182,6 +182,8 @@ export const financings = approval.table(
     dsrRatio: percent("dsr_ratio"),
     formulaVersions: jsonb("formula_versions").$type<Record<string, string>>().notNull(),
     firstInstallmentDate: date("first_installment_date").notNull(),
+    /** Nomor SP3K produk kategori COLLATERAL (KPR), dibentuk saat level final menyetujui (AC-102.02). */
+    sp3kNumber: text("sp3k_number"),
     ...auditColumns(),
   },
   (table) => [

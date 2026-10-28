@@ -15,6 +15,13 @@
       "when": 1792983382702,
       "tag": "0001_approval_financing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793180291215,
+      "tag": "0002_financing_sp3k_number",
+      "breakpoints": true
     }
   ]
 }

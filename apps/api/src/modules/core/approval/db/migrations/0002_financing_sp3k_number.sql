@@ -1,0 +1,1 @@
+ALTER TABLE "approval"."financings" ADD COLUMN "sp3k_number" text;
