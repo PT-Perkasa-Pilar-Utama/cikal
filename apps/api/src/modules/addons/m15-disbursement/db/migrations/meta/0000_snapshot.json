@@ -1,0 +1,187 @@
+{
+  "id": "77375ac6-eef8-4e4c-8b70-27f1e8cd1d9c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m15_disbursement.disbursements": {
+      "name": "disbursements",
+      "schema": "m15_disbursement",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "disbursement_amount": {
+          "name": "disbursement_amount",
+          "type": "numeric(18, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bank_account_number_enc": {
+          "name": "bank_account_number_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disbursement_date": {
+          "name": "disbursement_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validity_status": {
+          "name": "validity_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "not_valid_reason": {
+          "name": "not_valid_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_number": {
+          "name": "contract_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_date": {
+          "name": "contract_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "disbursements_tenant_id_companies_id_fk": {
+          "name": "disbursements_tenant_id_companies_id_fk",
+          "tableFrom": "disbursements",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "disbursements_application_id_applications_id_fk": {
+          "name": "disbursements_application_id_applications_id_fk",
+          "tableFrom": "disbursements",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "disbursements_application_unique": {
+          "name": "disbursements_application_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "application_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "disbursements_validity_status_check": {
+          "name": "disbursements_validity_status_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" in ('VALID', 'NOT_VALID')"
+        },
+        "disbursements_valid_date_check": {
+          "name": "disbursements_valid_date_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" is distinct from 'VALID' or \"m15_disbursement\".\"disbursements\".\"disbursement_date\" is not null"
+        },
+        "disbursements_not_valid_reason_check": {
+          "name": "disbursements_not_valid_reason_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" is distinct from 'NOT_VALID' or \"m15_disbursement\".\"disbursements\".\"not_valid_reason\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m15_disbursement": "m15_disbursement"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

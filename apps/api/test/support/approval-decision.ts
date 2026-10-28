@@ -1,4 +1,4 @@
-import { errorEnvelopeSchema, type ProductCategory } from "@cikal/contracts";
+import { errorEnvelopeSchema, type ProductCategory, type StepCode } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import type pg from "pg";
 import { v7 as uuidv7 } from "uuid";
@@ -41,7 +41,12 @@ export async function waitingApproval(
   owner: pg.Pool,
   actors: ApprovalActors,
   requestedLimit: string,
-  options: { isReturn?: boolean; submittedBy?: string; productCategory?: ProductCategory } = {},
+  options: {
+    isReturn?: boolean;
+    submittedBy?: string;
+    productCategory?: ProductCategory;
+    routeSteps?: Partial<Record<StepCode, boolean>>;
+  } = {},
 ): Promise<{ applicationId: string; processId: string }> {
   const productId = await insertProduct(owner, { productCategory: options.productCategory });
   await insertSubProduct(owner, productId, {
@@ -58,7 +63,7 @@ export async function waitingApproval(
     ],
   });
   await insertRoute(owner, productId, [
-    { versionNumber: 1, status: "ACTIVE", steps: { DATA_ENTRY: true, APPROVAL: true } },
+    { versionNumber: 1, status: "ACTIVE", steps: { DATA_ENTRY: true, APPROVAL: true, ...options.routeSteps } },
   ]);
   const applicationId = await insertApplication(owner, {
     productId,

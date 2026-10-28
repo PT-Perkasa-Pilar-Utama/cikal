@@ -13,6 +13,7 @@ export interface ApplicationProcessRow {
   /** Cabang pembuat draft; kosong bila pembuatnya role pusat. */
   branchId: string | null;
   status: ApplicationStatus;
+  currentStep: StepCode | null;
   createdAt: Date;
   submittedAt: Date | null;
   submittedBy: string | null;
@@ -26,6 +27,7 @@ const processColumns = {
   productCategory: applications.productCategory,
   branchId: applications.branchId,
   status: applications.status,
+  currentStep: applications.currentStep,
   createdAt: applications.createdAt,
   submittedAt: applications.submittedAt,
   submittedBy: applications.submittedBy,
