@@ -1,6 +1,7 @@
 import type { LicenseFile } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
 import type pg from "pg";
+import { provisionNumberFormats } from "../../modules/core/document/index.js";
 import { provisionAdministrator } from "../../modules/core/identity/index.js";
 import { installLicenseFile, provisionCompany } from "../../modules/core/tenancy/index.js";
 import { businessDate } from "../clock/business-date.js";
@@ -28,8 +29,9 @@ export interface CreatedAdmin {
 
 /**
  * Subperintah `create-admin` (DEPLOYMENT_PLAN §3.6 langkah 5): company dari `LICENSE_FILE`, kunci tenant, lisensi,
- * role standar, dan admin pertama ber-role Super User dalam satu transaksi. Lisensi pertama terpasang tanpa halaman
- * License; api yang sudah berjalan membuang cache lisensinya lewat `license_installed`.
+ * format nomor dokumen default (grooming v3 DN-10), role standar, dan admin pertama ber-role Super User dalam satu
+ * transaksi. Lisensi pertama terpasang tanpa halaman License; api yang sudah berjalan membuang cache lisensinya lewat
+ * `license_installed`.
  */
 export async function createAdmin(pool: pg.Pool, request: CreateAdminRequest): Promise<CreatedAdmin> {
   const { companyCode } = request.license.license;
@@ -41,6 +43,7 @@ export async function createAdmin(pool: pg.Pool, request: CreateAdminRequest): P
     });
     await provisionTenantKeys(db, request.masterKey, tenantId);
     const { installed } = await installLicenseFile(db, request.license, businessDate(new Date()));
+    await provisionNumberFormats(db, tenantId, new Date());
     const admin = await provisionAdministrator(db, {
       tenantId,
       username: request.username,

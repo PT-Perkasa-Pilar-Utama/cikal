@@ -3,6 +3,7 @@ import { CHANGE_REQUEST_PORT } from "../../../platform/http/change-request-port.
 import { ApplicationModule } from "../application/index.js";
 import { CalculationModule } from "../calculation/index.js";
 import type { ChangeRequestPort } from "../change-request/index.js";
+import { DocumentModule } from "../document/index.js";
 import { OrchestratorModule, StepHandlerRegistry } from "../orchestrator/index.js";
 import { OrganizationModule } from "../organization/index.js";
 import { ProductModule } from "../product/index.js";
@@ -18,6 +19,7 @@ import { HierarchyChecks } from "./application/hierarchy-checks.js";
 import { ListHierarchiesUseCase } from "./application/list-hierarchies.use-case.js";
 import { RequestHierarchyCreateUseCase } from "./application/request-hierarchy-create.use-case.js";
 import { RequestHierarchyUpdateUseCase } from "./application/request-hierarchy-update.use-case.js";
+import { Sp3kNumbers } from "./application/sp3k-numbers.js";
 import { ApplicationApprovalsRepository } from "./db/application-approvals.repository.js";
 import { FinancingsRepository } from "./db/financings.repository.js";
 import { HierarchiesRepository } from "./db/hierarchies.repository.js";
@@ -30,6 +32,7 @@ import { ApprovalHierarchiesController } from "./http/approval-hierarchies.contr
   imports: [
     ApplicationModule,
     CalculationModule,
+    DocumentModule,
     OrchestratorModule,
     OrganizationModule,
     ProductModule,
@@ -48,6 +51,7 @@ import { ApprovalHierarchiesController } from "./http/approval-hierarchies.contr
     RequestHierarchyUpdateUseCase,
     ApprovalSetups,
     FinancingBuilder,
+    Sp3kNumbers,
     ApprovalStepHandler,
     GetApplicationApprovalUseCase,
     GetApplicationFinancingUseCase,

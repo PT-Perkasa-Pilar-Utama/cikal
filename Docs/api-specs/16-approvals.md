@@ -141,7 +141,7 @@ Semua ERROR di atas tanpa retry otomatis (`retryable: false`). Error rumus struk
 4. `decision` tidak ada di flag level: `403 ACTION_DENIED` (AC-73.03).
 5. Komentar kosong: `422 COMMENT_REQUIRED`; lebih dari 1.000: `422 COMMENT_TOO_LONG` (AC-72.04, AC-73.04, AC-73.05).
 6. `interestRate` di luar rentang: `422 RATE_OUT_OF_RANGE` (AC-97.05); SubProduct tanpa rentang Approver: `403 ACTION_DENIED`. `loanAmount` di atas `requestedLimit` atau tenor di luar batas produk: `400 VALIDATION_FAILED` dengan detail "Loan amount must not exceed the requested limit" atau "Tenor must be between 6 and 60 months" (teks usulan engineering). Setiap keputusan dicatat di Audit Trail modul `Approval` (`APPROVE`, `REJECT`, `REVISE` untuk Return); perubahan suku bunga mengisi `oldData` dan `newData` (AC-97.06).
-7. `APPROVE` di level bukan final: Task Queue menutup tugas user sesi dan membuat tugas `APPROVAL` `ASSIGNED` untuk approver posisi berikutnya pada StepExecution yang sama; langkah tetap `WAITING_HUMAN`; rantai menandai posisi ini `APPROVE` (AC-72.02). `APPROVE` di level final: `buildFinancing` (RM-07, RM-08, jadwal angsuran dengan sisa pokok baris terakhir 0) dengan `interestRate`, `tenorApproved`, dan `loanAmount` bila diisi; SP3K untuk KPR dibentuk BE-S6-05 (AC-102.02); tugas ditutup lewat `taskQueue.close`, StepResult `CONTINUE` atau `FINISH APPROVED` bila tidak ada langkah sesudah APPROVAL (AC-72.01). Struktur kredit di keputusan lain diabaikan.
+7. `APPROVE` di level bukan final: Task Queue menutup tugas user sesi dan membuat tugas `APPROVAL` `ASSIGNED` untuk approver posisi berikutnya pada StepExecution yang sama; langkah tetap `WAITING_HUMAN`; rantai menandai posisi ini `APPROVE` (AC-72.02). `APPROVE` di level final: `buildFinancing` (RM-07, RM-08, jadwal angsuran dengan sisa pokok baris terakhir 0) dengan `interestRate`, `tenorApproved`, dan `loanAmount` bila diisi; nomor SP3K dari `document.nextNumber("SP3K")` untuk produk kategori `COLLATERAL` (KPR, keputusan TL 2026-10-28), disimpan di struktur kredit (AC-102.02); tugas ditutup lewat `taskQueue.close`, StepResult `CONTINUE` atau `FINISH APPROVED` bila tidak ada langkah sesudah APPROVAL (AC-72.01). Struktur kredit di keputusan lain diabaikan.
 8. `REJECT`: StepResult `FINISH` dengan `FINISHED_REJECTED`; email penolakan lewat event (AC-73.01).
 9. `RETURN`: StepResult `BACK_TO_DRAFT` dengan `returnNote` = komentar; pengajuan kembali ke Draft Sales (AC-73.02).
 
@@ -170,6 +170,7 @@ Semua ERROR di atas tanpa retry otomatis (`retryable: false`). Error rumus struk
 | `ALREADY_PROCESSED` | 409 | "This application has already been processed" (AC-72.07) |
 | `ACTION_DENIED` | 403 | Aksi tidak diizinkan level (AC-73.03) |
 | `DOCUMENT_NUMBER_EXHAUSTED` | 422 | Nomor SP3K habis (AC-102.06) |
+| `DOCUMENT_NUMBER_FORMAT_NOT_SET` | 422 | Tenant tanpa format SP3K ACTIVE (api-specs 10 §10.6) |
 | `FORMULA_ERROR` | 422 | Rumus struktur kredit gagal (FM-09) |
 
 **Traceability:** US-72 (AC-72.01 s.d. AC-72.07), US-73 (AC-73.01 s.d. AC-73.05), US-97 (AC-97.05, AC-97.06), US-102 (AC-102.02, AC-102.06).
@@ -192,7 +193,7 @@ Semua ERROR di atas tanpa retry otomatis (`retryable: false`). Error rumus struk
 }
 ```
 
-`approvalType` = `AUTO` untuk auto approval (AC-74.01). `dbrRatio` dan `dsrRatio` dalam persen (rumus `DBR_RATIO`, `DSR_RATIO` RM-08); `dbrRatio` `null` bila penghasilan kosong, `dsrRatio` `null` karena angsuran berjalan belum menjadi data pengajuan di POC. `insuranceValue` 0 sampai e-polis menghitung ulang. Tanggal angsuran pertama = tanggal bisnis persetujuan + 1 bulan. `sp3kNumber` `null` sampai BE-S6-05 membentuk nomor SP3K (AC-102.02). Belum disetujui: `404 NOT_FOUND` "Financing is not available yet"; pengajuan tidak ada: `404 APPLICATION_NOT_FOUND`.
+`approvalType` = `AUTO` untuk auto approval (AC-74.01). `dbrRatio` dan `dsrRatio` dalam persen (rumus `DBR_RATIO`, `DSR_RATIO` RM-08); `dbrRatio` `null` bila penghasilan kosong, `dsrRatio` `null` karena angsuran berjalan belum menjadi data pengajuan di POC. `insuranceValue` 0 sampai e-polis menghitung ulang. Tanggal angsuran pertama = tanggal bisnis persetujuan + 1 bulan. `sp3kNumber` berisi nomor SP3K produk kategori `COLLATERAL`, `null` untuk kategori lain (AC-102.02). Belum disetujui: `404 NOT_FOUND` "Financing is not available yet"; pengajuan tidak ada: `404 APPLICATION_NOT_FOUND`.
 
 **Traceability:** US-72 (AC-72.01), US-74 (AC-74.01), US-97 (AC-97.06), US-76 (AC-76.05).
 

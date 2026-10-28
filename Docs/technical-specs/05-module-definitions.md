@@ -200,7 +200,7 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 |---|---|
 | StepHandler `APPROVAL` | Auto approve bila `requestedLimit <= limitAutoApproval` dan `limitAutoApproval > 0` (RM-05). Selain itu membentuk rantai: level dipilih dari rentang nominal (batas menurut `APPROVAL_RANGE_BOUNDARY`), naik lewat `upLevel`/`upSubLevel` sampai `isFinalApprover` (RM-06). Tanpa level atau tanpa setup = ERROR dengan pesan TRM_APV_004/005 |
 | `decide(approvalId, decision, comment)` | Komentar wajib, maksimal 1.000 (AC-72.04, AC-73.05); penginput pengajuan tidak bisa memutuskan (AC-72.05); keputusan bersamaan diproses sekali (AC-72.07); level atas menunggu level bawah (AC-72.03) |
-| `buildFinancing(appId)` | Saat level final menyetujui: rumus RM-07, RM-08, angsuran per jenis bunga, jadwal; SP3K untuk KPR lewat Document; dihitung ulang setelah e-polis |
+| `buildFinancing(appId)` | Saat level final menyetujui: rumus RM-07, RM-08, angsuran per jenis bunga, jadwal; nomor SP3K produk kategori `COLLATERAL` (KPR) lewat `document.nextNumber`; dihitung ulang setelah e-polis |
 
 ## 5.15 Integration Registry
 
