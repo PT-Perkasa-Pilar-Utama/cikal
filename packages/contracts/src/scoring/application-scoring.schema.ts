@@ -2,7 +2,7 @@ import { z } from "zod";
 import { dataEnvelope } from "../common/envelope.js";
 
 /** Angka model dan skor sebagai string desimal 2 angka, contoh "470.00" (technical-specs 06 §6.11 M09). */
-const scoreValue = z.string().regex(/^-?\d{1,10}\.\d{2}$/, "Invalid score value format");
+export const scoreValue = z.string().regex(/^-?\d{1,10}\.\d{2}$/, "Invalid score value format");
 
 /** Hasil RAC (api-specs 22 §22.5): `FAIL` bila satu kriteria `MANDATORY` tidak terpenuhi. */
 export const racOutcomeSchema = z.enum(["PASS", "FAIL"]);

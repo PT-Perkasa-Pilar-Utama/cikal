@@ -124,6 +124,11 @@ export class ApplicationsRepository {
     return row ?? null;
   }
 
+  async findByLoanId(tx: Tx, loanId: string): Promise<ApplicationProcessRow | null> {
+    const [row] = await tx.select(processColumns).from(applications).where(eq(applications.loanId, loanId));
+    return row ?? null;
+  }
+
   async findMany(tx: Tx, ids: readonly string[]): Promise<ApplicationProcessRow[]> {
     if (ids.length === 0) return [];
     return tx

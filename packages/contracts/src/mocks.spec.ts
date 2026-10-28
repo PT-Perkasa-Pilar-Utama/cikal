@@ -18,6 +18,7 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["productDetail", c.productDetailResponseSchema, c.productDetailResponseMock],
   ["productPricing", c.productPricingResponseSchema, c.productPricingResponseMock],
   ["productRoute", c.productRouteResponseSchema, c.productRouteResponseMock],
+  ["scoringModelTest", c.scoringModelTestResponseSchema, c.scoringModelTestResponseMock],
   ["availableProducts", c.availableProductsResponseSchema, c.availableProductsResponseMock],
   ["applicationInquiry", c.applicationInquiryResponseSchema, c.applicationInquiryResponseMock],
   ["applicationDetail", c.applicationDetailResponseSchema, c.applicationDetailResponseMock],

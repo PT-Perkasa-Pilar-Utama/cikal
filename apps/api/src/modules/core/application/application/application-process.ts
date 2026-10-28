@@ -25,6 +25,11 @@ export class ApplicationProcess {
     return this.applications.findById(tx, id);
   }
 
+  /** Pengajuan tenant transaksi menurut Loan ID, contoh pengajuan contoh uji model scoring (api-specs 22 §22.5). */
+  findByLoanId(tx: Tx, loanId: string): Promise<ProcessApplication | null> {
+    return this.applications.findByLoanId(tx, loanId);
+  }
+
   /** Pengajuan tenant transaksi untuk daftar modul lain, contoh antrean tugas; id yang tidak ada dilewati. */
   findMany(tx: Tx, ids: readonly string[]): Promise<ProcessApplication[]> {
     return this.applications.findMany(tx, [...new Set(ids)]);

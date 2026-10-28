@@ -12,6 +12,7 @@ import { EditCriteriaUseCase } from "./application/edit-criteria.use-case.js";
 import { GetApplicationScoringUseCase } from "./application/get-application-scoring.use-case.js";
 import { GetScoringModelUseCase } from "./application/get-scoring-model.use-case.js";
 import { ListScoringModelsUseCase } from "./application/list-scoring-models.use-case.js";
+import { ModelEvaluator } from "./application/model-evaluator.js";
 import { ModelStep } from "./application/model-step.js";
 import { ModelViews } from "./application/model-views.js";
 import { RacStepHandler } from "./application/rac-step-handler.js";
@@ -21,6 +22,7 @@ import { ScoringModelChangeHandler } from "./application/scoring-model-change-ha
 import { ScoringModelChanges } from "./application/scoring-model-changes.js";
 import { ScoringStepHandler } from "./application/scoring-step-handler.js";
 import { SubmitScoringModelUseCase } from "./application/submit-scoring-model.use-case.js";
+import { TestScoringModelUseCase } from "./application/test-scoring-model.use-case.js";
 import { VariableValuesResolver } from "./application/variable-values.js";
 import { ScoringModelDraftsRepository } from "./db/scoring-model-drafts.repository.js";
 import { ScoringModelsRepository } from "./db/scoring-models.repository.js";
@@ -39,6 +41,8 @@ import { ModelActivationJob } from "./jobs/model-activation.job.js";
     ScoringModelDraftsRepository,
     ScoringResultsRepository,
     VariableValuesResolver,
+    ModelEvaluator,
+    TestScoringModelUseCase,
     ModelStep,
     RacStepHandler,
     ScoringStepHandler,
