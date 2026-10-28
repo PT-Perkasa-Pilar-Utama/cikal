@@ -12,10 +12,19 @@ export const SEED_LAYERS: Record<SeedName, readonly SeedName[]> = {
   qa: ["base", "dev", "qa"],
 };
 
+/** Objek storage yang ditulis seed, contoh template akad (grooming v2 POC). */
+export interface SeedObject {
+  key: string;
+  body: Buffer;
+  contentType: string;
+}
+
 /** Masukan seed dari luar repo. `userPassword` adalah password akun seed dev dan qa dari vault (DEPLOYMENT_PLAN §6.5). */
 export interface SeedContext {
   userPassword: string | null;
   masterKey: Buffer;
+  /** Menulis objek ke bucket lingkungan; menimpa objek dengan kunci sama sehingga seed tetap idempoten. */
+  putObject(object: SeedObject): Promise<void>;
 }
 
 /** Seed berjalan sebagai role pemilik skema di dalam satu transaksi; wajib idempoten (`ON CONFLICT DO NOTHING`). */

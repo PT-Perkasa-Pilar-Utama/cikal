@@ -386,13 +386,13 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | table.column | type | nullable | notes |
 |---|---|---|---|
 | document_files.file_name, original_extension | text | no | nama dari user; ekstensi `png`, `jpg`, `jpeg`, `pdf`, `docx` (DC-02) |
-| document_files.stored_format | text | no | `PDF` |
+| document_files.stored_format | text | no | `PDF`; `DOCX` untuk template Word (`document_templates.file_id`) |
 | document_files.size_bytes | bigint | no | ukuran berkas yang diunggah, dasar batas `UPLOAD_MAX_MB` |
 | document_files.storage_key | text | no | UQ; kunci objek S3 `tenants/<tenantId>/document/<fileId>` (07 §7.7) |
 | document_templates.document_code | text | no | `AKAD-KPR`; UQ(tenant_id, document_code, product_id) |
 | document_templates.product_id | uuid | yes | kosong = semua produk |
 | document_templates.file_id | uuid | no | FK document_files; maks 5 MB |
-| document_templates.placeholders | jsonb | no | hasil deteksi |
+| document_templates.placeholders | jsonb | no | hasil deteksi; nama placeholder `{{nama}}` terurut. Di POC baris dan objeknya dari seed `qa` (`AKAD-KTAQA`) |
 | generated_documents.application_id | uuid | no | FK application.applications |
 | generated_documents.document_code, document_number | text | no / yes | `0013/SP3K/011/X/2026` |
 | generated_documents.file_id | uuid | no | FK document_files |

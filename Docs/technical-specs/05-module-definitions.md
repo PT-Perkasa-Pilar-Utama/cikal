@@ -53,7 +53,7 @@ Respons `/api/admin/reset-state`:
 { "seed": "qa", "durationMs": 8420, "migrationsApplied": 42, "tenantsSeeded": ["001"], "bucketObjectsDeleted": 17 }
 ```
 
-Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua skema aplikasi dan `pgboss`, jalankan migrasi, jalankan seed terpilih, kosongkan bucket lingkungan, nyalakan kembali konsumen. Di production modul ini tidak mendaftarkan rute sama sekali (bukan sekadar menolak akses), lihat `07-security.md` 7.8.
+Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua skema aplikasi dan `pgboss`, jalankan migrasi, kosongkan bucket lingkungan, jalankan seed terpilih, nyalakan kembali konsumen. Di production modul ini tidak mendaftarkan rute sama sekali (bukan sekadar menolak akses), lihat `07-security.md` 7.8.
 
 ## 5.1 Identity & Access
 
@@ -152,7 +152,7 @@ Langkah reset: hentikan konsumen worker, `DROP SCHEMA ... CASCADE` untuk semua s
 |---|---|
 | `upload(file, ctx)` | Maksimal `UPLOAD_MAX_MB`, ekstensi png/jpg/jpeg/pdf/docx; disimpan sebagai PDF (DC-02) |
 | `validateTemplate(docx)` | Menolak placeholder di luar katalog (AC-24.03) |
-| `generate(documentCode, applicationId)` | Mengisi template (docxtemplater) lalu konversi lewat Gotenberg; menyimpan GeneratedDocument dengan nomor dari `nextNumber` |
+| `generate(documentCode, applicationId)` | Mengisi template (docxtemplater, placeholder `{{nama}}`) lalu konversi lewat Gotenberg; menyimpan GeneratedDocument dengan nomor dari `nextNumber`. Template khusus produk didahulukan atas template semua produk; tanpa template: `422 TEMPLATE_NOT_AVAILABLE` |
 | `nextNumber(documentType, scope, date)` | Nomor dari format aktif (DN-01 s.d. DN-10): satu kali per dokumen, aman konkuren (`UPDATE ... RETURNING` pada baris counter), berhenti dengan error bila habis (AC-102.06) |
 
 **Seam:** `PdfConverterPort` (Gotenberg, adapter tiruan untuk test), `StoragePort`.

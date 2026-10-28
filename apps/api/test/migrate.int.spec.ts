@@ -43,9 +43,9 @@ describe("migrate runner", () => {
   });
 
   it("applies the platform and each licensed module's migrations once and records them in the module ledger", async () => {
-    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(49);
+    expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(50);
     expect(await migrateModules(owner, installedModuleData, "cikal_app")).toBe(0);
-    expect(await latestMigration(app, installedModuleData)).toBe("reporting/0000_application_inquiry");
+    expect(await latestMigration(app, installedModuleData)).toBe("document/0001_document_templates");
   });
 
   it("applies seed layers idempotently", async () => {
@@ -90,7 +90,7 @@ describe("migrate runner", () => {
 
     expect(result).toMatchObject({
       seed: "qa",
-      migrationsApplied: 49,
+      migrationsApplied: 50,
       tenantsSeeded: ["001"],
       bucketObjectsDeleted: 3,
     });
@@ -103,6 +103,33 @@ describe("migrate runner", () => {
       { key_purpose: "ENCRYPTION", status: "ACTIVE" },
     ]);
     expect(signals).toEqual(["reset_started", "reset_finished"]);
+  });
+
+  it("TL-S6-02 empties the bucket before seeding so the seed akad template survives a reset", async () => {
+    const steps: string[] = [];
+
+    await resetState({
+      appEnv: "test",
+      pool: owner,
+      modules: installedModuleData,
+      appRole: "cikal_app",
+      seed: "qa",
+      seedContext: {
+        ...seedContext,
+        putObject: async ({ key }) => {
+          steps.push(`put ${key}`);
+        },
+      },
+      emptyBucket: async () => {
+        steps.push("empty bucket");
+        return 0;
+      },
+    });
+
+    expect(steps).toEqual([
+      "empty bucket",
+      "put tenants/0192b6a0-0001-7000-8000-000000000001/document/0192b6cb-0001-7000-8000-000000000001",
+    ]);
   });
 
   it("refuses a concurrent reset with RESET_IN_PROGRESS", async () => {

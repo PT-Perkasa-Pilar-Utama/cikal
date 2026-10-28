@@ -2,9 +2,11 @@ import { Module } from "@nestjs/common";
 import { APP_CONFIG, type AppConfig } from "../../../platform/config/config.js";
 import { GotenbergPdfConverter } from "./adapters/gotenberg-pdf-converter.js";
 import { DocumentFiles } from "./application/document-files.js";
+import { DocumentGenerator } from "./application/document-generator.js";
 import { FileAccessRegistry } from "./application/file-access-registry.js";
 import { GetDownloadUrlUseCase } from "./application/get-download-url.use-case.js";
 import { DocumentFilesRepository } from "./db/document-files.repository.js";
+import { DocumentTemplatesRepository } from "./db/document-templates.repository.js";
 import { FilesController } from "./http/files.controller.js";
 import { PDF_CONVERTER_PORT } from "./ports/pdf-converter.port.js";
 
@@ -18,10 +20,12 @@ import { PDF_CONVERTER_PORT } from "./ports/pdf-converter.port.js";
       useFactory: (config: AppConfig) => new GotenbergPdfConverter(config.gotenbergUrl),
     },
     DocumentFilesRepository,
+    DocumentTemplatesRepository,
     DocumentFiles,
+    DocumentGenerator,
     FileAccessRegistry,
     GetDownloadUrlUseCase,
   ],
-  exports: [DocumentFiles, FileAccessRegistry],
+  exports: [DocumentFiles, DocumentGenerator, FileAccessRegistry],
 })
 export class DocumentModule {}

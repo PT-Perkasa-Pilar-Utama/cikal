@@ -2,14 +2,19 @@ import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testconta
 import pg from "pg";
 import type { AppConfig } from "../../src/platform/config/config.js";
 import { installedModuleData } from "../../src/platform/migrate/installed-modules.js";
-import type { SeedName } from "../../src/platform/migrate/module-data.js";
+import type { SeedContext, SeedName } from "../../src/platform/migrate/module-data.js";
 import { migrateModules, seedModules } from "../../src/platform/migrate/runner.js";
 import { installTestLicense, issueTestLicense } from "./license.js";
 import { TEST_MASTER_KEY, testConfig } from "./test-config.js";
 
 /** Password akun seed di lingkungan uji; hanya dipakai container sekali pakai. */
 export const SEED_USER_PASSWORD = "Seed-Test-Password-1";
-export const seedContext = { userPassword: SEED_USER_PASSWORD, masterKey: TEST_MASTER_KEY };
+/** Objek seed, contoh template akad, diabaikan kecuali uji memberi storage S3 (`startDatabase` argumen kedua). */
+export const seedContext: SeedContext = {
+  userPassword: SEED_USER_PASSWORD,
+  masterKey: TEST_MASTER_KEY,
+  putObject: async () => {},
+};
 
 export interface TestDatabase {
   /** Role pemilik skema untuk menyiapkan data uji di luar RLS. */
@@ -25,7 +30,10 @@ export interface TestDatabase {
  * PostgreSQL 17 dengan role seperti instalasi (initdb `10-roles.sh`), sudah dimigrasi dan di-seed. Lisensi seed dev
  * company 001 diganti lisensi POC bertanda tangan kunci uji, karena uji tidak memegang kunci privat dev.
  */
-export async function startDatabase(seed: SeedName = "dev"): Promise<TestDatabase> {
+export async function startDatabase(
+  seed: SeedName = "dev",
+  putObject: SeedContext["putObject"] = seedContext.putObject,
+): Promise<TestDatabase> {
   const container: StartedPostgreSqlContainer = await new PostgreSqlContainer("postgres:17-alpine").start();
   const admin = new pg.Client({ connectionString: container.getConnectionUri() });
   await admin.connect();
@@ -40,7 +48,7 @@ export async function startDatabase(seed: SeedName = "dev"): Promise<TestDatabas
   const owner = new pg.Pool({ connectionString: url("cikal_owner", "owner"), max: 3 });
   const app = new pg.Pool({ connectionString: appUrl, max: 2 });
   await migrateModules(owner, installedModuleData, "cikal_app");
-  await seedModules(owner, installedModuleData, seed, seedContext);
+  await seedModules(owner, installedModuleData, seed, { ...seedContext, putObject });
   if (seed !== "base") await installTestLicense(owner, issueTestLicense());
 
   return {
