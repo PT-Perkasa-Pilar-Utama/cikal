@@ -2,9 +2,11 @@ import {
   type ChangeRequestAccepted,
   type ScoringModelDetailResponse,
   type ScoringModelListResponse,
+  type ScoringModelTestResponse,
   scoringModelCreateSchema,
   scoringModelListQuerySchema,
   scoringModelSubmitSchema,
+  scoringModelTestRequestSchema,
   scoringModelUpdateSchema,
 } from "@cikal/contracts";
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
@@ -16,13 +18,15 @@ import { GetScoringModelUseCase } from "../application/get-scoring-model.use-cas
 import { ListScoringModelsUseCase } from "../application/list-scoring-models.use-case.js";
 import { SaveScoringModelUseCase } from "../application/save-scoring-model.use-case.js";
 import { SubmitScoringModelUseCase } from "../application/submit-scoring-model.use-case.js";
+import { TestScoringModelUseCase } from "../application/test-scoring-model.use-case.js";
 
 class ScoringModelListQueryDto extends createZodDto(scoringModelListQuerySchema) {}
 class ScoringModelCreateDto extends createZodDto(scoringModelCreateSchema) {}
 class ScoringModelUpdateDto extends createZodDto(scoringModelUpdateSchema) {}
 class ScoringModelSubmitDto extends createZodDto(scoringModelSubmitSchema) {}
+class ScoringModelTestDto extends createZodDto(scoringModelTestRequestSchema) {}
 
-/** Halaman "Scoring Model": daftar, detail, draft, dan pengajuan versi (api-specs 22 §22.1 s.d. §22.4). */
+/** Halaman "Scoring Model": daftar, detail, draft, pengajuan versi, dan uji model (api-specs 22 §22.1 s.d. §22.5). */
 @Controller("v1/scoring-models")
 export class ScoringModelsController {
   constructor(
@@ -30,6 +34,7 @@ export class ScoringModelsController {
     private readonly details: GetScoringModelUseCase,
     private readonly saves: SaveScoringModelUseCase,
     private readonly submits: SubmitScoringModelUseCase,
+    private readonly tests: TestScoringModelUseCase,
   ) {}
 
   @Get()
@@ -87,5 +92,16 @@ export class ScoringModelsController {
     @Body() body: ScoringModelSubmitDto,
   ): Promise<ChangeRequestAccepted> {
     return this.submits.execute(ctx, id, body);
+  }
+
+  @Post(":id/test")
+  @HttpCode(200)
+  @Requires("MST-SCORING", "VIEW")
+  test(
+    @CurrentContext() ctx: RequestContext,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: ScoringModelTestDto,
+  ): Promise<ScoringModelTestResponse> {
+    return this.tests.execute(ctx, id, body);
   }
 }
