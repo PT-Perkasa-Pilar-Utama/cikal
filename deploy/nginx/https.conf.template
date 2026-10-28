@@ -1,0 +1,80 @@
+# Konfigurasi HTTPS (DEPLOYMENT_PLAN §3.7). Port 80 hanya melayani ACME dan redirect. Sertifikat Let's Encrypt atau
+# sertifikat client di /etc/letsencrypt/live/${DOMAIN}/ (DEPLOYMENT_PLAN §2.6); dhparam dari folder nginx VM.
+# Diproses envsubst image nginx saat container start: ${DOMAIN} dan ${STORAGE_UPSTREAM} dari environment compose.
+
+# DNS Docker dibaca ulang tiap 10 detik: api yang di-restart saat rilis (§4.3) bisa mendapat IP baru.
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+server {
+    listen 80;
+    server_name ${DOMAIN} files.${DOMAIN};
+    server_tokens off;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+    server_tokens off;
+    client_max_body_size 25m;
+
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_dhparam /etc/nginx/cikal/dhparam.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Frame-Options "DENY" always;
+    # Pratinjau dan unduhan dokumen memakai URL bertanda tangan di files.${DOMAIN} (issue #102).
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://files.${DOMAIN}; font-src 'self' data:; connect-src 'self' https://files.${DOMAIN}; frame-src 'self' blob: https://files.${DOMAIN}; object-src 'self' https://files.${DOMAIN}; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+
+    location /api/ {
+        set $api_upstream http://api:3000;
+        proxy_pass $api_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_read_timeout 120s;
+    }
+
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri /index.html;
+    }
+}
+
+# Host unduhan dokumen (S3_PUBLIC_ENDPOINT). Header Host diteruskan apa adanya karena tanda tangan SigV4 memuatnya.
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name files.${DOMAIN};
+    server_tokens off;
+
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_dhparam /etc/nginx/cikal/dhparam.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+    location / {
+        set $storage_upstream http://${STORAGE_UPSTREAM};
+        proxy_pass $storage_upstream;
+        proxy_set_header Host $http_host;
+        proxy_buffering off;
+    }
+}

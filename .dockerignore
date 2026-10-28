@@ -1,0 +1,19 @@
+# Konteks build image cikal-api dan cikal-web: hanya source; dependensi dan hasil build dibuat ulang di image.
+**/node_modules
+**/dist
+**/.turbo
+**/*.generated.ts
+**/routeTree.gen.ts
+**/test-results
+**/playwright-report
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.claude
+.refira
+Docs
+tmp
+deploy/compose/.secrets
+deploy/compose/initdb

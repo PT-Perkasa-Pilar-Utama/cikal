@@ -1,0 +1,166 @@
+# SIT dan UAT: satu VM (DEPLOYMENT_PLAN §2.1, §2.2). Disalin ke /opt/cikal/docker-compose.yml; nilai dari .env
+# (deploy/compose/env/sit.env.example). Secret dari /opt/cikal/secrets, dipasang per file di /run/secrets.
+name: cikal
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 50m
+    max-file: "5"
+
+x-app: &app
+  image: ${CIKAL_API_IMAGE:?set CIKAL_API_IMAGE in .env}
+  env_file: .env
+  logging: *logging
+  restart: unless-stopped
+  secrets:
+    [
+      cikal_master_key,
+      s3_access_key,
+      s3_secret_key,
+      monitoring_token,
+      reset_token,
+      seed_user_password,
+      smtp_password,
+      oksara_key,
+    ]
+  volumes:
+    - ./license.json:/etc/cikal/license.json:ro
+
+services:
+  nginx:
+    image: ${CIKAL_WEB_IMAGE:?set CIKAL_WEB_IMAGE in .env}
+    logging: *logging
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      STORAGE_UPSTREAM: storage:9000
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/cikal:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    environment:
+      PROCESS_ROLE: api
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/nodejs/bin/node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health/live').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    depends_on: &app-depends
+      migrate:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      storage:
+        condition: service_started
+      gotenberg:
+        condition: service_started
+
+  worker:
+    <<: *app
+    command: ["dist/worker.js"]
+    environment:
+      PROCESS_ROLE: worker
+    depends_on: *app-depends
+
+  # Runner platform/migrate sekali jalan: `docker compose run --rm migrate seed --seed=qa` mengganti perintahnya.
+  migrate:
+    <<: *app
+    restart: "no"
+    entrypoint: ["/nodejs/bin/node", "dist/platform/migrate/run.js"]
+    command: ["migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  gotenberg:
+    image: gotenberg/gotenberg:8.20.1
+    logging: *logging
+    restart: unless-stopped
+
+  db:
+    image: postgres:17.6-alpine
+    logging: *logging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cikal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_postgres_password
+      CIKAL_OWNER_PASSWORD_FILE: /run/secrets/db_owner_password
+      CIKAL_APP_PASSWORD_FILE: /run/secrets/db_app_password
+    secrets: [db_postgres_password, db_owner_password, db_app_password]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cikal"]
+      interval: 5s
+      retries: 20
+
+  storage:
+    image: chrislusf/seaweedfs:3.97
+    logging: *logging
+    restart: unless-stopped
+    command: server -dir=/data -filer.encryptVolumeData -s3 -s3.port=9000 -s3.config=/run/secrets/s3.json
+    secrets: [s3.json]
+    volumes:
+      - storage-data:/data
+
+  # Membuat bucket ${S3_BUCKET} lalu berhenti. weed shell bisa menggantung sebelum master siap; tiap percobaan dibatasi.
+  storage-init:
+    image: chrislusf/seaweedfs:3.97
+    logging: *logging
+    restart: "no"
+    depends_on: [storage]
+    entrypoint: >
+      /bin/sh -c "until echo 's3.bucket.list' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888 2>/dev/null | grep -q '${S3_BUCKET:?set S3_BUCKET in .env}';
+      do echo 's3.bucket.create -name ${S3_BUCKET}' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888; sleep 2; done"
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    profiles: [mailpit]
+    logging: *logging
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  certbot:
+    image: certbot/certbot:v3.3.0
+    profiles: [tools]
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+
+secrets:
+  cikal_master_key: { file: ./secrets/cikal_master_key }
+  s3_access_key: { file: ./secrets/s3_access_key }
+  s3_secret_key: { file: ./secrets/s3_secret_key }
+  s3.json: { file: ./secrets/s3.json }
+  monitoring_token: { file: ./secrets/monitoring_token }
+  reset_token: { file: ./secrets/reset_token }
+  seed_user_password: { file: ./secrets/seed_user_password }
+  smtp_password: { file: ./secrets/smtp_password }
+  oksara_key: { file: ./secrets/oksara_key }
+  db_postgres_password: { file: ./secrets/db_postgres_password }
+  db_owner_password: { file: ./secrets/db_owner_password }
+  db_app_password: { file: ./secrets/db_app_password }
+
+volumes:
+  db-data:
+  storage-data:

@@ -50,10 +50,12 @@ cikal/
 ├── apps/web/src/            routes/, features/<f>/, components/, lib/api/client.ts
 ├── packages/contracts/      Zod request/response schemas and mocks (single source of API types)
 ├── packages/formula/        pure formula engine; no NestJS, no DB, no I/O
-├── tools/package-builder/   manifest -> licensed-modules.generated.ts, licensed-module-codes.generated.ts; --license-key -> license-public-key.generated.ts
+├── tools/package-builder/   manifest -> licensed-modules.generated.ts, licensed-module-codes.generated.ts; --license-key -> license-public-key.generated.ts; prune.mjs drops unlicensed add-ons in image builds
 ├── tools/license-cli/       Ed25519 license keygen, issue, verify (DEPLOYMENT_PLAN §3.11)
-├── deploy/compose/          dev compose, initdb role script
-├── deploy/license/          public license keys per build (dev key for dev and CI); never a private key
+├── deploy/compose/          dev compose, single/app/data server compose, env examples, initdb role script
+├── deploy/nginx/            http/https templates for the cikal-web nginx (TLS, proxy, files host)
+├── deploy/postgres/         cikal-postgres image (pgBackRest) for the production data VM
+├── deploy/license/          public license keys per build (dev key for dev and CI, PPU key for release images); never a private key
 ├── deploy/manifests/        poc.json (CORE, M06, M07, M08, M09, M10, M11, M15)
 └── Docs/                    all project docs (§1)
 ```
