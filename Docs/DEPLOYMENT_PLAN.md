@@ -518,8 +518,8 @@ docker compose pull
 docker compose run --rm migrate
 docker compose run --rm migrate seed --seed=base
 
-# 5. [VM aplikasi] Company dari license.json, kunci tenant, lisensi, 16 role standar, dan admin pertama
-#    ber-role Super User. Password sekali pakai dicetak ke terminal: simpan di vault, wajib diganti saat login
+# 5. [VM aplikasi] Company dari license.json, kunci tenant, lisensi, format nomor SP3K dan kontrak default
+#    (grooming v3 DN-10), 16 role standar, dan admin pertama ber-role Super User. Password sekali pakai dicetak ke terminal: simpan di vault, wajib diganti saat login
 #    pertama. --company-name dan --address wajib bila company belum ada.
 docker compose run --rm migrate create-admin --username admin --email admin@bankcontoh.co.id   --company-name "Bank Contoh" --address "Jl. Jenderal Sudirman Kav. 1, Jakarta Pusat"
 

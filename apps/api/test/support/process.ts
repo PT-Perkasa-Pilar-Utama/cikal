@@ -1,5 +1,6 @@
 import {
   type ApplicationStatus,
+  type ProductCategory,
   type StepCode,
   type StepContext,
   type StepResult,
@@ -151,6 +152,7 @@ export async function insertApplication(
     branchId?: string;
     requestedLimit?: string;
     tenorProposed?: number;
+    productCategory?: ProductCategory;
   },
 ): Promise<string> {
   loanCounter += 1;
@@ -160,7 +162,7 @@ export async function insertApplication(
   await owner.query(
     `insert into application.applications (id, tenant_id, loan_id, channel, product_category, product_id, status,
        submitted_by, submitted_at, created_at, created_by, branch_id, requested_limit, tenor_proposed)
-     values ($1, $2, $3, 'WEB', 'NON_COLLATERAL', $4, $5, $6, $7, now() - interval '2 days', $8, $9, $10, $11)`,
+     values ($1, $2, $3, 'WEB', $12, $4, $5, $6, $7, now() - interval '2 days', $8, $9, $10, $11)`,
     [
       id,
       options.tenantId ?? seedCompanyIds.company001,
@@ -173,6 +175,7 @@ export async function insertApplication(
       options.branchId ?? null,
       options.requestedLimit ?? null,
       options.tenorProposed ?? null,
+      options.productCategory ?? "NON_COLLATERAL",
     ],
   );
   return id;

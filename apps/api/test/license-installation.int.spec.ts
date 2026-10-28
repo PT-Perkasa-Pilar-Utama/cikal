@@ -89,6 +89,13 @@ describe("license installation from LICENSE_FILE", () => {
       "select key_purpose from platform.tenant_keys t join tenancy.companies c on c.id = t.tenant_id order by 1",
     );
     expect(rows).toEqual([{ key_purpose: "BLIND_INDEX" }, { key_purpose: "ENCRYPTION" }]);
+    const formats = await db.owner.query(
+      "select document_type, pattern, status from document.document_number_formats order by document_type",
+    );
+    expect(formats.rows).toEqual([
+      { document_type: "CONTRACT", pattern: "{BRANCH_CODE}/PK/{YYYY}/{SEQ:6}", status: "ACTIVE" },
+      { document_type: "SP3K", pattern: "{SEQ:4}/SP3K/{BRANCH_CODE}/{MM_ROMAN}/{YYYY}", status: "ACTIVE" },
+    ]);
   });
 
   it("keeps the active license and refuses a second admin with the same username", async () => {

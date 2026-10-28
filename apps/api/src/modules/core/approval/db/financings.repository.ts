@@ -26,6 +26,7 @@ const financingColumns = {
   dsrRatio: financings.dsrRatio,
   formulaVersions: financings.formulaVersions,
   firstInstallmentDate: financings.firstInstallmentDate,
+  sp3kNumber: financings.sp3kNumber,
 };
 
 const installmentColumns = {
