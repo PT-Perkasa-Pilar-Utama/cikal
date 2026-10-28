@@ -9,6 +9,7 @@ import { ProductModule } from "../product/index.js";
 import { TaskQueueModule } from "../task-queue/index.js";
 import { ApprovalSetups } from "./application/approval-setup.js";
 import { ApprovalStepHandler } from "./application/approval-step-handler.js";
+import { ApprovedFinancings } from "./application/approved-financings.js";
 import { DecideApprovalUseCase } from "./application/decide-approval.use-case.js";
 import { FinancingBuilder } from "./application/financing-builder.js";
 import { GetApplicationApprovalUseCase } from "./application/get-application-approval.use-case.js";
@@ -48,11 +49,13 @@ import { ApprovalHierarchiesController } from "./http/approval-hierarchies.contr
     RequestHierarchyUpdateUseCase,
     ApprovalSetups,
     FinancingBuilder,
+    ApprovedFinancings,
     ApprovalStepHandler,
     GetApplicationApprovalUseCase,
     GetApplicationFinancingUseCase,
     DecideApprovalUseCase,
   ],
+  exports: [ApprovedFinancings],
 })
 export class ApprovalModule implements OnModuleInit {
   constructor(

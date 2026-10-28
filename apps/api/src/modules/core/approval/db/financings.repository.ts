@@ -58,6 +58,24 @@ export class FinancingsRepository {
       .values(schedule.map((row) => ({ ...row, ...audit, id: uuidv7(), financingId: financing.id })));
   }
 
+  /** Jadwal baru satu struktur kredit setelah First Installment Date diubah (api-specs 25 §25.2 langkah 3). */
+  async replaceSchedule(
+    tx: Tx,
+    tenantId: string,
+    financingId: string,
+    change: { firstInstallmentDate: string; monthlyInstallment: string },
+    schedule: InstallmentRow[],
+    actorId: string | null,
+  ): Promise<void> {
+    const audit = { tenantId, createdBy: actorId, updatedBy: actorId };
+    await tx
+      .update(financings)
+      .set({ ...change, updatedAt: new Date(), updatedBy: actorId })
+      .where(eq(financings.id, financingId));
+    await tx.delete(installments).where(eq(installments.financingId, financingId));
+    await tx.insert(installments).values(schedule.map((row) => ({ ...row, ...audit, id: uuidv7(), financingId })));
+  }
+
   async findByApplication(
     tx: Tx,
     applicationId: string,

@@ -23,9 +23,9 @@ Di Rilis 1, Cikal tidak terhubung ke core FAST. Langkah `DISBURSEMENT` berjalan 
 }
 ```
 
-`bankAccountNumber` utuh hanya untuk menu `OPS-*`; `APP-INQUIRY` menerima nilai tersamar. Field `epolisDate` tidak ada di respons bila M14 tidak berlisensi (AC-76.06).
+`bankAccountNumber` utuh hanya untuk menu `OPS-*`; `APP-INQUIRY` menerima nilai tersamar. Nilainya `null` sampai Print Akad mengisi rekening nasabah (`customerAccountNumber` 25.3), karena tidak ada langkah sebelumnya yang mengambil rekening (keputusan TL 2026-10-28). `disbursementAmount` = `netDisbursement` struktur kredit yang disetujui. Data pencairan dibuat saat langkah VALIDITY_CHECK dimulai. Field `epolisDate` tidak ada di respons bila M14 tidak berlisensi (AC-76.06). Rute memakai `@Authenticated()` dan use case memeriksa keempat menu; tanpa satu pun `403 ACCESS_DENIED`.
 
-**Errors:** `APPLICATION_NOT_FOUND` 404.
+**Errors:** `APPLICATION_NOT_FOUND` 404; `NOT_FOUND` 404 bila pengajuan belum sampai langkah VALIDITY_CHECK.
 
 **Traceability:** US-76, US-77, US-101.
 
@@ -64,8 +64,10 @@ Di Rilis 1, Cikal tidak terhubung ke core FAST. Langkah `DISBURSEMENT` berjalan 
 |---|---|---|
 | `DISBURSEMENT_DATE_TOO_EARLY` | 422 | "Disbursement date must be at least 1 day after today" (AC-76.02) |
 | `DISBURSEMENT_BEFORE_EPOLIS` | 422 | "Disbursement date must not be earlier than the epolis date (25-10-2026)" (AC-76.03) |
-| `VALIDATION_FAILED` | 400 | Tanggal atau alasan kosong |
-| `TASK_NOT_ASSIGNED_TO_YOU` | 403 | |
+| `VALIDATION_FAILED` | 400 | Tanggal atau alasan kosong; detail "This field is required" pada `disbursementDate` atau `reason` |
+| `TASK_NOT_ASSIGNED_TO_YOU` | 403 | "This task is assigned to another user" |
+| `ALREADY_PROCESSED` | 409 | "This application has already been processed": langkah VALIDITY_CHECK tidak lagi menunggu |
+| `APPLICATION_NOT_FOUND` | 404 | "Application not found" |
 
 **Traceability:** US-76; AC-76.01 s.d. AC-76.06 (AC-76.03 Deferred di POC).
 
