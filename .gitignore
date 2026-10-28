@@ -48,3 +48,6 @@ deploy/compose/.secrets/
 playwright-report/
 test-results/
 **/playwright/.auth/
+
+# Kunci privat lisensi tidak pernah masuk repo (DEPLOYMENT_PLAN §3.11)
+license-signing-key.pem

@@ -1,0 +1,78 @@
+# Production VM data (DEPLOYMENT_PLAN §2.1, §2.2, §3.9): PostgreSQL dengan pgBackRest dan SeaweedFS. Port hanya
+# diikat ke IP privat; aturan DOCKER-USER (§3.1 langkah 5b) membatasi pengirimnya ke VM aplikasi.
+name: cikal
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 50m
+    max-file: "5"
+
+services:
+  db:
+    image: ${CIKAL_POSTGRES_IMAGE:?set CIKAL_POSTGRES_IMAGE in .env}
+    logging: *logging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cikal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_postgres_password
+      CIKAL_OWNER_PASSWORD_FILE: /run/secrets/db_owner_password
+      CIKAL_APP_PASSWORD_FILE: /run/secrets/db_app_password
+    secrets: [db_postgres_password, db_owner_password, db_app_password]
+    ports:
+      - "${PRIVATE_IP:?set PRIVATE_IP in .env}:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./secrets/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cikal"]
+      interval: 5s
+      retries: 20
+
+  storage:
+    image: chrislusf/seaweedfs:3.97
+    logging: *logging
+    restart: unless-stopped
+    command: server -dir=/data -filer.encryptVolumeData -s3 -s3.port=9000 -s3.config=/run/secrets/s3.json
+    secrets: [s3.json]
+    ports:
+      - "${PRIVATE_IP}:9000:9000"
+    volumes:
+      - storage-data:/data
+
+  # Membuat bucket ${S3_BUCKET} lalu berhenti. weed shell bisa menggantung sebelum master siap; tiap percobaan dibatasi.
+  storage-init:
+    image: chrislusf/seaweedfs:3.97
+    logging: *logging
+    restart: "no"
+    depends_on: [storage]
+    entrypoint: >
+      /bin/sh -c "until echo 's3.bucket.list' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888 2>/dev/null | grep -q '${S3_BUCKET:?set S3_BUCKET in .env}';
+      do echo 's3.bucket.create -name ${S3_BUCKET}' | timeout 15 weed shell -master=storage:9333 -filer=storage:8888; sleep 2; done"
+
+  # Salinan harian bucket ke offsite; objek yang terhapus atau berubah disimpan di folder per tanggal (§3.9).
+  objects-backup:
+    image: rclone/rclone:1.68.2
+    profiles: [tools]
+    logging: *logging
+    restart: "no"
+    environment:
+      S3_BUCKET: ${S3_BUCKET}
+      OFFSITE_BUCKET: ${OFFSITE_BUCKET:?set OFFSITE_BUCKET in .env}
+    volumes:
+      - ./secrets/rclone.conf:/config/rclone/rclone.conf:ro
+    entrypoint: >
+      /bin/sh -c "rclone sync seaweed:$$S3_BUCKET offsite:$$OFFSITE_BUCKET/current
+      --backup-dir offsite:$$OFFSITE_BUCKET/deleted/$$(date +%F)"
+
+secrets:
+  s3.json: { file: ./secrets/s3.json }
+  db_postgres_password: { file: ./secrets/db_postgres_password }
+  db_owner_password: { file: ./secrets/db_owner_password }
+  db_app_password: { file: ./secrets/db_app_password }
+
+volumes:
+  db-data:
+  storage-data:

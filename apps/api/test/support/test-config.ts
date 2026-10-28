@@ -35,6 +35,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     smtp: null,
     worker: { concurrency: 1 },
     licensePublicKey: testLicenseKeys.publicKey,
+    licenseFile: null,
     ...overrides,
   };
 }

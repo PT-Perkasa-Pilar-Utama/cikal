@@ -149,6 +149,7 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 │   ├── available/              http.conf.template, https.conf.template dari deploy/nginx
 │   ├── templates/              template aktif (default.conf.template)
 │   └── dhparam.pem
+├── certbot/                    www (webroot ACME) dan conf (sertifikat, /etc/letsencrypt)
 └── backups/                    pg_dump UAT dan dump manual
 ```
 
@@ -156,19 +157,19 @@ Docker menulis aturan iptables sendiri untuk port yang dipublikasi, sehingga atu
 
 | Artefak | Isi | Kartu | Status |
 |---|---|---|---|
-| `apps/api/Dockerfile` | Image `cikal-api` distroless per manifest | TL-S6-01 | Belum ada |
-| `apps/web/Dockerfile` | Image `cikal-web`: nginx 1.28 + hasil `vite build` | TL-S6-01 | Belum ada |
-| `.github/workflows/release.yml` | Build dan push dua image saat tag `v*`, tulis digest di job summary | TL-S6-01 | Belum ada |
-| `deploy/compose/docker-compose.single.yml`, `docker-compose.app.yml`, `docker-compose.data.yml` | Service di 2.2, log rotation, healthcheck | TL-S6-01 | Belum ada |
-| `deploy/compose/env/{sit,uat,production-app,production-data}.env.example` | Isi 3.5 | TL-S6-01 | Belum ada |
+| `apps/api/Dockerfile` | Image `cikal-api` distroless per manifest; modul di luar manifest dipangkas sebelum kompilasi (`tools/package-builder/prune.mjs`) | TL-S6-01 | Ada |
+| `apps/web/Dockerfile` | Image `cikal-web`: nginx 1.28 + hasil `vite build` | TL-S6-01 | Ada |
+| `.github/workflows/release.yml` | Build dan push `cikal-api`, `cikal-web`, dan `cikal-postgres` saat tag `v*`, tulis digest di job summary | TL-S6-01 | Ada |
+| `deploy/compose/docker-compose.single.yml`, `docker-compose.app.yml`, `docker-compose.data.yml` | Service di 2.2, log rotation, healthcheck; secret dipasang per file di `/run/secrets` | TL-S6-01 | Ada |
+| `deploy/compose/env/{sit,uat,production-app,production-data}.env.example` | Isi 3.5 | TL-S6-01 | Ada |
 | `deploy/compose/initdb/10-roles.sh` | Membuat `cikal_owner` dan `cikal_app` dari file secret | TL-S1-02 | Ada |
-| `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan; server block `files.${DOMAIN}` ke storage yang meneruskan header `Host` apa adanya, dan CSP aplikasi mengizinkan host itu untuk pratinjau dokumen (issue #102) | TL-S6-01 | Belum ada |
-| `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Belum ada |
-| Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada, kecuali `create-admin` (8, F-02) |
+| `deploy/nginx/{http,https}.conf.template` | Proxy, ACME webroot, TLS, header keamanan; server block `files.${DOMAIN}` ke storage yang meneruskan header `Host` apa adanya, dan CSP aplikasi mengizinkan host itu untuk pratinjau dokumen (issue #102) | TL-S6-01 | Ada |
+| `deploy/postgres/Dockerfile` | `postgres:17.6` + pgBackRest, `archive_mode=on`, `archive_timeout=300` | TL-S6-01 | Ada |
+| Runner `platform/migrate` dengan subperintah `migrate`, `seed --seed=base\|dev\|qa`, `reset --seed=dev\|qa`, `install-license`, `create-admin` | Satu entrypoint untuk semua operasi skema dan data | TL-S1-02, TL-S6-01 | Ada |
 | `POST /api/admin/reset-state` lengkap | Drop, migrasi, kosongkan bucket, seed, sinyal `cikal_ops` | TL-S1-02, TL-S1-03 | Ada; butuh sesi role QA dan header CSRF |
 | `tools/license-cli` | `keygen`, `issue`, `verify` file lisensi Ed25519 (3.11) | TL-S2-02 | Ada |
 | `deploy/license/ppu-license-public-key.pem` dan build image dengan `--license-key` kunci itu | Kunci publik PPU tertanam di image rilis | TL-S6-01 | Belum ada (8, F-09) |
-| Pemasangan `license.json` saat instalasi (`LICENSE_FILE`, `create-admin`) | Lisensi pertama company tanpa lewat halaman License | TL-S6-01 | Belum ada (8, F-09) |
+| Pemasangan `license.json` saat instalasi (`LICENSE_FILE`, `create-admin`) | Lisensi pertama company tanpa lewat halaman License; dipasang ulang setiap reset | TL-S6-01 | Ada |
 
 ### 2.6 Perbedaan untuk on-premise client
 
@@ -291,7 +292,7 @@ Di VM tunggal dan VM aplikasi, susun folder nginx:
 
 ```bash
 cd /opt/cikal
-mkdir -p nginx/available nginx/templates backups
+mkdir -p nginx/available nginx/templates certbot/www certbot/conf backups
 cp nginx-src/*.conf.template nginx/available/ && rm -r nginx-src
 chmod 600 .env
 ```
@@ -443,6 +444,7 @@ Nilai yang berbeda per lingkungan:
 |---|---|---|---|
 | `DOMAIN`, `PUBLIC_BASE_URL` | `cikal-sit.example.id` | `cikal-uat.example.id` | `cikal.example.id` |
 | `COMPOSE_PROFILES` | `mailpit` | kosong | kosong |
+| `STORAGE_UPSTREAM` (compose, proxy `files.$DOMAIN`) | tidak dipakai (`storage:9000`) | tidak dipakai (`storage:9000`) | `10.10.0.20:9000` |
 | `APP_ENV` | `sit` | `uat` | `production` |
 | Host di `DATABASE_URL`, `DATABASE_MIGRATION_URL` | `db` | `db` | `10.10.0.20` |
 | `S3_ENDPOINT` | `http://storage:9000` | `http://storage:9000` | `http://10.10.0.20:9000` |
@@ -458,6 +460,7 @@ Nilai yang berbeda per lingkungan:
 CIKAL_POSTGRES_IMAGE=ghcr.io/pt-perkasa-pilar-utama/cikal-postgres:17.6@sha256:<digest>
 PRIVATE_IP=10.10.0.20          # port db dan storage hanya diikat ke IP ini
 S3_BUCKET=cikal-prod
+OFFSITE_BUCKET=cikal-objects-prod   # tujuan objects-backup (3.9)
 ```
 
 ### 3.6 Menjalankan service, migrasi, dan seed
@@ -477,8 +480,10 @@ docker compose run --rm storage-init
 # 3. Migrasi semua modul berlisensi ke versi terbaru (runner platform/migrate)
 docker compose run --rm migrate
 
-# 4. Seed: base + qa (SIT dan UAT)
+# 4. Seed: base + qa (SIT dan UAT), lalu lisensi PPU dari license.json. Image rilis tidak mempercayai
+#    lisensi dev di seed qa, jadi tanpa langkah ini company 001 tidak punya lisensi (F-09).
 docker compose run --rm migrate seed --seed=qa
+docker compose run --rm migrate install-license
 
 # 5. Template nginx HTTP sementara untuk penerbitan sertifikat (3.7)
 cp nginx/available/http.conf.template nginx/templates/default.conf.template
@@ -513,9 +518,10 @@ docker compose pull
 docker compose run --rm migrate
 docker compose run --rm migrate seed --seed=base
 
-# 5. [VM aplikasi] Admin pertama. Password sekali pakai dicetak ke terminal:
-#    simpan di vault, wajib diganti saat login pertama. Company diambil dari license.json.
-docker compose run --rm migrate create-admin --username admin
+# 5. [VM aplikasi] Company dari license.json, kunci tenant, lisensi, 16 role standar, dan admin pertama
+#    ber-role Super User. Password sekali pakai dicetak ke terminal: simpan di vault, wajib diganti saat login
+#    pertama. --company-name dan --address wajib bila company belum ada.
+docker compose run --rm migrate create-admin --username admin --email admin@bankcontoh.co.id   --company-name "Bank Contoh" --address "Jl. Jenderal Sudirman Kav. 1, Jakarta Pusat"
 
 # 6. [VM aplikasi] Template HTTP sementara, lalu semua service
 cp nginx/available/http.conf.template nginx/templates/default.conf.template
@@ -706,13 +712,13 @@ pnpm --filter @cikal/license-cli build
 Pasangan kunci PPU dibuat sekali. Kunci privat disimpan di password manager tim dan salinan lokal dihapus; kunci publik di-commit sebagai `deploy/license/ppu-license-public-key.pem` dan dipakai build image rilis (TL-S6-01):
 
 ```bash
-node tools/license-cli/dist/cli.js keygen --out ~/cikal-license-keys
+node tools/license-cli/dist/cli.js keygen --out "$HOME/cikal-license-keys"
 ```
 
 Menerbitkan file lisensi satu company, lalu memeriksanya dengan kunci publik:
 
 ```bash
-node tools/license-cli/dist/cli.js issue --key ~/cikal-license-keys/license-signing-key.pem --number PPU-LIC-2026-0001 \
+node tools/license-cli/dist/cli.js issue --key "$HOME/cikal-license-keys/license-signing-key.pem" --number PPU-LIC-2026-0001 \
   --company 001 --deployment ON_PREMISE --modules CORE,M06,M07,M08,M09,M10,M11,M15 \
   --valid-from 2026-10-21 --valid-to 2027-12-31 --out license.json
 ```
@@ -980,7 +986,8 @@ docker compose exec -T db pg_dump -U postgres -Fc cikal > backups/cikal-uat-pre-
 
 # 3. Wipe, migrasi ulang, dan seed dalam satu perintah runner, urutan sama dengan API:
 #    DROP semua skema aplikasi dan pgboss (pakai DATABASE_MIGRATION_URL),
-#    migrasi per modul berlisensi, kosongkan bucket ${S3_BUCKET}, seed base + qa (seed qa menulis template akad).
+#    migrasi per modul berlisensi, kosongkan bucket ${S3_BUCKET}, seed base + qa (seed qa menulis template akad),
+#    lalu pasang ulang license.json bila LICENSE_FILE diisi.
 docker compose run --rm migrate reset --seed=qa
 
 # 4. Nyalakan kembali; proses baru berarti cache memori dan pool kosong
@@ -1189,12 +1196,12 @@ docker image prune -a --filter "until=720h"
 | ID | Temuan | Tindak lanjut |
 |---|---|---|
 | F-01 | MS-03 menyebut runner migrasi membaca `DATABASE_URL`, berbeda dengan 11.2 | Diperbaiki di [technical-specs/06-data-model.md](technical-specs/06-data-model.md) 6.12: runner memakai `DATABASE_MIGRATION_URL` |
-| F-02 | Runner butuh subperintah `seed --seed=base`, `reset --seed=dev\|qa` (menolak di production), dan `create-admin`; seed `dev` dan `qa` dibangun di atas `base` | `seed` berlapis dan `reset` selesai di TL-S1-02 (tech 06 6.12 MS-05, MS-07 diperbarui). `create-admin` menunggu tabel `iam` dari BE-S1-01; masuk TL-S6-01 |
+| F-02 | Runner butuh subperintah `seed --seed=base`, `reset --seed=dev\|qa` (menolak di production), dan `create-admin`; seed `dev` dan `qa` dibangun di atas `base` | Selesai: `seed` berlapis dan `reset` di TL-S1-02, `create-admin` di TL-S6-01 (3.6 langkah 5) |
 | F-03 | Role `cikal_app` harus mendapat `USAGE` dan hak tabel di setiap skema yang dibuat `cikal_owner` | Selesai di TL-S1-02: runner memberi `GRANT` dan `ALTER DEFAULT PRIVILEGES` setelah migrasi per skema (MS-05) |
-| F-04 | Artefak server di 2.5 (dua Dockerfile, tiga file compose, contoh env, template nginx, image `cikal-postgres`, `release.yml`) melebihi estimasi TL-S6-01 (2.5d) | Pecah menjadi kartu baru di Sprint 6 atau tambah estimasi lewat `/task-breakdown` |
+| F-04 | Artefak server di 2.5 (dua Dockerfile, tiga file compose, contoh env, template nginx, image `cikal-postgres`, `release.yml`) melebihi estimasi TL-S6-01 (2.5d) | Diputuskan TL 2026-10-28: semua artefak tetap di TL-S6-01, estimasi bertambah |
 | F-05 | Koneksi production VM aplikasi ke PostgreSQL dan SeaweedFS lewat jaringan privat tanpa TLS; tech ref bagian 13 meminta semua koneksi memakai TLS | Putuskan: aktifkan TLS PostgreSQL (`sslmode=verify-full`) dan HTTPS SeaweedFS, atau terima jaringan privat sebagai batas untuk POC dan catat sebagai ADR |
 | F-06 | SIT dan UAT publik; `POST /api/admin/reset-state` terjangkau internet walau dilindungi sesi, role `QA-RESET`, dan token | Rekomendasi: template nginx membatasi `location /api/admin/` ke CIDR kantor PPU |
 | F-07 | Tech 02 2.6 menyebut sertifikat dari bank; hosting PPU memakai Let's Encrypt | Perbarui tabel container 2.6 agar mencakup kedua model (lihat 2.6 dokumen ini) |
 | F-08 | Admin dari `create-admin` wajib ganti password saat login pertama; belum ada AC-nya | Bawa ke `/grooming` sebagai AC baru US-01 |
-| F-09 | Image rilis dipromosikan SIT, UAT, lalu production, jadi image SIT dan UAT mempercayai kunci PPU, bukan kunci dev. Lisensi dev di seed `qa` tidak berlaku di sana, dan reset menghapus lisensi yang dipasang | TL-S6-01: build rilis dengan `--license-key deploy/license/ppu-license-public-key.pem`, lalu pasang `license.json` (`LICENSE_FILE`) saat instalasi dan setelah setiap reset |
+| F-09 | Image rilis dipromosikan SIT, UAT, lalu production, jadi image SIT dan UAT mempercayai kunci PPU, bukan kunci dev. Lisensi dev di seed `qa` tidak berlaku di sana, dan reset menghapus lisensi yang dipasang | Selesai di TL-S6-01: `release.yml` membangun dengan `--license-key deploy/license/ppu-license-public-key.pem`; `create-admin` (production) dan `install-license` (SIT, UAT) memasang `LICENSE_FILE` saat instalasi, dan reset (API dan CLI) memasangnya ulang setelah seed. `LICENSE_FILE` wajib di sit, uat, dan production |
 | F-10 | AC-100.01 dan AC-100.02 menyebut halaman "License" (daftar modul, masa berlaku, pesan "License file is invalid"); belum ada kartu frontend untuk layar itu | Tambah kartu layar License (FE) lewat `/task-breakdown`; API-nya selesai di TL-S2-02 |

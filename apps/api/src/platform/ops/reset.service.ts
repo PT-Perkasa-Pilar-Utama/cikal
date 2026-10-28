@@ -4,6 +4,7 @@ import pg from "pg";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
 import { DomainError } from "../http/domain-error.js";
 import { installedModuleData } from "../migrate/installed-modules.js";
+import { licenseFileInstaller } from "../migrate/license-file.js";
 import { appRoleFor, ResetInProgressError, resetState } from "../migrate/runner.js";
 import { StorageService } from "../storage/storage.module.js";
 import { OpsSignals } from "./ops-signals.js";
@@ -28,11 +29,13 @@ export class ResetService implements OnModuleDestroy {
       throw DomainError.standard("SERVICE_UNAVAILABLE", "Reset state is not configured");
     }
     this.pool ??= new pg.Pool({ connectionString: migrationUrl, max: 2 });
+    const pool = this.pool;
+    const installLicense = licenseFileInstaller(pool, this.config.licenseFile, this.config.licensePublicKey);
     this.signals.emit("reset_started");
     try {
       return await resetState({
         appEnv: this.config.appEnv,
-        pool: this.pool,
+        pool,
         modules: installedModuleData,
         appRole: appRoleFor(this.config.database.url, migrationUrl),
         seed: seed ?? this.config.resetApi.defaultSeed,
@@ -42,6 +45,7 @@ export class ResetService implements OnModuleDestroy {
           putObject: ({ key, body, contentType }) => this.storage.putObject(key, body, contentType),
         },
         emptyBucket: () => this.storage.emptyBucket(),
+        installLicense,
       });
     } catch (error) {
       if (error instanceof ResetInProgressError) {
