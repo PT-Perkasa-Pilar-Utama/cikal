@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { type ApplicationStatus, applicationInquiryResponseSchema, errorEnvelopeSchema } from "@cikal/contracts";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { v7 as uuidv7 } from "uuid";
@@ -34,12 +35,12 @@ describe("application inquiry", () => {
   let templateId: string;
   let copies = 0;
 
-  /** Token huruf unik per uji agar pencarian hanya menemukan baris uji itu. */
-  const token = () =>
-    `Q${uuidv7()
-      .replace(/[^a-f]/g, "")
-      .slice(0, 8)
-      .toUpperCase()}`;
+  /**
+   * Token 12 huruf acak per uji agar pencarian `q` (cocok sebagian) hanya menemukan baris uji itu. Huruf dari UUID v7
+   * tidak cukup: awalannya dari timestamp sama untuk semua uji dan sebagian token lebih pendek, sehingga token satu uji
+   * bisa menjadi bagian nama uji lain.
+   */
+  const token = () => `Q${Array.from(randomBytes(12), (byte) => String.fromCharCode(65 + (byte % 26))).join("")}`;
   const list = async (session: TestSession, query: string) => {
     const res = await app.inject({ method: "GET", url: `/api/v1/applications?${query}`, headers: session.headers });
     expect(res.statusCode, res.body).toBe(200);
