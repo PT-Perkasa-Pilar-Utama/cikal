@@ -712,12 +712,13 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 ### M15 Pencairan & Core (`m15_disbursement`)
 | table.column | type | nullable | notes |
 |---|---|---|---|
-| disbursements.application_id | uuid | no | UQ |
+| disbursements.application_id | uuid | no | UQ; dibuat saat langkah VALIDITY_CHECK dimulai, proses baru sesudah kembali ke Draft mengosongkan hasil Validity Check |
+| disbursements.process_instance_id | uuid | no | proses yang sampai VALIDITY_CHECK |
 | disbursements.contract_number | text | yes | dari penomoran dokumen `CONTRACT` |
 | disbursements.contract_date | date | yes | |
 | disbursements.disbursement_amount | numeric(18,2) | no | |
-| disbursements.bank_account_number_enc | bytea | no | |
-| disbursements.disbursement_date | date | no | `>= H+1` dan `>=` tanggal e-polis |
+| disbursements.bank_account_number_enc | bytea | yes | rekening nasabah dari Print Akad (keputusan TL 2026-10-28) |
+| disbursements.disbursement_date | date | yes | diisi saat Valid (CHECK); `>= H+1` dan `>=` tanggal e-polis |
 | disbursements.validity_status, not_valid_reason | text | yes | |
 | akad_prints.payment_method, bank_account_number, customer_account_number_enc, risk_manager_user_id | | no | |
 | akad_prints.generated_document_id, print_count | uuid, int | no | |
