@@ -1,22 +1,18 @@
 #!/usr/bin/env node
 // CLI penerbit dan pemeriksa file lisensi bertanda tangan untuk tim PPU (US-100, technical-specs 07 §7.6).
 // Kunci privat tidak pernah di-commit; simpan di password manager tim dan hapus salinan lokal setelah dipakai.
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { deploymentTypeSchema, moduleCodeSchema } from "@cikal/contracts";
 import { ZodError, z } from "zod";
-import { checkLicense, generateLicenseKeys, issueLicense } from "./license.js";
+import { writeLicenseKeyFiles, writeNewFile } from "./key-files.js";
+import { checkLicense, issueLicense } from "./license.js";
 
 const USAGE = `Usage:
   cikal-license keygen --out <dir>
   cikal-license issue --key <private-key.pem> --number <license-number> --company <code> --deployment <SAAS|ON_PREMISE>
                       --modules <CORE,M06,...> --valid-from <YYYY-MM-DD> --valid-to <YYYY-MM-DD> [--max-users <n>] --out <file>
   cikal-license verify --public-key <public-key.pem> --file <license.json>`;
-
-const SIGNING_KEY_FILE = "license-signing-key.pem";
-const PUBLIC_KEY_FILE = "license-public-key.pem";
-const PRIVATE_FILE_MODE = 0o600;
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -46,17 +42,15 @@ function fail(message: string, code = 1): never {
   process.exit(code);
 }
 
-/** `wx`: file yang sudah ada tidak ditimpa, sehingga kunci atau lisensi lama tidak hilang tanpa sengaja. */
-function writeNew(path: string, content: string, mode?: number): void {
-  writeFileSync(path, content, { flag: "wx", ...(mode === undefined ? {} : { mode }) });
+function writeNew(path: string, content: string): void {
+  writeNewFile(path, content);
   console.log(`wrote ${path}`);
 }
 
 function keygen(): void {
-  const dir = required("out");
-  const keys = generateLicenseKeys();
-  writeNew(join(dir, SIGNING_KEY_FILE), keys.privateKey, PRIVATE_FILE_MODE);
-  writeNew(join(dir, PUBLIC_KEY_FILE), keys.publicKey);
+  const paths = writeLicenseKeyFiles(required("out"));
+  console.log(`wrote ${paths.signingKey}`);
+  console.log(`wrote ${paths.publicKey}`);
 }
 
 function issue(): void {
