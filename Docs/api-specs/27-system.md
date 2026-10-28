@@ -88,7 +88,7 @@ Body ini tidak memakai envelope `data` karena dibaca alat monitoring.
 3. `DROP SCHEMA ... CASCADE` untuk semua skema aplikasi dan `pgboss` memakai `DATABASE_MIGRATION_URL`.
 4. Jalankan migrasi per modul berlisensi (runner `platform/migrate`, [../technical-specs/06-data-model.md](../technical-specs/06-data-model.md) 6.12).
 5. Kosongkan bucket lingkungan.
-6. Jalankan seed terpilih (idempoten, per modul). Seed menulis ulang objeknya ke bucket, contoh template akad seed `qa`.
+6. Jalankan seed terpilih (idempoten, per modul). Seed menulis ulang objeknya ke bucket, contoh template akad seed `qa`. Bila `LICENSE_FILE` diisi, file itu dipasang ulang sebagai lisensi aktif company-nya (DEPLOYMENT_PLAN F-09).
 7. Nyalakan kembali konsumen worker; buang semua cache memori lewat `NOTIFY`.
 8. Semua sesi ikut terhapus; klien harus login ulang dengan akun seed.
 

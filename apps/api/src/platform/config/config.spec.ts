@@ -11,6 +11,7 @@ const BASE_ENV = {
   MONITORING_TOKEN_FILE: "/run/secrets/monitoring_token",
   REGION_API_KEY_FILE: "/run/secrets/oksara_key",
   MASTER_KEY_FILE: "/run/secrets/cikal_master_key",
+  LICENSE_FILE: "/etc/cikal/license.json",
   SMTP_HOST: "localhost",
   SMTP_PORT: "1025",
   SMTP_FROM: "no-reply@example.id",
@@ -75,5 +76,23 @@ describe("envSchema REGION_API_KEY_FILE", () => {
     const env = envSchema.parse({ ...withoutKey, APP_ENV: "dev", ALLOW_SIMULATION_ADAPTERS: "true" });
     expect(env.REGION_API_KEY_FILE).toBeUndefined();
     expect(env.REGION_API_URL).toBe("https://oksara.senar.id");
+  });
+});
+
+describe("envSchema LICENSE_FILE", () => {
+  const { LICENSE_FILE: _file, ...withoutLicense } = BASE_ENV;
+
+  it("TL-S6-01 requires the license file on release images in sit, uat, and production (DEPLOYMENT_PLAN F-09)", () => {
+    for (const appEnv of ["sit", "uat", "production"]) {
+      const result = envSchema.safeParse({ ...withoutLicense, APP_ENV: appEnv });
+      expect(result.error?.issues).toContainEqual(
+        expect.objectContaining({ path: ["LICENSE_FILE"], message: "is required in sit, uat, and production" }),
+      );
+    }
+  });
+
+  it("keeps the seed license in dev and test without a license file", () => {
+    expect(envSchema.parse({ ...withoutLicense, APP_ENV: "dev" }).LICENSE_FILE).toBeUndefined();
+    expect(envSchema.parse({ ...withoutLicense, APP_ENV: "test" }).LICENSE_FILE).toBeUndefined();
   });
 });

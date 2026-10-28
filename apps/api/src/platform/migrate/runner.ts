@@ -181,8 +181,8 @@ async function notify(db: Queryable, signal: OpsSignal): Promise<void> {
 
 /**
  * Mengembalikan database ke keadaan awal (api-specs 27 §27.4): kunci advisory, sinyal `reset_started`,
- * DROP skema modul dan antrean, migrasi, kosongkan bucket, seed, sinyal `reset_finished`. Bucket dikosongkan sebelum
- * seed agar objek seed, contoh template akad, tetap ada.
+ * DROP skema modul dan antrean, migrasi, kosongkan bucket, seed, pasang `LICENSE_FILE`, sinyal `reset_finished`.
+ * Bucket dikosongkan sebelum seed agar objek seed, contoh template akad, tetap ada.
  * `pool` wajib memakai role pemilik skema. Production sudah ditolak di registrasi rute dan CLI; pemeriksaan
  * di sini lapisan terakhir.
  */
@@ -194,6 +194,8 @@ export async function resetState(options: {
   seed: ResetSeedName;
   seedContext: SeedContext;
   emptyBucket: () => Promise<number>;
+  /** Memasang `LICENSE_FILE` setelah seed (DEPLOYMENT_PLAN F-09); `null` bila lingkungan memakai lisensi seed. */
+  installLicense: (() => Promise<void>) | null;
 }): Promise<ResetResult> {
   const { pool, modules, appRole, seed } = options;
   if (options.appEnv === "production") throw new Error("Reset is not allowed in production");
@@ -210,6 +212,7 @@ export async function resetState(options: {
       const migrationsApplied = await migrateModules(pool, modules, appRole);
       const bucketObjectsDeleted = await options.emptyBucket();
       await seedModules(pool, modules, seed, options.seedContext);
+      await options.installLicense?.();
       const tenantsSeeded = await listTenants(pool);
       return {
         seed,

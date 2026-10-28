@@ -16,6 +16,9 @@ const secureFlag = z
   .default("true")
   .transform((v) => v === "true");
 
+/** Lingkungan image rilis: lisensi seed dev tidak berlaku, jadi lisensi dipasang dari file (DEPLOYMENT_PLAN F-09). */
+const LICENSE_FILE_ENVIRONMENTS: ReadonlySet<AppEnv> = new Set(["sit", "uat", "production"]);
+
 /** Environment variable teknis (technical-specs 11 §11.2). Konfigurasi bisnis per tenant tidak ada di sini. */
 export const envSchema = z
   .object({
@@ -27,6 +30,7 @@ export const envSchema = z
     DATABASE_MIGRATION_URL: z.string().startsWith("postgres").optional(),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
     MASTER_KEY_FILE: z.string().min(1),
+    LICENSE_FILE: z.string().min(1).optional(),
     S3_ENDPOINT: z.url(),
     S3_PUBLIC_ENDPOINT: z.url().optional(),
     S3_REGION: z.string().min(1),
@@ -80,6 +84,9 @@ export const envSchema = z
         path: ["SEED_USER_PASSWORD_FILE"],
         message: "is required when ENABLE_RESET_API=true",
       });
+    }
+    if (!env.LICENSE_FILE && LICENSE_FILE_ENVIRONMENTS.has(env.APP_ENV)) {
+      ctx.addIssue({ code: "custom", path: ["LICENSE_FILE"], message: "is required in sit, uat, and production" });
     }
     if (env.SMTP_USER && !env.SMTP_PASSWORD_FILE) {
       ctx.addIssue({ code: "custom", path: ["SMTP_PASSWORD_FILE"], message: "is required when SMTP_USER is set" });
@@ -145,6 +152,11 @@ export interface AppConfig {
    * oleh `tools/package-builder`, tidak pernah dibaca dari env; uji menggantinya dengan kunci uji.
    */
   licensePublicKey: string;
+  /**
+   * Path file lisensi bertanda tangan yang dipasang `create-admin` dan setiap reset (DEPLOYMENT_PLAN F-09). `null` di
+   * dev dan test, yang memakai lisensi seed.
+   */
+  licenseFile: string | null;
 }
 
 export interface SmtpConfig {
@@ -216,6 +228,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     },
     worker: { concurrency: env.WORKER_CONCURRENCY },
     licensePublicKey: licensePublicKeyPem,
+    licenseFile: env.LICENSE_FILE ?? null,
   };
 }
 

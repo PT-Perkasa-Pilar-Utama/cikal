@@ -86,6 +86,7 @@ describe("migrate runner", () => {
       seed: "qa",
       seedContext,
       emptyBucket: async () => 3,
+      installLicense: null,
     });
 
     expect(result).toMatchObject({
@@ -124,6 +125,7 @@ describe("migrate runner", () => {
         steps.push("empty bucket");
         return 0;
       },
+      installLicense: null,
     });
 
     expect(steps).toEqual([
@@ -145,6 +147,7 @@ describe("migrate runner", () => {
           seed: "qa",
           seedContext,
           emptyBucket: async () => 0,
+          installLicense: null,
         }),
       ).rejects.toBeInstanceOf(ResetInProgressError);
     } finally {
@@ -163,6 +166,7 @@ describe("migrate runner", () => {
         seed: "qa",
         seedContext,
         emptyBucket: async () => 0,
+        installLicense: null,
       }),
     ).rejects.toThrow("Reset is not allowed in production");
   });
