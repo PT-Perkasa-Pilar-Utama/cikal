@@ -28,6 +28,8 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["documentNumberFormats", c.documentNumberFormatListResponseSchema, c.documentNumberFormatListResponseMock],
   ["documentNumberPreview", c.documentNumberPreviewResponseSchema, c.documentNumberPreviewResponseMock],
   ["documentNumberFormatAccepted", c.documentNumberFormatAcceptedSchema, c.documentNumberFormatAcceptedMock],
+  ["auditLogList", c.auditLogListResponseSchema, c.auditLogListResponseMock],
+  ["auditLogDetail", c.auditLogDetailResponseSchema, c.auditLogDetailResponseMock],
   ["availableProducts", c.availableProductsResponseSchema, c.availableProductsResponseMock],
   ["applicationInquiry", c.applicationInquiryResponseSchema, c.applicationInquiryResponseMock],
   ["applicationDetail", c.applicationDetailResponseSchema, c.applicationDetailResponseMock],

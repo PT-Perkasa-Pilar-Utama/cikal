@@ -223,8 +223,8 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | Operasi | Spec | Rilis | Status |
 |---|---|---|---|
 | `GET /applications` | 17 §17.1 | POC | OK |
-| `GET /audit-logs` | 17 §17.2 | POC | TODO |
-| `GET /audit-logs/{id}` | 17 §17.3 | POC | TODO |
+| `GET /audit-logs` | 17 §17.2 | POC | OK |
+| `GET /audit-logs/{id}` | 17 §17.3 | POC | OK |
 | Dashboard, export | 17 §17.4 | Backlog | TODO |
 | Email templates, notification history | 18 §18.2 | Backlog | TODO |
 

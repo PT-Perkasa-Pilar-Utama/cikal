@@ -1,6 +1,7 @@
 export * from "./access-control/index.js";
 export * from "./application/index.js";
 export * from "./approval/index.js";
+export * from "./audit/index.js";
 export * from "./auth/index.js";
 export * from "./calculation/index.js";
 export * from "./change-request/index.js";

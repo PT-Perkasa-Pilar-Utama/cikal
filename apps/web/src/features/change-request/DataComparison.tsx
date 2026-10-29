@@ -12,7 +12,11 @@ interface DataComparisonProps {
   /** Data baru (`CREATE`) tidak punya "Current Data". */
   showCurrent: boolean;
   presentation: FieldPresentation;
+  /** Judul dua kolom nilai; jejak audit memakai "Before" dan "After" (AC-14.02). */
+  columnTitles?: { current: string; proposed: string };
 }
+
+const CHANGE_REQUEST_TITLES = { current: "Current Data", proposed: "Proposed Data" };
 
 /** Array baris, contoh periode pricing atau isi paket impor, tampil sebagai tabel kecil. */
 function RecordList({
@@ -65,14 +69,19 @@ function FieldValue({ path, value, presentation }: { path: string; value: unknow
 }
 
 /** Dua kolom "Current Data" dan "Proposed Data"; field yang berubah diberi latar Warning dan tanda "(changed)" untuk pembaca layar (AC-12.02). */
-export function DataComparison({ rows, showCurrent, presentation }: DataComparisonProps) {
+export function DataComparison({
+  rows,
+  showCurrent,
+  presentation,
+  columnTitles = CHANGE_REQUEST_TITLES,
+}: DataComparisonProps) {
   return (
     <table className="w-full border-collapse">
       <thead>
         <tr className="border-b border-neutral-2 text-left text-neutral-5">
           <th className="w-1/5 p-2">Field</th>
-          {showCurrent && <th className="w-3/8 p-2">Current Data</th>}
-          <th className="p-2">Proposed Data</th>
+          {showCurrent && <th className="w-3/8 p-2">{columnTitles.current}</th>}
+          <th className="p-2">{columnTitles.proposed}</th>
         </tr>
       </thead>
       <tbody>
