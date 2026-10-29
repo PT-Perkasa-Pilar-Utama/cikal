@@ -22,6 +22,7 @@ const pairs: Array<[string, z.ZodType, unknown]> = [
   ["disbursementDetail", c.disbursementDetailResponseSchema, c.disbursementDetailResponseMock],
   ["validityCheckValid", c.validityCheckResponseSchema, c.validityCheckValidResponseMock],
   ["validityCheckNotValid", c.validityCheckResponseSchema, c.validityCheckNotValidResponseMock],
+  ["akadPrint", c.akadPrintResponseSchema, c.akadPrintResponseMock],
   ["documentNumberFormats", c.documentNumberFormatListResponseSchema, c.documentNumberFormatListResponseMock],
   ["documentNumberPreview", c.documentNumberPreviewResponseSchema, c.documentNumberPreviewResponseMock],
   ["documentNumberFormatAccepted", c.documentNumberFormatAcceptedSchema, c.documentNumberFormatAcceptedMock],

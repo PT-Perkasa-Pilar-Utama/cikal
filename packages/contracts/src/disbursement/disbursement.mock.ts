@@ -1,4 +1,4 @@
-import type { DisbursementDetailResponse, ValidityCheckResponse } from "./disbursement.schema.js";
+import type { AkadPrintResponse, DisbursementDetailResponse, ValidityCheckResponse } from "./disbursement.schema.js";
 
 /** Pengajuan KPR yang menunggu Validity Check (api-specs 25 §25.1). */
 export const disbursementDetailResponseMock = {
@@ -34,3 +34,17 @@ export const validityCheckNotValidResponseMock = {
   data: { validityStatus: "NOT_VALID", applicationStatus: "DRAFT" },
   message: "Disbursement data marked as not valid",
 } satisfies ValidityCheckResponse;
+
+/** Akad pertama cabang 011 tahun 2026 (AC-77.01, AC-102.08). */
+export const akadPrintResponseMock = {
+  data: {
+    contractNumber: "011/PK/2026/000001",
+    contractDate: "2026-10-20",
+    generatedDocumentId: "0192b6e1-0001-7000-8000-000000000041",
+    fileId: "0192b6e0-0002-7000-8000-000000000041",
+    downloadUrl:
+      "http://localhost:9000/cikal-dev/tenants/0192b6a0-0001-7000-8000-000000000001/document/0192b6e0-0002-7000-8000-000000000041?X-Amz-Expires=300&X-Amz-Signature=mock",
+    expiresAt: "2026-10-20T08:05:00.000Z",
+    nextStep: "DISBURSEMENT",
+  },
+} satisfies AkadPrintResponse;

@@ -8,8 +8,12 @@ import { FinancingsRepository } from "../db/financings.repository.js";
 const MONEY_SCALE = 2;
 const money = (value: Decimal): string => value.toFixed(MONEY_SCALE);
 
-/** Ringkasan struktur kredit yang disetujui untuk langkah pencairan (api-specs 25 §25.1). */
+/** Ringkasan struktur kredit yang disetujui untuk langkah pencairan dan isi akad (api-specs 25 §25.1, §25.3). */
 export interface ApprovedFinancing {
+  loanAmount: string;
+  tenor: number;
+  interestRate: string;
+  monthlyInstallment: string;
   netDisbursement: string;
   firstInstallmentDate: string;
 }
@@ -28,10 +32,9 @@ export class ApprovedFinancings {
   async find(tx: Tx, applicationId: string): Promise<ApprovedFinancing | null> {
     const found = await this.financings.findByApplication(tx, applicationId);
     if (!found) return null;
-    return {
-      netDisbursement: found.financing.netDisbursement,
-      firstInstallmentDate: found.financing.firstInstallmentDate,
-    };
+    const { loanAmount, tenor, interestRate, monthlyInstallment, netDisbursement, firstInstallmentDate } =
+      found.financing;
+    return { loanAmount, tenor, interestRate, monthlyInstallment, netDisbursement, firstInstallmentDate };
   }
 
   /**

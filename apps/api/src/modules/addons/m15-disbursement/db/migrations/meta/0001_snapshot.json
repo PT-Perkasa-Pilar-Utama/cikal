@@ -1,0 +1,393 @@
+{
+  "id": "32859a00-2afd-4855-b1bb-c7706405cf42",
+  "prevId": "77375ac6-eef8-4e4c-8b70-27f1e8cd1d9c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "m15_disbursement.akad_prints": {
+      "name": "akad_prints",
+      "schema": "m15_disbursement",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bank_account_number": {
+          "name": "bank_account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer_account_number_enc": {
+          "name": "customer_account_number_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer_account_number_key_version": {
+          "name": "customer_account_number_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "risk_manager_user_id": {
+          "name": "risk_manager_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "generated_document_id": {
+          "name": "generated_document_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "print_count": {
+          "name": "print_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "akad_prints_tenant_id_companies_id_fk": {
+          "name": "akad_prints_tenant_id_companies_id_fk",
+          "tableFrom": "akad_prints",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "akad_prints_application_id_applications_id_fk": {
+          "name": "akad_prints_application_id_applications_id_fk",
+          "tableFrom": "akad_prints",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "akad_prints_risk_manager_user_id_users_id_fk": {
+          "name": "akad_prints_risk_manager_user_id_users_id_fk",
+          "tableFrom": "akad_prints",
+          "tableTo": "users",
+          "schemaTo": "iam",
+          "columnsFrom": [
+            "risk_manager_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "akad_prints_generated_document_id_generated_documents_id_fk": {
+          "name": "akad_prints_generated_document_id_generated_documents_id_fk",
+          "tableFrom": "akad_prints",
+          "tableTo": "generated_documents",
+          "schemaTo": "document",
+          "columnsFrom": [
+            "generated_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "akad_prints_file_id_document_files_id_fk": {
+          "name": "akad_prints_file_id_document_files_id_fk",
+          "tableFrom": "akad_prints",
+          "tableTo": "document_files",
+          "schemaTo": "document",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "akad_prints_application_unique": {
+          "name": "akad_prints_application_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "application_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "akad_prints_print_count_check": {
+          "name": "akad_prints_print_count_check",
+          "value": "\"m15_disbursement\".\"akad_prints\".\"print_count\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "m15_disbursement.disbursements": {
+      "name": "disbursements",
+      "schema": "m15_disbursement",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "process_instance_id": {
+          "name": "process_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "disbursement_amount": {
+          "name": "disbursement_amount",
+          "type": "numeric(18, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bank_account_number_enc": {
+          "name": "bank_account_number_enc",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_number_key_version": {
+          "name": "bank_account_number_key_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "disbursement_date": {
+          "name": "disbursement_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validity_status": {
+          "name": "validity_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "not_valid_reason": {
+          "name": "not_valid_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_number": {
+          "name": "contract_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_date": {
+          "name": "contract_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "disbursements_tenant_id_companies_id_fk": {
+          "name": "disbursements_tenant_id_companies_id_fk",
+          "tableFrom": "disbursements",
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "disbursements_application_id_applications_id_fk": {
+          "name": "disbursements_application_id_applications_id_fk",
+          "tableFrom": "disbursements",
+          "tableTo": "applications",
+          "schemaTo": "application",
+          "columnsFrom": [
+            "application_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "disbursements_application_unique": {
+          "name": "disbursements_application_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "application_id"
+          ]
+        }
+      },
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "disbursements_validity_status_check": {
+          "name": "disbursements_validity_status_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" in ('VALID', 'NOT_VALID')"
+        },
+        "disbursements_valid_date_check": {
+          "name": "disbursements_valid_date_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" is distinct from 'VALID' or \"m15_disbursement\".\"disbursements\".\"disbursement_date\" is not null"
+        },
+        "disbursements_not_valid_reason_check": {
+          "name": "disbursements_not_valid_reason_check",
+          "value": "\"m15_disbursement\".\"disbursements\".\"validity_status\" is distinct from 'NOT_VALID' or \"m15_disbursement\".\"disbursements\".\"not_valid_reason\" is not null"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "m15_disbursement": "m15_disbursement"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

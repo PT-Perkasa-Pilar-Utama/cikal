@@ -14,6 +14,9 @@ import {
   sequenceCapacity,
 } from "../domain/number-pattern.js";
 
+/** Kode cabang pengajuan tanpa cabang (dibuat role pusat) untuk `{BRANCH_CODE}` dan cakupan counter (api-specs 10 §10.6). */
+export const HEAD_OFFICE_BRANCH_CODE = "000";
+
 /** Cakupan satu dokumen; `date` tanggal bisnis `YYYY-MM-DD`. Kode company dibaca dari tenant transaksi. */
 export interface NumberScope {
   tenantId: string;

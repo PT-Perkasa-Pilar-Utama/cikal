@@ -13,6 +13,13 @@ type SeedValues = ReadonlyArray<readonly [paramId: string, paramValue: string]>;
  */
 const SEED_PARAMETERS: ReadonlyArray<readonly [ParamType, SeedValues]> = [
   [
+    "Payment Method",
+    [
+      ["AUTO_DEBET", "Auto Debet"],
+      ["TRANSFER", "Transfer"],
+    ],
+  ],
+  [
     "Occupation",
     [
       ["001", "Karyawan Swasta"],

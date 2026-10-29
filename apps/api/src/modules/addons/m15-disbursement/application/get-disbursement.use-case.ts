@@ -1,11 +1,14 @@
 import type { DisbursementDetailResponse } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
-import { TenantTx } from "../../../../platform/db/tenant-tx.js";
+import { TenantEncryption } from "../../../../platform/crypto/tenant-encryption.js";
+import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
 import { ACCESS_PORT, type AccessPort, type RequestContext } from "../../../../platform/http/access-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationProcess } from "../../../core/application/index.js";
 import { ApprovedFinancings } from "../../../core/approval/index.js";
-import { DisbursementsRepository } from "../db/disbursements.repository.js";
+import { AkadPrintsRepository } from "../db/akad-prints.repository.js";
+import { type DisbursementRow, DisbursementsRepository } from "../db/disbursements.repository.js";
+import { maskAccountNumber } from "../domain/akad-format.js";
 import { applicationNotFound } from "./disbursement-errors.js";
 
 const READERS = [
@@ -27,36 +30,50 @@ export class GetDisbursementUseCase {
     private readonly applications: ApplicationProcess,
     private readonly financings: ApprovedFinancings,
     private readonly disbursements: DisbursementsRepository,
+    private readonly prints: AkadPrintsRepository,
+    private readonly encryption: TenantEncryption,
   ) {}
 
   async execute(ctx: RequestContext, applicationId: string): Promise<DisbursementDetailResponse> {
     const allowed = await Promise.all(READERS.map(([menu, action]) => this.access.allows(ctx, menu, action)));
     if (!allowed.some(Boolean)) await this.access.authorize(ctx, "OPS-VALIDITY", "VIEW");
+    const operations = allowed.slice(0, -1).some(Boolean);
     return this.db.withTenantTx(ctx, async (tx) => {
       const application = await this.applications.find(tx, applicationId);
       if (!application) throw applicationNotFound();
       const disbursement = await this.disbursements.findByApplication(tx, applicationId);
       const financing = await this.financings.find(tx, applicationId);
       if (!disbursement || !financing) throw DomainError.standard("NOT_FOUND");
+      const print = await this.prints.findByApplication(tx, applicationId);
       return {
         data: {
           applicationId,
           loanId: application.loanId,
           currentStep: application.currentStep,
           disbursementAmount: disbursement.disbursementAmount,
-          // Rekening nasabah diisi Print Akad di kartu BE-S6-02 (keputusan TL 2026-10-28).
-          bankAccountNumber: null,
+          bankAccountNumber: await this.accountOf(tx, disbursement, operations),
           disbursementDate: disbursement.disbursementDate,
           firstInstallmentDate: financing.firstInstallmentDate,
           validityStatus: disbursement.validityStatus,
           notValidReason: disbursement.notValidReason,
           contractNumber: disbursement.contractNumber,
           contractDate: disbursement.contractDate,
-          // Riwayat cetak akad diisi kartu BE-S6-02; respons core diisi kartu BE-S6-03.
-          akadPrints: [],
+          akadPrints: print ? [print] : [],
+          // Respons core diisi kartu BE-S6-03.
           coreResponse: null,
         },
       };
     });
+  }
+
+  /** Rekening nasabah dari Print Akad: utuh untuk menu `OPS-*`, tersamar untuk `APP-INQUIRY` saja (api-specs 25 §25.1). */
+  private async accountOf(tx: Tx, disbursement: DisbursementRow, operations: boolean): Promise<string | null> {
+    const { bankAccountNumberEnc, bankAccountNumberKeyVersion } = disbursement;
+    if (!bankAccountNumberEnc || bankAccountNumberKeyVersion === null) return null;
+    const account = await this.encryption.decrypt(tx, {
+      ciphertext: bankAccountNumberEnc,
+      keyVersion: bankAccountNumberKeyVersion,
+    });
+    return operations ? account : maskAccountNumber(account);
   }
 }

@@ -15,6 +15,8 @@ const disbursementColumns = {
   notValidReason: disbursements.notValidReason,
   contractNumber: disbursements.contractNumber,
   contractDate: disbursements.contractDate,
+  bankAccountNumberEnc: disbursements.bankAccountNumberEnc,
+  bankAccountNumberKeyVersion: disbursements.bankAccountNumberKeyVersion,
 };
 
 export type DisbursementRow = Pick<typeof disbursements.$inferSelect, keyof typeof disbursementColumns>;
@@ -62,6 +64,37 @@ export class DisbursementsRepository {
     await tx
       .update(disbursements)
       .set({ ...result, updatedAt: new Date(), updatedBy: userId })
+      .where(eq(disbursements.applicationId, applicationId));
+  }
+
+  /** Nomor kontrak dibentuk sekali per pengajuan dan dipakai lagi saat cetak ulang (DN-06, AC-102.08). */
+  async setContract(
+    tx: Tx,
+    applicationId: string,
+    contract: { contractNumber: string; contractDate: string },
+    userId: string,
+  ): Promise<void> {
+    await tx
+      .update(disbursements)
+      .set({ ...contract, updatedAt: new Date(), updatedBy: userId })
+      .where(eq(disbursements.applicationId, applicationId));
+  }
+
+  /** Rekening nasabah dari form Print Akad (keputusan TL 2026-10-28), terenkripsi per tenant. */
+  async setCustomerAccount(
+    tx: Tx,
+    applicationId: string,
+    account: { ciphertext: Buffer; keyVersion: number },
+    userId: string,
+  ): Promise<void> {
+    await tx
+      .update(disbursements)
+      .set({
+        bankAccountNumberEnc: account.ciphertext,
+        bankAccountNumberKeyVersion: account.keyVersion,
+        updatedAt: new Date(),
+        updatedBy: userId,
+      })
       .where(eq(disbursements.applicationId, applicationId));
   }
 }

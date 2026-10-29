@@ -1,10 +1,16 @@
+import type { FileDownloadQuery } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
 import { v7 as uuidv7 } from "uuid";
 import type { TenantContext, Tx } from "../../../../platform/db/tenant-tx.js";
 import { SYSTEM_PARAMETER_PORT, type SystemParameterPort } from "../../../../platform/http/system-parameter-port.js";
 import { StorageService } from "../../../../platform/storage/storage.module.js";
 import { DocumentFilesRepository } from "../db/document-files.repository.js";
-import { STORED_CONTENT_TYPE } from "../domain/file-download.js";
+import {
+  contentDisposition,
+  DOWNLOAD_URL_TTL_SECONDS,
+  pdfFileName,
+  STORED_CONTENT_TYPE,
+} from "../domain/file-download.js";
 import { checkUpload, type UploadCandidate, type UploadExtension } from "../domain/upload-rules.js";
 import { PDF_CONVERTER_PORT, type PdfConverterPort } from "../ports/pdf-converter.port.js";
 
@@ -14,6 +20,15 @@ export interface StoredFile {
   fileName: string;
   sizeBytes: number;
   uploadedAt: Date;
+}
+
+/** URL S3 bertanda tangan satu file (technical-specs 07 §7.7). */
+export interface FileLink {
+  fileId: string;
+  url: string;
+  expiresAt: Date;
+  fileName: string;
+  sizeBytes: number;
 }
 
 /** PDF yang disimpan beserta nama, ekstensi, dan ukuran berkas asalnya. */
@@ -64,6 +79,23 @@ export class DocumentFiles {
       userId: actor.userId,
     });
     return { fileId: row.id, fileName: row.fileName, sizeBytes: row.sizeBytes, uploadedAt: row.createdAt };
+  }
+
+  /**
+   * URL bertanda tangan berumur 5 menit dengan `Content-Type` PDF dan nama unduhan `.pdf` (api-specs 10 §10.1);
+   * `null` bila file tidak ada di tenant transaksi. Hak lihat diperiksa pemanggil.
+   */
+  async link(tx: Tx, fileId: string, disposition: FileDownloadQuery["disposition"]): Promise<FileLink | null> {
+    const file = await this.files.find(tx, fileId);
+    if (!file) return null;
+    const fileName = pdfFileName(file.fileName);
+    const expiresAt = new Date(Date.now() + DOWNLOAD_URL_TTL_SECONDS * 1000);
+    const url = await this.storage.signedGetUrl(file.storageKey, {
+      expiresInSeconds: DOWNLOAD_URL_TTL_SECONDS,
+      contentType: STORED_CONTENT_TYPE,
+      contentDisposition: contentDisposition(disposition, fileName),
+    });
+    return { fileId: file.id, url, expiresAt, fileName, sizeBytes: file.sizeBytes };
   }
 
   /** Data file untuk slot dokumen pemiliknya; id yang tidak ada di tenant transaksi dilewati. */

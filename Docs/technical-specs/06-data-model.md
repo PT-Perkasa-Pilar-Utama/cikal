@@ -393,7 +393,7 @@ Role aplikasi hanya punya `INSERT` dan `SELECT` pada tabel ini (AD-03). Retensi 
 | document_templates.product_id | uuid | yes | kosong = semua produk |
 | document_templates.file_id | uuid | no | FK document_files; maks 5 MB |
 | document_templates.placeholders | jsonb | no | hasil deteksi; nama placeholder `{{nama}}` terurut. Di POC baris dan objeknya dari seed `qa` (`AKAD-KTAQA`) |
-| generated_documents.application_id | uuid | no | FK application.applications |
+| generated_documents.application_id | uuid | no | tanpa FK: modul Application bergantung pada Document, FK membuat siklus migrasi (BE-S6-02) |
 | generated_documents.document_code, document_number | text | no / yes | `0013/SP3K/011/X/2026` |
 | generated_documents.file_id | uuid | no | FK document_files |
 | generated_documents.is_reprint | boolean | no | |
@@ -717,11 +717,12 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | disbursements.contract_number | text | yes | dari penomoran dokumen `CONTRACT` |
 | disbursements.contract_date | date | yes | |
 | disbursements.disbursement_amount | numeric(18,2) | no | |
-| disbursements.bank_account_number_enc | bytea | yes | rekening nasabah dari Print Akad (keputusan TL 2026-10-28) |
+| disbursements.bank_account_number_enc, bank_account_number_key_version | bytea, int | yes | rekening nasabah dari Print Akad (keputusan TL 2026-10-28); versi kunci TenantEncryption |
 | disbursements.disbursement_date | date | yes | diisi saat Valid (CHECK); `>= H+1` dan `>=` tanggal e-polis |
 | disbursements.validity_status, not_valid_reason | text | yes | |
-| akad_prints.payment_method, bank_account_number, customer_account_number_enc, risk_manager_user_id | | no | |
-| akad_prints.generated_document_id, print_count | uuid, int | no | |
+| akad_prints.application_id | uuid | no | UQ; satu cetak pertama per pengajuan, cetak ulang di US-78 |
+| akad_prints.payment_method, bank_account_number, customer_account_number_enc, customer_account_number_key_version, risk_manager_user_id | | no | `paramId` "Payment Method"; FK iam.users |
+| akad_prints.generated_document_id, file_id, print_count | uuid, uuid, int | no | FK document.generated_documents, document.document_files; CHECK print_count >= 1 |
 | disbursement_files.file_name, payload | text, jsonb | no | `<loanId>.json` |
 | core_responses.loan_id | text | no | |
 | core_responses.provider_code | text | no | |

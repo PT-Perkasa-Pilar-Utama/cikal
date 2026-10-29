@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { applicationStatusSchema } from "../application/application.schema.js";
 import { dataEnvelope } from "../common/envelope.js";
-import { businessDate, id, money } from "../common/scalars.js";
+import { businessDate, id, money, timestamp } from "../common/scalars.js";
 import { stepCodeSchema } from "../orchestrator/step.js";
 
 /** Hasil Validity Check (US-76). */
@@ -24,7 +24,7 @@ export const disbursementDetailSchema = z.object({
   notValidReason: z.string().nullable(),
   contractNumber: z.string().nullable(),
   contractDate: businessDate.nullable(),
-  akadPrints: z.array(z.object({ generatedDocumentId: id, printCount: z.number().int().min(1) })),
+  akadPrints: z.array(z.object({ generatedDocumentId: id, fileId: id, printCount: z.number().int().min(1) })),
   coreResponse: z.null(),
 });
 export type DisbursementDetail = z.infer<typeof disbursementDetailSchema>;
@@ -63,3 +63,29 @@ export const validityCheckResponseSchema = z.union([
   }),
 ]);
 export type ValidityCheckResponse = z.infer<typeof validityCheckResponseSchema>;
+
+const REQUIRED = "This field is required";
+const requiredText = (max: number) => z.string({ error: REQUIRED }).trim().min(1, REQUIRED).max(max);
+
+/** Body `POST /applications/{id}/akad/print` (api-specs 25 §25.3); field kosong "This field is required" (AC-77.02). */
+export const akadPrintRequestSchema = z.strictObject({
+  paymentMethod: requiredText(30),
+  bankAccountNumber: requiredText(30),
+  customerAccountNumber: requiredText(30),
+  riskManagerUserId: z.uuid({ error: REQUIRED }),
+});
+export type AkadPrintRequest = z.infer<typeof akadPrintRequestSchema>;
+
+/** PDF "Surat Perjanjian Kredit" diunduh dari `downloadUrl` berumur 5 menit (AC-77.01, AC-102.08). */
+export const akadPrintResponseSchema = dataEnvelope(
+  z.object({
+    contractNumber: z.string(),
+    contractDate: businessDate,
+    generatedDocumentId: id,
+    fileId: id,
+    downloadUrl: z.url(),
+    expiresAt: timestamp,
+    nextStep: stepCodeSchema.nullable(),
+  }),
+);
+export type AkadPrintResponse = z.infer<typeof akadPrintResponseSchema>;
