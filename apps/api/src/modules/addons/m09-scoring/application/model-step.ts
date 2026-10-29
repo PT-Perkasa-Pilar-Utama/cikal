@@ -8,9 +8,8 @@ import { ProductCodes } from "../../../core/product/index.js";
 import type { ModelGroup } from "../db/schema.js";
 import { type ActiveModel, ScoringModelsRepository } from "../db/scoring-models.repository.js";
 import { ScoringResultsRepository } from "../db/scoring-results.repository.js";
-import { type CriterionEvaluation, evaluateCriterion, type VariableValues } from "../domain/criteria.js";
-import { racOutcome, scoringOutcome } from "../domain/model-outcome.js";
-import { VariableValuesResolver } from "./variable-values.js";
+import type { CriterionEvaluation } from "../domain/criteria.js";
+import { type ModelEvaluation, ModelEvaluator, type ModelOutcome } from "./model-evaluator.js";
 
 const STEP_LABELS: Record<ModelGroup, string> = { RAC: "RAC", SCORING: "Scoring" };
 const OUTCOME_LABELS = { PASS: "Pass", REVIEW: "Review", FAIL: "Fail" } as const;
@@ -21,35 +20,6 @@ const failure = (errorCategory: "CONFIG" | "BUSINESS_SETUP" | "FORMULA", errorMe
   errorMessage,
   retryable: false,
 });
-
-/** Kode variabel yang dibaca kriteria model, termasuk variabel di sisi kanan perbandingan. */
-function variablesOf(model: ActiveModel): Set<string> {
-  return new Set(
-    model.criteria.flatMap((criterion) =>
-      criterion.value.type === "VARIABLE" ? [criterion.fieldCode, criterion.value.variableCode] : [criterion.fieldCode],
-    ),
-  );
-}
-
-interface Outcome {
-  outcome: "PASS" | "REVIEW" | "FAIL";
-  totalScore: string | null;
-  failedReasons: string[];
-}
-
-/** RAC dinilai kriteria wajib; Scoring menjumlahkan bobot ke konstanta dan dibandingkan dengan Cut Off. */
-function outcomeOf(group: ModelGroup, model: ActiveModel, evaluations: CriterionEvaluation[]): Outcome | string {
-  if (group === "RAC") {
-    const rac = racOutcome(evaluations);
-    return { outcome: rac.result, totalScore: null, failedReasons: rac.failedReasons };
-  }
-  if (model.constant === null || model.cutOff === null) return `Scoring model ${model.modelCode} has no cut off`;
-  const scored = scoringOutcome(
-    { constant: model.constant, cutOff: model.cutOff, reviewLowerBound: model.reviewLowerBound },
-    evaluations,
-  );
-  return { outcome: scored.result, totalScore: scored.totalScore, failedReasons: [] };
-}
 
 /**
  * Langkah RAC dan SCORING M09 (api-specs 22 §22.5, §22.6): model ACTIVE kelompoknya untuk produk pengajuan,
@@ -63,7 +33,7 @@ export class ModelStep {
     private readonly productCodes: ProductCodes,
     private readonly models: ScoringModelsRepository,
     private readonly results: ScoringResultsRepository,
-    private readonly variables: VariableValuesResolver,
+    private readonly evaluator: ModelEvaluator,
   ) {}
 
   async run(tx: Tx, ctx: StepContext, group: ModelGroup): Promise<StepResult> {
@@ -75,17 +45,14 @@ export class ModelStep {
       const kind = group === "SCORING" ? "scoring" : "RAC";
       return failure("BUSINESS_SETUP", `No active ${kind} model for product ${productName}`);
     }
-    const codes = variablesOf(model);
-    let values: VariableValues;
+    let evaluation: ModelEvaluation;
     try {
-      values = await this.variables.values(ctx, facts, codes);
+      evaluation = await this.evaluator.evaluate(tx, ctx, facts, model, group);
     } catch (error) {
       if (error instanceof DomainError && error.code === "FORMULA_ERROR") return failure("FORMULA", error.message);
       throw error;
     }
-    const choiceLabel = await this.variables.choiceLabels(tx, codes);
-    const evaluations = model.criteria.map((criterion) => evaluateCriterion(criterion, values, choiceLabel));
-    const outcome = outcomeOf(group, model, evaluations);
+    const { evaluations, outcome } = evaluation;
     if (typeof outcome === "string") return failure("BUSINESS_SETUP", outcome);
     await this.save(tx, ctx, group, model, outcome, evaluations);
     const summary = `${STEP_LABELS[group]} = ${OUTCOME_LABELS[outcome.outcome]}`;
@@ -97,7 +64,7 @@ export class ModelStep {
     ctx: StepContext,
     group: ModelGroup,
     model: ActiveModel,
-    outcome: Outcome,
+    outcome: ModelOutcome,
     evaluations: readonly CriterionEvaluation[],
   ): Promise<void> {
     return this.results.replace(

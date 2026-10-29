@@ -112,8 +112,9 @@ Aturan nilai berurutan: field dari katalog `usableInScoring` modul berlisensi (`
 **Behavior**
 
 1. Loan ID tidak ditemukan di tenant: `404 APPLICATION_NOT_FOUND` (AC-38.04).
-2. Evaluasi kriteria terhadap data pengajuan contoh dengan rumus versi ACTIVE saat ini; tidak menulis hasil ke pengajuan, tidak mengubah prosesnya.
-3. `totalScore = constant + jumlah bobot kriteria terpenuhi`. `SCORING`: `PASS` bila `totalScore >= cutOff` (sama dengan Cut Off = Pass), `REVIEW` bila ada `reviewLowerBound` dan skor di antaranya, selain itu `FAIL` (AC-38.02, AC-38.03). `RAC`: `FAIL` bila satu kriteria `MANDATORY` gagal.
+2. Model `SCORING` tanpa Cut Off: `400 VALIDATION_FAILED` dengan detail `cutOff` "Cut Off is required for a scoring model", sama dengan submit (§22.4).
+3. Evaluasi kriteria terhadap data pengajuan contoh dengan rumus versi ACTIVE saat ini dan parameter produk pengajuan yang berlaku hari ini; tidak menulis hasil ke pengajuan, tidak mengubah prosesnya, dan log rumus tidak dicatat atas pengajuan contoh.
+4. `totalScore = constant + jumlah bobot kriteria terpenuhi`. `SCORING`: `PASS` bila `totalScore >= cutOff` (sama dengan Cut Off = Pass), `REVIEW` bila ada `reviewLowerBound` dan skor di antaranya, selain itu `FAIL` (AC-38.02, AC-38.03). `RAC`: `FAIL` bila satu kriteria `MANDATORY` gagal.
 
 **Output 200**
 
@@ -126,7 +127,9 @@ Aturan nilai berurutan: field dari katalog `usableInScoring` modul berlisensi (`
 }
 ```
 
-**Errors:** `APPLICATION_NOT_FOUND` 404 "Application not found" (AC-38.04), `FORMULA_ERROR` 422.
+`RAC` mengembalikan `constant`, `cutOff`, dan `totalScore` `null`.
+
+**Errors:** `APPLICATION_NOT_FOUND` 404 "Application not found" (AC-38.04), `NOT_FOUND` 404 (model tidak ada), `VALIDATION_FAILED` 400 (Cut Off kosong), `FORMULA_ERROR` 422.
 
 **Traceability:** US-38; AC-38.01 s.d. AC-38.04.
 

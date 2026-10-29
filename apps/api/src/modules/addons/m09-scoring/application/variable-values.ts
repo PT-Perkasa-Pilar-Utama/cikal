@@ -1,4 +1,3 @@
-import type { StepContext } from "@cikal/contracts";
 import type { InterestType } from "@cikal/formula";
 import { Inject, Injectable } from "@nestjs/common";
 import { Decimal } from "decimal.js";
@@ -12,6 +11,17 @@ import type { ChoiceLabel, VariableValues } from "../domain/criteria.js";
 import { variableOf } from "../domain/scoring-variables.js";
 
 const RATIO = "INSTALLMENT_TO_INCOME_RATIO";
+
+/**
+ * Konteks penilaian: langkah proses, atau uji model tanpa proses (api-specs 22 §22.5) yang tidak mengisi
+ * `applicationId` dan `processInstanceId` sehingga log rumus tidak tercatat atas pengajuan contoh.
+ */
+export interface ValueContext {
+  tenantId: string;
+  applicationId?: string;
+  processInstanceId?: string;
+  parameterSnapshot: Readonly<Record<string, string>>;
+}
 const RATIO_DECIMALS = 4;
 const isInterestType = (value: string | undefined): value is InterestType => value === "FLAT" || value === "EFFECTIVE";
 
@@ -26,7 +36,7 @@ export class VariableValuesResolver {
     @Inject(GENERAL_PARAMETER_PORT) private readonly parameters: GeneralParameterPort,
   ) {}
 
-  async values(ctx: StepContext, facts: ApplicationFacts, codes: ReadonlySet<string>): Promise<VariableValues> {
+  async values(ctx: ValueContext, facts: ApplicationFacts, codes: ReadonlySet<string>): Promise<VariableValues> {
     const snapshot = ctx.parameterSnapshot;
     return {
       OCCUPATION: facts.occupation,
@@ -55,7 +65,7 @@ export class VariableValuesResolver {
   }
 
   /** Angsuran dari plafon, tenor, dan suku bunga produk dibagi penghasilan, dalam persen (AC-67.02). */
-  private async installmentRatio(ctx: StepContext, facts: ApplicationFacts): Promise<string | null> {
+  private async installmentRatio(ctx: ValueContext, facts: ApplicationFacts): Promise<string | null> {
     const { PRODUCT_INTEREST_RATE: rate, PRODUCT_INTEREST_TYPE: interestType } = ctx.parameterSnapshot;
     const { requestedLimit, tenorProposed, monthlyIncomeAllowance } = facts;
     if (!requestedLimit || !tenorProposed || !monthlyIncomeAllowance || !rate || !isInterestType(interestType)) {
