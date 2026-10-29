@@ -128,8 +128,8 @@ Di POC, user dan role berasal dari seed; layar yang dibangun adalah Role Access 
 
 ## 3.6 GET /users
 
-**Purpose:** Daftar user untuk dropdown pilihan user di layar lain, terutama "Approver" di Approval Hierarchy (AC-27.01, AC-27.02).  
-**Access:** `IAM-USER` VIEW atau `MST-APPROVAL` VIEW.
+**Purpose:** Daftar user untuk dropdown pilihan user di layar lain: "Approver" di Approval Hierarchy (AC-27.01, AC-27.02) dan "Risk Manager" di Print Akad dengan `withAccess=OPS-RECONTEST:UPDATE` (AC-77.01).  
+**Access:** `IAM-USER` VIEW, `MST-APPROVAL` VIEW, atau `OPS-PRINT-AKAD` UPDATE (keputusan 2026-10-29: Admin Operasional memilih Risk Manager tanpa hak menu User).
 
 **Input (query)**
 
@@ -149,7 +149,7 @@ Di POC, user dan role berasal dari seed; layar yang dibangun adalah Role Access 
 
 Email dan nomor telepon tidak dikembalikan di daftar ini.
 
-**Traceability:** US-27 (AC-27.01, AC-27.02); US-07 (backlog).
+**Traceability:** US-27 (AC-27.01, AC-27.02); US-77 (AC-77.01); US-07 (backlog).
 
 ## 3.7 Operasi backlog (TODO)
 

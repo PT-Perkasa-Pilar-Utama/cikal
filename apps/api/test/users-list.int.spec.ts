@@ -10,7 +10,7 @@ import { setUser } from "./support/task.js";
 
 const APPROVE_ACCESS = "withAccess=OPS-APPROVAL:APPROVE";
 
-/** Dropdown user, terutama "Approver" di Approval Hierarchy (api-specs 03 §3.6, AC-27.01, AC-27.02). */
+/** Dropdown user "Approver" di Approval Hierarchy dan "Risk Manager" di Print Akad (api-specs 03 §3.6, AC-27.01, AC-77.01). */
 describe("users list", () => {
   let db: TestDatabase;
   let app: NestFastifyApplication;
@@ -106,6 +106,19 @@ describe("users list", () => {
 
     expect(res.statusCode).toBe(400);
     expect(errorEnvelopeSchema.parse(res.json())).toMatchObject({ code: "VALIDATION_FAILED" });
+  });
+
+  it("AC-77.01 lists the Risk Managers for the Print Akad Risk Manager dropdown of an Admin Operasional", async () => {
+    const operations = await createSession(db.owner, { roleId: seedRoleIds.adminOperasional });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/v1/users?withAccess=OPS-RECONTEST:UPDATE",
+      headers: operations.headers,
+    });
+
+    expect(res.statusCode, res.body).toBe(200);
+    const { data } = userListResponseSchema.parse(res.json());
+    expect(data.map((user) => user.roleName)).toEqual(["Risk Manager"]);
   });
 
   it("refuses a user without View on User or Approval Setup (ACCESS_DENIED)", async () => {
