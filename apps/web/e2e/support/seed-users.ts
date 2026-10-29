@@ -12,6 +12,7 @@ export const SESSION_USERS = [
   "sales.jkt01",
   "verifikator.01",
   "kepala.cabang",
+  "admin.ops",
 ] as const;
 export type SessionUser = (typeof SESSION_USERS)[number];
 
