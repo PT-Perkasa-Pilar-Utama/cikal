@@ -22,6 +22,9 @@ const menuRoutes = new Map<string, LinkProps["to"]>([
   ["IAM-ROLE-ACCESS", "/access/role-access"],
   ["OPS-VERIFICATION", "/operations/verification"],
   ["OPS-APPROVAL", "/operations/approval"],
+  ["OPS-VALIDITY", "/operations/validity"],
+  ["OPS-PRINT-AKAD", "/operations/print-akad"],
+  ["OPS-DISBURSEMENT", "/operations/disbursement"],
   ["OPS-MONITORING", "/operations/monitoring"],
   ["RPT-AUDIT", "/reports/audit-trail"],
 ]);
