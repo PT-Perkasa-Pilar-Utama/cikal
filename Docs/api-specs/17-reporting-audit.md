@@ -59,7 +59,7 @@ Data dibaca dari view `reporting.application_inquiry` (`security_invoker`, XM-07
   "meta": { "page": 1, "pageSize": 20, "totalItems": 12, "totalPages": 1 } }
 ```
 
-`eventType = AUTHENTICATION` mencakup `LOGIN`, `LOGIN_FAILED`, `LOGOUT` dengan alamat IP (AC-14.06).
+`eventType = AUTHENTICATION` mencakup `LOGIN`, `LOGIN_FAILED`, `LOGOUT` dengan alamat IP (AC-14.06). `eventType` tidak disimpan; nilainya diturunkan dari `action` dan `module`: `LOGIN`, `LOGIN_FAILED`, `LOGOUT` = `AUTHENTICATION`; `VIEW_APPLICATION`, `VIEW_DOCUMENT` = `DATA_ACCESS`; aksi lain modul `Application`, `Approval`, `Task Queue`, `Process Monitoring`, `Document` = `APPLICATION_ACTION`; selain itu `MASTER_DATA`. Tanggal periode adalah tanggal bisnis Asia/Jakarta, inklusif.
 
 **Errors**
 
@@ -75,7 +75,7 @@ Data dibaca dari view `reporting.application_inquiry` (`security_invoker`, XM-07
 **Purpose:** Detail perubahan: data sebelum dan sesudah berdampingan.  
 **Access:** `RPT-AUDIT` VIEW.
 
-**Output 200:** baris 17.2 ditambah `oldData`, `newData`, `changedFields`. Nilai `SECRET` tidak pernah tercatat (PR-12).
+**Output 200:** baris 17.2 ditambah `oldData`, `newData`, `changedFields`. `changedFields` berisi path bertitik field yang berbeda (array dibandingkan utuh), kosong bila tidak ada data sebelum. Data yang bukan objek dibungkus `{"value": ...}`. Nilai `SECRET` tidak pernah tercatat (PR-12).
 
 **Errors:** `NOT_FOUND` 404.
 

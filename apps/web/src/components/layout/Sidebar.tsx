@@ -22,6 +22,7 @@ const menuRoutes = new Map<string, LinkProps["to"]>([
   ["OPS-VERIFICATION", "/operations/verification"],
   ["OPS-APPROVAL", "/operations/approval"],
   ["OPS-MONITORING", "/operations/monitoring"],
+  ["RPT-AUDIT", "/reports/audit-trail"],
 ]);
 
 /** Submenu yang sudah punya layar; grup tanpa submenu seperti itu disembunyikan. */
