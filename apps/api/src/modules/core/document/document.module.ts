@@ -8,6 +8,7 @@ import { DocumentFiles } from "./application/document-files.js";
 import { DocumentGenerator } from "./application/document-generator.js";
 import { DocumentNumbering } from "./application/document-numbering.js";
 import { FileAccessRegistry } from "./application/file-access-registry.js";
+import { GeneratedDocuments } from "./application/generated-documents.js";
 import { GetDownloadUrlUseCase } from "./application/get-download-url.use-case.js";
 import { ListNumberFormatsUseCase } from "./application/list-number-formats.use-case.js";
 import { NumberFormatActivation } from "./application/number-format-activation.js";
@@ -19,6 +20,7 @@ import { DocumentFilesRepository } from "./db/document-files.repository.js";
 import { DocumentNumberCountersRepository } from "./db/document-number-counters.repository.js";
 import { DocumentNumberFormatsRepository } from "./db/document-number-formats.repository.js";
 import { DocumentTemplatesRepository } from "./db/document-templates.repository.js";
+import { GeneratedDocumentsRepository } from "./db/generated-documents.repository.js";
 import { DocumentNumberFormatsController } from "./http/document-number-formats.controller.js";
 import { FilesController } from "./http/files.controller.js";
 import { NumberFormatActivationJob } from "./jobs/number-format-activation.job.js";
@@ -39,6 +41,8 @@ import { PDF_CONVERTER_PORT } from "./ports/pdf-converter.port.js";
     DocumentFiles,
     DocumentGenerator,
     FileAccessRegistry,
+    GeneratedDocumentsRepository,
+    GeneratedDocuments,
     GetDownloadUrlUseCase,
     DocumentNumberFormatsRepository,
     DocumentNumberCountersRepository,
@@ -51,7 +55,7 @@ import { PDF_CONVERTER_PORT } from "./ports/pdf-converter.port.js";
     PreviewNumberUseCase,
     RequestNumberFormatUpdateUseCase,
   ],
-  exports: [DocumentFiles, DocumentGenerator, DocumentNumbering, FileAccessRegistry],
+  exports: [DocumentFiles, DocumentGenerator, DocumentNumbering, FileAccessRegistry, GeneratedDocuments],
 })
 export class DocumentModule implements OnModuleInit {
   constructor(

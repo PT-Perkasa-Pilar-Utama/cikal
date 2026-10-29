@@ -84,14 +84,18 @@ Di Rilis 1, Cikal tidak terhubung ke core FAST. Langkah `DISBURSEMENT` berjalan 
 | paymentMethod | string | ya | `paramId` |
 | bankAccountNumber | string | ya | rekening bank pencair |
 | customerAccountNumber | string | ya | terenkripsi |
-| riskManagerUserId | uuid | ya | user aktif dengan role Risk Manager |
+| riskManagerUserId | uuid | ya | user ACTIVE tenant; tanpa cek nama role (aturan diikat ke menu/aksi, `CLAUDE.md` §3) |
 
 **Behavior**
 
 1. Field kosong: `400 VALIDATION_FAILED`, detail "This field is required" (AC-77.02).
-2. Template `AKAD-<productCode>` ACTIVE tidak ada: `422 TEMPLATE_NOT_AVAILABLE` (AC-77.03).
-3. Nomor kontrak dari `document.nextNumber('CONTRACT', ...)` (`10-documents.md` 10.6): satu kali per pengajuan, aman bersamaan (AC-102.07, AC-102.08). Habis: `422 DOCUMENT_NUMBER_EXHAUSTED`.
-4. Generate PDF (docxtemplater + Gotenberg), simpan GeneratedDocument dan AkadPrint; tutup tugas; StepResult `CONTINUE` ke `DISBURSEMENT`; pengajuan tampil di "Reprint Akad" (AC-77.01).
+2. `paymentMethod` bukan pilihan aktif "Payment Method" atau `riskManagerUserId` bukan user ACTIVE: `400 VALIDATION_FAILED`, detail "Payment method is not available" / "Risk Manager is not available". Dicek sebelum nomor kontrak dibentuk.
+3. Template `AKAD-<productCode>` ACTIVE tidak ada: `422 TEMPLATE_NOT_AVAILABLE` (AC-77.03).
+4. Nomor kontrak dari `document.nextNumber('CONTRACT', ...)` (`10-documents.md` 10.6): satu kali per pengajuan, aman bersamaan (AC-102.07, AC-102.08). Habis: `422 DOCUMENT_NUMBER_EXHAUSTED`.
+5. Generate PDF (docxtemplater + Gotenberg), simpan GeneratedDocument dan AkadPrint; tutup tugas; StepResult `CONTINUE` ke `DISBURSEMENT`; pengajuan tampil di "Reprint Akad" (AC-77.01).
+6. Rekening nasabah disimpan terenkripsi (TenantEncryption) di `akad_prints` dan `disbursements`. GET detail (§25.1) menampilkannya penuh untuk menu OPS-*, tersamar (`******4321`) untuk APP-INQUIRY.
+7. Placeholder template: `contractNumber`, `contractDate`, `loanId`, `customerName`, `productName`, `plafond`, `tenor`, `interestRate`, `installment`, `paymentMethod`, `bankAccountNumber`, `customerAccountNumber`, `riskManagerName`.
+8. Berkas akad dapat diunduh lewat `GET /files/{id}/download-url` (`10-documents.md` 10.1) oleh pemegang OPS-PRINT-AKAD, OPS-DISBURSEMENT, atau APP-INQUIRY VIEW.
 
 **Output 200**
 
@@ -110,6 +114,10 @@ Klien mengunduh PDF dari `downloadUrl` (berumur 5 menit).
 | `TEMPLATE_NOT_AVAILABLE` | 422 | "Document template AKAD-KPR is not available" (AC-77.03) |
 | `DOCUMENT_NUMBER_EXHAUSTED` | 422 | "Document number sequence for CONTRACT has reached its limit. Please contact your administrator" (AC-102.06) |
 | `SERVICE_UNAVAILABLE` | 503 | Konverter PDF tidak tersedia |
+| `VALIDATION_FAILED` | 400 | "Payment method is not available" / "Risk Manager is not available" |
+| `TASK_NOT_ASSIGNED_TO_YOU` | 403 | "This task is assigned to another user" |
+| `ALREADY_PROCESSED` | 409 | "This application has already been processed": langkah PRINT_AKAD tidak lagi menunggu; cetak ulang di §25.5 (US-78) |
+| `APPLICATION_NOT_FOUND` | 404 | "Application not found" |
 
 **Traceability:** US-77 (AC-77.01 s.d. AC-77.03); US-102 (AC-102.07, AC-102.08).
 

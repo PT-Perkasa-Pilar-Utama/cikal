@@ -186,13 +186,13 @@ describe("process advance", () => {
   });
 
   it("stops at ERROR when a licensed step in the route has no handler installed", async () => {
-    const { processId } = await submitted({ DATA_ENTRY: true, PRINT_AKAD: true });
+    const { processId } = await submitted({ DATA_ENTRY: true, DISBURSEMENT: true });
     await drainProcessJobs(app, db.owner, { includeDelayed: true });
 
-    expect((await latestSteps(db.owner, processId)).get("PRINT_AKAD")).toMatchObject({
+    expect((await latestSteps(db.owner, processId)).get("DISBURSEMENT")).toMatchObject({
       status: "ERROR",
       error_category: "CONFIG",
-      error_message: "No step handler is installed for PRINT_AKAD",
+      error_message: "No step handler is installed for DISBURSEMENT",
     });
     expect(await processStatus(db.owner, processId)).toBe("WAITING");
   });

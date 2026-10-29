@@ -249,7 +249,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `GET /applications/{id}/decision` | 24 §24.4 | POC | OK |
 | `GET /applications/{id}/disbursement` | 25 §25.1 | POC | OK |
 | `POST /applications/{id}/validity-check` | 25 §25.2 | POC | OK |
-| `POST /applications/{id}/akad/print` | 25 §25.3 | POC | TODO |
+| `POST /applications/{id}/akad/print` | 25 §25.3 | POC | OK |
 | `POST /applications/{id}/disbursement/record` | 25 §25.4 | POC | TODO |
 | Dedup, Dukcapil, Fraud: matrix, rules, review, blacklist | 19 §19.3, 20 §20.3, 21 §21.3 | Backlog | TODO |
 | Credit bureau mappings | 23 §23.4 | Backlog | TODO |

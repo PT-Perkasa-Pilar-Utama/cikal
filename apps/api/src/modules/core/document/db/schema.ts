@@ -2,6 +2,7 @@ import type { CounterScope, DocumentType, NumberFormatStatus, ResetPeriod } from
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   integer,
   jsonb,
@@ -141,4 +142,27 @@ export const documentNumberCounters = document.table(
     check("document_number_counters_last_number_check", sql`${table.lastNumber} >= 0`),
     tenantIsolation(),
   ],
+);
+
+/**
+ * GENERATED_DOCUMENTS, technical-specs 06 §6.8: dokumen hasil generate dan nomornya (DN-06). `application_id` tanpa
+ * foreign key karena modul Application bergantung pada Document; modul pemanggil menjamin pengajuannya ada.
+ */
+export const generatedDocuments = document.table(
+  "generated_documents",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    applicationId: uuid("application_id").notNull(),
+    documentCode: text("document_code").notNull(),
+    documentNumber: text("document_number"),
+    fileId: uuid("file_id")
+      .notNull()
+      .references(() => documentFiles.id),
+    isReprint: boolean("is_reprint").notNull(),
+    ...auditColumns(),
+  },
+  () => [tenantIsolation()],
 );
