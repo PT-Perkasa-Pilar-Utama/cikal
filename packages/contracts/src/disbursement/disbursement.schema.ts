@@ -3,6 +3,7 @@ import { applicationStatusSchema } from "../application/application.schema.js";
 import { dataEnvelope } from "../common/envelope.js";
 import { businessDate, id, money, timestamp } from "../common/scalars.js";
 import { stepCodeSchema } from "../orchestrator/step.js";
+import { coreResponseSchema } from "./disbursement-record.schema.js";
 
 /** Hasil Validity Check (US-76). */
 export const validityStatusSchema = z.enum(["VALID", "NOT_VALID"]);
@@ -25,7 +26,7 @@ export const disbursementDetailSchema = z.object({
   contractNumber: z.string().nullable(),
   contractDate: businessDate.nullable(),
   akadPrints: z.array(z.object({ generatedDocumentId: id, fileId: id, printCount: z.number().int().min(1) })),
-  coreResponse: z.null(),
+  coreResponse: coreResponseSchema.nullable(),
 });
 export type DisbursementDetail = z.infer<typeof disbursementDetailSchema>;
 

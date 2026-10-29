@@ -14,3 +14,9 @@ export function unavailableChoice(field: string, label: string): DomainError {
     { field, code: "VALIDATION_FAILED", message: `${label} is not available` },
   ]);
 }
+
+/** Skema kontrak sudah mewajibkan field per hasil; ini hanya penyempit tipe. */
+export function required(value: string | undefined): string {
+  if (!value) throw DomainError.standard("VALIDATION_FAILED");
+  return value;
+}

@@ -15,6 +15,13 @@
       "when": 1793225648826,
       "tag": "0001_akad_prints",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793242178462,
+      "tag": "0002_core_responses",
+      "breakpoints": true
     }
   ]
 }

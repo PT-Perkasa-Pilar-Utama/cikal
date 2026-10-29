@@ -4,7 +4,7 @@ import { z } from "zod";
 export const APPLICATION_SUBMITTED_EVENT = "ApplicationSubmitted";
 /** Pengajuan berakhir ditolak, contoh Dukcapil Failed atau High Fraud Potential (api-specs 18 §18.1). */
 export const APPLICATION_REJECTED_EVENT = "ApplicationRejected";
-/** Pencairan berhasil; dipublikasikan langkah Record Disbursement M15 (kartu BE-S6-03). */
+/** Pencairan berhasil; dipublikasikan saat status pengajuan menjadi DISBURSED (api-specs 25 §25.4 langkah 5). */
 export const DISBURSEMENT_COMPLETED_EVENT = "DisbursementCompleted";
 
 /** Payload event pengajuan di outbox, tanpa data pemohon (technical-specs 06 §6.3). */

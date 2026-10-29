@@ -1,4 +1,5 @@
 import { DomainError } from "../../../../platform/http/domain-error.js";
+import { dayMonthYear } from "./akad-format.js";
 
 /** `YYYY-MM-DD` sehari sesudah `date`. */
 function nextDay(date: string): string {
@@ -11,5 +12,16 @@ function nextDay(date: string): string {
 export function assertDisbursementDate(disbursementDate: string, today: string): void {
   if (disbursementDate < nextDay(today)) {
     throw new DomainError("DISBURSEMENT_DATE_TOO_EARLY", "Disbursement date must be at least 1 day after today", 422);
+  }
+}
+
+/** Tanggal cair dari core tidak boleh sebelum tanggal hasil Validity Check (api-specs 25 §25.4 langkah 2, AC-101.04). */
+export function assertNotBeforeValidated(disbursementDate: string, validatedDate: string): void {
+  if (disbursementDate < validatedDate) {
+    throw new DomainError(
+      "DISBURSEMENT_BEFORE_VALIDATED_DATE",
+      `Disbursement date must not be earlier than the validated date (${dayMonthYear(validatedDate)})`,
+      422,
+    );
   }
 }

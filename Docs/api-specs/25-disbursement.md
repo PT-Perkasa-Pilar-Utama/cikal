@@ -23,6 +23,8 @@ Di Rilis 1, Cikal tidak terhubung ke core FAST. Langkah `DISBURSEMENT` berjalan 
 }
 ```
 
+`coreResponse` berisi respons core `APPLIED` terakhir proses saat ini (proses baru sesudah Recontest mulai dari `null`): `{"channel":"MANUAL","outcome":"SUKSES","disbursementDate":"2026-10-21","coreLoanNumber":"LN-0012345","cif":null,"failureReason":null,"recordedAt":"2026-10-21T03:00:00.000Z"}`. `outcome` `GAGAL` membawa `failureReason`.
+
 `bankAccountNumber` utuh hanya untuk menu `OPS-*`; `APP-INQUIRY` menerima nilai tersamar. Nilainya `null` sampai Print Akad mengisi rekening nasabah (`customerAccountNumber` 25.3), karena tidak ada langkah sebelumnya yang mengambil rekening (keputusan TL 2026-10-28). `disbursementAmount` = `netDisbursement` struktur kredit yang disetujui. Data pencairan dibuat saat langkah VALIDITY_CHECK dimulai. Field `epolisDate` tidak ada di respons bila M14 tidak berlisensi (AC-76.06). Rute memakai `@Authenticated()` dan use case memeriksa keempat menu; tanpa satu pun `403 ACCESS_DENIED`.
 
 **Errors:** `APPLICATION_NOT_FOUND` 404; `NOT_FOUND` 404 bila pengajuan belum sampai langkah VALIDITY_CHECK.
@@ -134,7 +136,7 @@ Klien mengunduh PDF dari `downloadUrl` (berumur 5 menit).
 | result | enum | ya | `DISBURSED`, `FAILED` |
 | disbursementDate | date | kondisional | wajib bila `DISBURSED`; >= tanggal hasil Validity Check |
 | coreLoanNumber | string | kondisional | wajib bila `DISBURSED`, maks 50 |
-| cif | string | tidak | |
+| cif | string | tidak | maks 50 |
 | reason | string | kondisional | wajib bila `FAILED`, maks 500 |
 
 **Behavior**
@@ -142,9 +144,10 @@ Klien mengunduh PDF dari `downloadUrl` (berumur 5 menit).
 1. `DISBURSED` tanpa tanggal atau nomor pinjaman core: `400 VALIDATION_FAILED`, detail "This field is required" per field (AC-101.03).
 2. `disbursementDate` < tanggal Validity Check: `422 DISBURSEMENT_BEFORE_VALIDATED_DATE` (AC-101.04).
 3. `FAILED` tanpa alasan: `400 VALIDATION_FAILED`, detail "Reason is required" (AC-101.05).
-4. Simpan `core_responses` dengan `channel = MANUAL`, `enteredBy`; tutup tugas.
-5. `DISBURSED`: StepResult `FINISH` dengan `DISBURSED`; publish `DisbursementCompleted`; email "Kredit <Loan ID> telah dicairkan" ke pemohon (AC-101.01).
-6. `FAILED`: StepResult `RECONTEST`; pengajuan masuk antrean "Recontest" (AC-101.02).
+4. Simpan `core_responses` dengan `channel = MANUAL`, `providerCode = MANUAL`, `processingStatus = APPLIED`, `enteredBy`; tutup tugas. `coreLoanNumber` disimpan di `core_loan_account`.
+5. `DISBURSED`: StepResult `FINISH` dengan `DISBURSED`; Application mempublikasikan `DisbursementCompleted` saat status menjadi DISBURSED, di transaksi yang sama; email "Kredit <Loan ID> telah dicairkan" ke pemohon (AC-101.01, `18-notifications.md`).
+6. `FAILED`: StepResult `RECONTEST` dengan alasan sebagai ringkasan langkah; pengajuan masuk antrean "Recontest" (AC-101.02).
+7. Langkah `WAIT_CORE` tidak dijangkau: `FINISH` dan `RECONTEST` mengakhiri proses.
 
 **Output 200**
 
@@ -159,8 +162,9 @@ Klien mengunduh PDF dari `downloadUrl` (berumur 5 menit).
 |---|---|---|
 | `VALIDATION_FAILED` | 400 | AC-101.03, AC-101.05 |
 | `DISBURSEMENT_BEFORE_VALIDATED_DATE` | 422 | "Disbursement date must not be earlier than the validated date (21-10-2026)" (AC-101.04) |
-| `TASK_NOT_ASSIGNED_TO_YOU` | 403 | |
-| `ALREADY_PROCESSED` | 409 | Hasil sudah dicatat |
+| `TASK_NOT_ASSIGNED_TO_YOU` | 403 | "This task is assigned to another user" |
+| `ALREADY_PROCESSED` | 409 | "This application has already been processed": hasil sudah dicatat |
+| `APPLICATION_NOT_FOUND` | 404 | "Application not found" |
 
 **Traceability:** US-101; AC-101.01 s.d. AC-101.05.
 
