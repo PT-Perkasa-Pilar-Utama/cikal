@@ -1,5 +1,6 @@
 import type { ScoringCriterion, ScoringModelDetail as ScoringModel } from "@cikal/contracts";
-import { CopyPlus, Plus, Send } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CopyPlus, FlaskConical, Plus, Send } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { FeedbackMessage } from "../../components/ui/FeedbackMessage";
@@ -29,7 +30,8 @@ interface ScoringModelDetailProps {
 
 /**
  * Detail satu versi model (api-specs 22 §22.2): draft bisa ditambah atau diubah kriterianya lalu diajukan lewat
- * "Submit for Approval" (AC-37.05); versi ACTIVE disalin dulu menjadi draft lewat "New Version" (§22.3).
+ * "Submit for Approval" (AC-37.05); versi ACTIVE disalin dulu menjadi draft lewat "New Version" (§22.3). Semua versi
+ * bisa diuji di "Scoring Model Test" (§22.5).
  */
 export function ScoringModelDetail({ model, canUpdate, onNewVersion }: ScoringModelDetailProps) {
   const [editing, setEditing] = useState<ScoringCriterion | "new" | null>(null);
@@ -56,6 +58,14 @@ export function ScoringModelDetail({ model, canUpdate, onNewVersion }: ScoringMo
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-neutral-8">Criteria</h2>
           <div className="flex gap-3">
+            <Link
+              to="/master/scoring/$modelId/test"
+              params={{ modelId: model.id }}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-neutral-0 px-4 py-2.5 font-semibold text-primary hover:bg-primary-light/40"
+            >
+              <FlaskConical size={16} aria-hidden />
+              Scoring Model Test
+            </Link>
             {editable && (
               <>
                 <Button variant="secondary" disabled={!variables.data} onClick={() => setEditing("new")}>

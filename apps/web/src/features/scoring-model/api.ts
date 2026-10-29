@@ -3,8 +3,10 @@ import {
   changeRequestAcceptedSchema,
   criterionResponseSchema,
   formulaVariableListResponseSchema,
+  type ScoringModelTestRequest,
   scoringModelDetailResponseSchema,
   scoringModelListResponseSchema,
+  scoringModelTestResponseSchema,
 } from "@cikal/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/api/client";
@@ -66,3 +68,13 @@ export const useSubmitModel = (modelId: string) =>
       body: JSON.stringify({}),
     }),
   );
+
+/** "Run Test" dengan Loan ID pengajuan contoh; hasilnya tidak disimpan ke pengajuan (api-specs 22 §22.5, AC-38.01). */
+export const useTestModel = (modelId: string) =>
+  useMutation({
+    mutationFn: (body: ScoringModelTestRequest) =>
+      apiRequest(scoringModelTestResponseSchema, `${modelPath(modelId)}/test`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  });
