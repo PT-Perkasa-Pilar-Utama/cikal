@@ -724,8 +724,9 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | akad_prints.payment_method, bank_account_number, customer_account_number_enc, customer_account_number_key_version, risk_manager_user_id | | no | `paramId` "Payment Method"; FK iam.users |
 | akad_prints.generated_document_id, file_id, print_count | uuid, uuid, int | no | FK document.generated_documents, document.document_files; CHECK print_count >= 1 |
 | disbursement_files.file_name, payload | text, jsonb | no | `<loanId>.json` |
+| core_responses.application_id, process_instance_id | uuid | no | FK application.applications; index proses: GET detail membaca respons proses saat ini (BE-S6-03) |
 | core_responses.loan_id | text | no | |
-| core_responses.provider_code | text | no | |
+| core_responses.provider_code | text | no | `MANUAL` untuk Record Disbursement |
 | core_responses.channel | text | no | `CALLBACK`, `FILE`, `POLLING`, `MANUAL` (US-101) |
 | core_responses.outcome | text | no | `SUKSES`, `GAGAL` |
 | core_responses.core_loan_account, cif | text | yes | |
@@ -734,7 +735,7 @@ Kolom mengikuti data dictionary bagian Calculation. `formula_versions` berversi 
 | core_responses.failure_reason | text | yes | |
 | core_responses.processing_status | text | no | `APPLIED`, `IGNORED_NOT_WAITING`, `DUPLICATE` |
 | core_responses.file_id | uuid | yes | wajib kecuali MANUAL |
-| core_responses.entered_by | uuid | yes | MANUAL |
+| core_responses.entered_by | uuid | yes | FK iam.users; CHECK: MANUAL wajib `entered_by`, kanal lain wajib `file_id` |
 
 Kolom `token_number` dan `token_expired_at` (data dictionary) tidak dibuat sampai BA menjelaskan fungsinya (grooming v3).
 

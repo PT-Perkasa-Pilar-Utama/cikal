@@ -1,6 +1,6 @@
-import type { ValidityStatus } from "@cikal/contracts";
+import type { CoreChannel, ValidityStatus } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { check, date, integer, numeric, pgSchema, text, unique, uuid } from "drizzle-orm/pg-core";
+import { check, date, index, integer, numeric, pgSchema, text, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
 import { applications } from "../../../core/application/index.js";
 import { documentFiles, generatedDocuments } from "../../../core/document/index.js";
@@ -82,6 +82,59 @@ export const akadPrints = m15Disbursement.table(
   (table) => [
     unique("akad_prints_application_unique").on(table.applicationId),
     check("akad_prints_print_count_check", sql`${table.printCount} >= 1`),
+    tenantIsolation(),
+  ],
+);
+
+/** Hasil pencairan dari core (technical-specs 06 §6.11 CORE_RESPONSES). */
+export type CoreOutcome = "SUKSES" | "GAGAL";
+/** Respons diterapkan ke langkah yang menunggu, atau diabaikan (technical-specs 06 §6.11). */
+export type CoreProcessingStatus = "APPLIED" | "IGNORED_NOT_WAITING" | "DUPLICATE";
+
+/**
+ * CORE_RESPONSES, technical-specs 06 §6.11 M15: hasil pencairan per proses pengajuan. Rilis 1 hanya kanal `MANUAL`
+ * dari halaman "Record Disbursement" (api-specs 25 §25.4); kanal lain wajib berkas respons core.
+ */
+export const coreResponses = m15Disbursement.table(
+  "core_responses",
+  {
+    id: uuid("id").primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => companies.id),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => applications.id),
+    processInstanceId: uuid("process_instance_id").notNull(),
+    loanId: text("loan_id").notNull(),
+    providerCode: text("provider_code").notNull(),
+    channel: text("channel").$type<CoreChannel>().notNull(),
+    outcome: text("outcome").$type<CoreOutcome>().notNull(),
+    coreLoanAccount: text("core_loan_account"),
+    cif: text("cif"),
+    disburseDate: date("disburse_date"),
+    mainLimit: text("main_limit"),
+    childLimit: text("child_limit"),
+    collateralLink: text("collateral_link"),
+    collateralDetail: text("collateral_detail"),
+    failureReason: text("failure_reason"),
+    processingStatus: text("processing_status").$type<CoreProcessingStatus>().notNull(),
+    fileId: uuid("file_id").references(() => documentFiles.id),
+    enteredBy: uuid("entered_by").references(() => users.id),
+    ...auditColumns(),
+  },
+  (table) => [
+    index("core_responses_process_idx").on(table.processInstanceId),
+    check("core_responses_channel_check", sql`${table.channel} in ('CALLBACK', 'FILE', 'POLLING', 'MANUAL')`),
+    check("core_responses_outcome_check", sql`${table.outcome} in ('SUKSES', 'GAGAL')`),
+    check(
+      "core_responses_processing_status_check",
+      sql`${table.processingStatus} in ('APPLIED', 'IGNORED_NOT_WAITING', 'DUPLICATE')`,
+    ),
+    check(
+      "core_responses_source_check",
+      sql`(${table.channel} = 'MANUAL' and ${table.enteredBy} is not null) or (${table.channel} <> 'MANUAL' and ${table.fileId} is not null)`,
+    ),
     tenantIsolation(),
   ],
 );

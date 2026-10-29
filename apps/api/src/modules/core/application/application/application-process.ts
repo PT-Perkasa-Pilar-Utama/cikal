@@ -5,7 +5,11 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 import { Outbox } from "../../../../platform/queue/outbox.js";
 import { type ApplicationProcessRow, ApplicationsRepository } from "../db/applications.repository.js";
 import { canTransition } from "../domain/application-status.js";
-import { APPLICATION_REJECTED_EVENT, type ApplicationEventPayload } from "./application-events.js";
+import {
+  APPLICATION_REJECTED_EVENT,
+  type ApplicationEventPayload,
+  DISBURSEMENT_COMPLETED_EVENT,
+} from "./application-events.js";
 
 export type ProcessApplication = ApplicationProcessRow;
 
@@ -52,8 +56,9 @@ export class ApplicationProcess {
 
   /**
    * Status dari hasil langkah dan aksi proses. Transisi di luar technical-specs 06 §6.13 ditolak `INVALID_STATE`.
-   * Kembali ke Draft menyimpan catatan pengembalian dan mengosongkan langkah saat ini. Penolakan menulis event
-   * `ApplicationRejected` untuk email penolakan di transaksi yang sama (TRM_DKC_005).
+   * Kembali ke Draft menyimpan catatan pengembalian dan mengosongkan langkah saat ini. Penolakan dan pencairan menulis
+   * event `ApplicationRejected` dan `DisbursementCompleted` untuk email nasabah di transaksi yang sama (TRM_DKC_005,
+   * AC-101.01).
    */
   async transition(
     tx: Tx,
@@ -75,15 +80,16 @@ export class ApplicationProcess {
       },
       options.userId,
     );
-    if (to === "FINISHED_REJECTED") await this.publishRejected(tx, id);
+    if (to === "FINISHED_REJECTED") await this.publish(tx, id, APPLICATION_REJECTED_EVENT);
+    if (to === "DISBURSED") await this.publish(tx, id, DISBURSEMENT_COMPLETED_EVENT);
   }
 
-  private async publishRejected(tx: Tx, id: string): Promise<void> {
+  private async publish(tx: Tx, id: string, eventType: string): Promise<void> {
     const application = await this.applications.findById(tx, id);
     if (!application) throw new Error(`Application ${id} not found`);
     await this.outbox.publish(tx, {
       tenantId: application.tenantId,
-      eventType: APPLICATION_REJECTED_EVENT,
+      eventType,
       aggregateId: id,
       payload: { applicationId: id, loanId: application.loanId } satisfies ApplicationEventPayload,
     });

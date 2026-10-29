@@ -1,4 +1,4 @@
-import type { DisbursementDetailResponse } from "@cikal/contracts";
+import type { CoreResponse, DisbursementDetailResponse } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
 import { TenantEncryption } from "../../../../platform/crypto/tenant-encryption.js";
 import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
@@ -7,6 +7,7 @@ import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationProcess } from "../../../core/application/index.js";
 import { ApprovedFinancings } from "../../../core/approval/index.js";
 import { AkadPrintsRepository } from "../db/akad-prints.repository.js";
+import { type CoreResponseRow, CoreResponsesRepository } from "../db/core-responses.repository.js";
 import { type DisbursementRow, DisbursementsRepository } from "../db/disbursements.repository.js";
 import { maskAccountNumber } from "../domain/akad-format.js";
 import { applicationNotFound } from "./disbursement-errors.js";
@@ -31,6 +32,7 @@ export class GetDisbursementUseCase {
     private readonly financings: ApprovedFinancings,
     private readonly disbursements: DisbursementsRepository,
     private readonly prints: AkadPrintsRepository,
+    private readonly responses: CoreResponsesRepository,
     private readonly encryption: TenantEncryption,
   ) {}
 
@@ -45,6 +47,7 @@ export class GetDisbursementUseCase {
       const financing = await this.financings.find(tx, applicationId);
       if (!disbursement || !financing) throw DomainError.standard("NOT_FOUND");
       const print = await this.prints.findByApplication(tx, applicationId);
+      const response = await this.responses.appliedFor(tx, disbursement.processInstanceId);
       return {
         data: {
           applicationId,
@@ -59,8 +62,7 @@ export class GetDisbursementUseCase {
           contractNumber: disbursement.contractNumber,
           contractDate: disbursement.contractDate,
           akadPrints: print ? [print] : [],
-          // Respons core diisi kartu BE-S6-03.
-          coreResponse: null,
+          coreResponse: response ? coreResponseOf(response) : null,
         },
       };
     });
@@ -76,4 +78,17 @@ export class GetDisbursementUseCase {
     });
     return operations ? account : maskAccountNumber(account);
   }
+}
+
+/** Respons core proses saat ini dalam istilah halaman "Record Disbursement" (api-specs 25 §25.1, §25.4). */
+function coreResponseOf(row: CoreResponseRow): CoreResponse {
+  return {
+    channel: row.channel,
+    outcome: row.outcome,
+    disbursementDate: row.disburseDate,
+    coreLoanNumber: row.coreLoanAccount,
+    cif: row.cif,
+    failureReason: row.failureReason,
+    recordedAt: row.createdAt.toISOString(),
+  };
 }

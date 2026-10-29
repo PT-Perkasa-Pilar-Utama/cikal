@@ -3,18 +3,12 @@ import { Injectable } from "@nestjs/common";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
-import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationProcess } from "../../../core/application/index.js";
 import { ApprovedFinancings } from "../../../core/approval/index.js";
 import { DisbursementsRepository } from "../db/disbursements.repository.js";
 import { assertDisbursementDate } from "../domain/validity-rules.js";
+import { required } from "./disbursement-errors.js";
 import { DisbursementTasks } from "./disbursement-tasks.js";
-
-/** Skema kontrak sudah mewajibkan field per hasil; ini hanya penyempit tipe. */
-function required(value: string | undefined): string {
-  if (!value) throw DomainError.standard("VALIDATION_FAILED");
-  return value;
-}
 
 /**
  * Admin Operasional menyatakan data pencairan Valid atau Not Valid (api-specs 25 §25.2). Penutupan tugas

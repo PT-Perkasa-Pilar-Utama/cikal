@@ -9,7 +9,7 @@ import { TaskQueue } from "../../../core/task-queue/index.js";
 import { ALREADY_PROCESSED_MESSAGE, applicationNotFound } from "./disbursement-errors.js";
 
 /** Langkah pencairan manusia M15; kode antrean tugas sama dengan kode langkahnya. */
-export type DisbursementStep = Extract<StepCode, "VALIDITY_CHECK" | "PRINT_AKAD">;
+export type DisbursementStep = Extract<StepCode, "VALIDITY_CHECK" | "PRINT_AKAD" | "DISBURSEMENT">;
 
 /** Pengajuan yang langkahnya menunggu tugas user sesi. */
 export interface WorkingStep {
@@ -17,7 +17,7 @@ export interface WorkingStep {
   processInstanceId: string;
 }
 
-/** Tugas Validity Check dan Print Akad milik user sesi (api-specs 14 §14.5, api-specs 25 §25.2, §25.3). */
+/** Tugas Validity Check, Print Akad, dan Record Disbursement milik user sesi (api-specs 14 §14.5, api-specs 25). */
 @Injectable()
 export class DisbursementTasks {
   constructor(

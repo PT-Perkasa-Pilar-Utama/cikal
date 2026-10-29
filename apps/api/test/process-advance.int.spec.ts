@@ -186,13 +186,13 @@ describe("process advance", () => {
   });
 
   it("stops at ERROR when a licensed step in the route has no handler installed", async () => {
-    const { processId } = await submitted({ DATA_ENTRY: true, DISBURSEMENT: true });
+    const { processId } = await submitted({ DATA_ENTRY: true, WAIT_CORE: true });
     await drainProcessJobs(app, db.owner, { includeDelayed: true });
 
-    expect((await latestSteps(db.owner, processId)).get("DISBURSEMENT")).toMatchObject({
+    expect((await latestSteps(db.owner, processId)).get("WAIT_CORE")).toMatchObject({
       status: "ERROR",
       error_category: "CONFIG",
-      error_message: "No step handler is installed for DISBURSEMENT",
+      error_message: "No step handler is installed for WAIT_CORE",
     });
     expect(await processStatus(db.owner, processId)).toBe("WAITING");
   });

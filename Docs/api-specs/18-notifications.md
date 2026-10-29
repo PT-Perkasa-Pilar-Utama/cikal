@@ -18,7 +18,7 @@ Notification tidak punya endpoint di POC. Email dikirim oleh handler event outbo
 | Gagal kirim: log `FAILED`, proses pengajuan tidak berhenti | 5.8 |
 | Handler idempotent terhadap event yang dikirim ulang: satu log per event per template | 5.0.1 |
 | Template tidak ada untuk company: log `FAILED` "Email template <code> is not configured" | 5.8 |
-| Event `DisbursementCompleted` dipublikasikan langkah Record Disbursement (kartu BE-S6-03); handler sudah terpasang | AC-101.01 |
+| Event `DisbursementCompleted` dipublikasikan Application saat status menjadi DISBURSED, di transaksi Record Disbursement (25 §25.4) | AC-101.01 |
 
 ## 18.2 Operasi backlog (TODO)
 
