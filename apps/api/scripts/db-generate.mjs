@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 // Membangkitkan migrasi SQL satu modul dari db/schema.ts-nya (technical-specs 06 §6.12 MS-01).
-// Pemakaian (dari apps/api): pnpm db:generate <modul|platform> [nama-migrasi]
+// Pemakaian (dari apps/api): pnpm db:generate <modul|platform> [nama-migrasi] [--custom]
+// `--custom` membuat migrasi SQL kosong di ledger untuk DDL partisi yang tidak dibangkitkan drizzle-kit
+// (CODING_STANDARD §6.3).
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const [moduleName, migrationName] = process.argv.slice(2);
+const custom = process.argv.includes("--custom");
+const [moduleName, migrationName] = process.argv.slice(2).filter((arg) => arg !== "--custom");
 if (!moduleName) {
-  console.error("Usage: pnpm db:generate <module> [migration-name]");
+  console.error("Usage: pnpm db:generate <module> [migration-name] [--custom]");
   process.exit(2);
 }
 
@@ -34,6 +37,7 @@ const args = [
   `--schema=${posix(join(moduleDir, "db", "schema.ts"))}`,
   `--out=${posix(out)}`,
   ...(migrationName ? [`--name=${migrationName}`] : []),
+  ...(custom ? ["--custom"] : []),
 ];
 execFileSync("pnpm", ["exec", ...args], { cwd: apiDir, stdio: "inherit", shell: process.platform === "win32" });
 

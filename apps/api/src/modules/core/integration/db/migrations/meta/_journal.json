@@ -8,6 +8,20 @@
       "when": 1792739545788,
       "tag": "0000_integration_registry",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793329010894,
+      "tag": "0001_call_log_primary_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793329030991,
+      "tag": "0002_call_log_partitions",
+      "breakpoints": true
     }
   ]
 }

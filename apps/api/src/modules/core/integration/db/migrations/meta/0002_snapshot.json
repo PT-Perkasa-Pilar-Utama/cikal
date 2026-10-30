@@ -1,0 +1,442 @@
+{
+  "id": "388e1688-a871-467e-9e88-a18430656d89",
+  "prevId": "6dcfd6b2-ec52-4644-8b02-68f985daca4c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "integration.integration_call_logs": {
+      "name": "integration_call_logs",
+      "schema": "integration",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "module_code": {
+          "name": "module_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_code": {
+          "name": "provider_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "direction": {
+          "name": "direction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "application_id": {
+          "name": "application_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loan_id": {
+          "name": "loan_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "step_execution_id": {
+          "name": "step_execution_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "correlation_id": {
+          "name": "correlation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_reference": {
+          "name": "external_reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempt": {
+          "name": "attempt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_ms": {
+          "name": "duration_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error_category": {
+          "name": "error_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "request_masked": {
+          "name": "request_masked",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_masked": {
+          "name": "response_masked",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "integration_call_logs_application_idx": {
+          "name": "integration_call_logs_application_idx",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "started_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "integration_call_logs_tenant_id_companies_id_fk": {
+          "name": "integration_call_logs_tenant_id_companies_id_fk",
+          "tableFrom": "integration_call_logs",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "integration_call_logs_id_started_at_pk": {
+          "name": "integration_call_logs_id_started_at_pk",
+          "columns": [
+            "id",
+            "started_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "integration_call_logs_direction_check": {
+          "name": "integration_call_logs_direction_check",
+          "value": "\"integration\".\"integration_call_logs\".\"direction\" in ('OUTBOUND', 'INBOUND')"
+        },
+        "integration_call_logs_status_check": {
+          "name": "integration_call_logs_status_check",
+          "value": "\"integration\".\"integration_call_logs\".\"status\" in ('SUCCESS', 'ERROR')"
+        },
+        "integration_call_logs_category_check": {
+          "name": "integration_call_logs_category_check",
+          "value": "\"integration\".\"integration_call_logs\".\"error_category\" in ('TIMEOUT', 'CONNECTION', 'PROVIDER_ERROR', 'AUTH', 'CONFIG', 'INVALID_RESPONSE')"
+        },
+        "integration_call_logs_attempt_check": {
+          "name": "integration_call_logs_attempt_check",
+          "value": "\"integration\".\"integration_call_logs\".\"attempt\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "integration.integration_configs": {
+      "name": "integration_configs",
+      "schema": "integration",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "module_code": {
+          "name": "module_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_code": {
+          "name": "provider_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endpoint_url": {
+          "name": "endpoint_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timeout_seconds": {
+          "name": "timeout_seconds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 30
+        },
+        "max_retries": {
+          "name": "max_retries",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "async_wait_hours": {
+          "name": "async_wait_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "result_reuse_days": {
+          "name": "result_reuse_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "settings": {
+          "name": "settings",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "version_number": {
+          "name": "version_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effective_from": {
+          "name": "effective_from",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "integration_configs_active_unique": {
+          "name": "integration_configs_active_unique",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "module_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"integration\".\"integration_configs\".\"status\" = 'ACTIVE' and \"integration\".\"integration_configs\".\"module_code\" <> 'M14'",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "integration_configs_tenant_id_companies_id_fk": {
+          "name": "integration_configs_tenant_id_companies_id_fk",
+          "tableFrom": "integration_configs",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "tableTo": "companies",
+          "schemaTo": "tenancy",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "tenant_isolation": {
+          "name": "tenant_isolation",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "public"
+          ],
+          "using": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid",
+          "withCheck": "tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid"
+        }
+      },
+      "checkConstraints": {
+        "integration_configs_mode_check": {
+          "name": "integration_configs_mode_check",
+          "value": "\"integration\".\"integration_configs\".\"mode\" in ('SYNC', 'ASYNC', 'MANUAL')"
+        },
+        "integration_configs_status_check": {
+          "name": "integration_configs_status_check",
+          "value": "\"integration\".\"integration_configs\".\"status\" in ('DRAFT', 'WAITING_APPROVAL', 'ACTIVE', 'SUPERSEDED')"
+        },
+        "integration_configs_timeout_check": {
+          "name": "integration_configs_timeout_check",
+          "value": "\"integration\".\"integration_configs\".\"timeout_seconds\" between 1 and 120"
+        },
+        "integration_configs_max_retries_check": {
+          "name": "integration_configs_max_retries_check",
+          "value": "\"integration\".\"integration_configs\".\"max_retries\" between 0 and 5"
+        },
+        "integration_configs_async_wait_check": {
+          "name": "integration_configs_async_wait_check",
+          "value": "\"integration\".\"integration_configs\".\"async_wait_hours\" between 1 and 720"
+        },
+        "integration_configs_reuse_days_check": {
+          "name": "integration_configs_reuse_days_check",
+          "value": "\"integration\".\"integration_configs\".\"result_reuse_days\" between 0 and 90"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "integration": "integration"
+  },
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

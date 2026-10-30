@@ -1,5 +1,5 @@
 /** Tanggal bisnis memakai zona Asia/Jakarta (api-specs 12 §12.2, api-specs 25). */
-const BUSINESS_TIME_ZONE = "Asia/Jakarta";
+export const BUSINESS_TIME_ZONE = "Asia/Jakarta";
 
 const formatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: BUSINESS_TIME_ZONE,

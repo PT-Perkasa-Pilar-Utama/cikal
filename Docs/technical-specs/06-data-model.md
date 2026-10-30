@@ -589,7 +589,7 @@ Kolom: `application_id`, `process_instance_id` (UQ; tanpa foreign key, seperti t
 | installments.principal_amount, interest_amount, outstanding_amount | numeric(18,2) | no | baris terakhir outstanding 0 |
 
 ### INTEGRATION_PROVIDERS [instalasi], INTEGRATION_CONFIGS, INTEGRATION_CALL_LOGS (`integration`)
-Kolom mengikuti data dictionary bagian Integration Registry. `secret_ref uuid` FK `platform.secrets`. `integration_configs` berversi (DM-11) dengan UQ parsial ACTIVE per (tenant_id, module_code) kecuali M14. `integration_call_logs` dipartisi per bulan (`occurred_at`) untuk retensi 1 tahun.
+Kolom mengikuti data dictionary bagian Integration Registry. `secret_ref uuid` FK `platform.secrets`. `integration_configs` berversi (DM-11) dengan UQ parsial ACTIVE per (tenant_id, module_code) kecuali M14. `integration_call_logs` dipartisi per bulan (`started_at`, bulan Asia/Jakarta) untuk retensi 1 tahun: kunci primer (id, started_at), partisi `integration_call_logs_pYYYYMM` dibuat migrasi custom `0002_call_log_partitions` (CODING_STANDARD §6.3). Fungsi `integration.maintain_call_log_partitions()` (`SECURITY DEFINER` milik `cikal_owner`, tanpa parameter) membuat partisi bulan berjalan dan 2 bulan berikutnya serta menghapus partisi yang seluruh rentangnya lebih dari 1 tahun; dipanggil runner setelah setiap migrasi dan job pg-boss `integration.call-log-partitions` setiap hari pukul 01.00 Asia/Jakarta. RLS partisi aktif tanpa policy, jadi role aplikasi hanya mengakses lewat tabel induk.
 
 ### FORMULA_DEFINITIONS [instalasi], FORMULA_VERSIONS, FORMULA_TEST_CASES, FORMULA_EXECUTION_LOGS, HOLIDAY_CALENDARS (`calculation`)
 FormulaVariable bukan tabel: katalog instalasi dikelola tim engineer dan berubah hanya lewat rilis, jadi disimpan di kode `calculation/domain/formula-variables.ts` (api-specs 09 §9.2).
@@ -756,7 +756,7 @@ Kolom `token_number` dan `token_expired_at` (data dictionary) tidak dibuat sampa
 
 | ID | Aturan |
 |---|---|
-| MS-01 | Setiap modul menyimpan migrasinya di `<modul>/db/migrations`, dibangkitkan `drizzle-kit generate` dan direview sebagai SQL |
+| MS-01 | Setiap modul menyimpan migrasinya di `<modul>/db/migrations`, dibangkitkan `drizzle-kit generate` dan direview sebagai SQL. DDL partisi memakai migrasi custom `--custom` (CODING_STANDARD §6.3) |
 | MS-02 | Runner menemukan folder migrasi relatif terhadap folder modul (`import.meta.dirname`), tidak pernah lewat path absolut |
 | MS-03 | Connection string runner dibaca dari `DATABASE_MIGRATION_URL` (role pemilik skema `cikal_owner`); `api` dan `worker` memakai `DATABASE_URL` (role `cikal_app` tanpa `BYPASSRLS`). Tidak pernah ditulis di kode |
 | MS-04 | Migrasi dijalankan per modul berlisensi dalam urutan dependensi (CORE dulu), masing-masing dengan tabel ledger `__migrations` di skemanya |

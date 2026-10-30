@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, type OnApplicationShutdown } from "@nestjs/
 import { type SQL, sql } from "drizzle-orm";
 import PgBoss from "pg-boss";
 import type { z } from "zod";
+import { BUSINESS_TIME_ZONE } from "../clock/business-date.js";
 import { APP_CONFIG, type AppConfig } from "../config/config.js";
 import type { Tx } from "../db/tenant-tx.js";
 import { QUEUE_SCHEMA } from "./queue-definition.js";
@@ -37,6 +38,7 @@ function positional(text: string, values: readonly unknown[]): SQL {
 export class JobQueue implements OnApplicationShutdown {
   private readonly logger = new Logger(JobQueue.name);
   private readonly consumers = new Map<string, Consumer>();
+  private readonly schedules = new Map<string, string>();
   private readonly boss: PgBoss;
 
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {
@@ -46,7 +48,7 @@ export class JobQueue implements OnApplicationShutdown {
       max: config.worker.concurrency + 1,
       migrate: false,
       supervise: config.processRole === "worker",
-      schedule: false,
+      schedule: config.processRole === "worker",
     });
     this.boss.on("error", (error) => this.logger.error(error.message, error.stack));
   }
@@ -64,9 +66,20 @@ export class JobQueue implements OnApplicationShutdown {
     this.consumers.set(name, (data) => handler(schema.parse(data)));
   }
 
-  /** Proses worker: memulai pg-boss lalu `WORKER_CONCURRENCY` konsumen per antrean (technical-specs 11 §11.2). */
+  /** Mendaftarkan job berulang `cron` waktu Asia/Jakarta; antreannya juga butuh konsumen lewat `consume`. */
+  schedule(name: string, cron: string): void {
+    this.schedules.set(name, cron);
+  }
+
+  /**
+   * Proses worker: memulai pg-boss, memasang jadwal, lalu `WORKER_CONCURRENCY` konsumen per antrean (technical-specs
+   * 11 §11.2). Jadwal dipasang ulang setiap mulai karena reset state menghapus skema pg-boss.
+   */
   async startConsumers(): Promise<void> {
     await this.boss.start();
+    for (const [name, cron] of this.schedules) {
+      await this.boss.schedule(name, cron, {}, { tz: BUSINESS_TIME_ZONE });
+    }
     for (const [name, consumer] of this.consumers) {
       for (let slot = 0; slot < this.config.worker.concurrency; slot++) {
         await this.boss.work(name, { pollingIntervalSeconds: POLLING_INTERVAL_SECONDS }, async (jobs) => {
