@@ -11,6 +11,8 @@ import { ListInsurancesUseCase } from "./application/list-insurances.use-case.js
 import { ListParameterOptionsUseCase } from "./application/list-parameter-options.use-case.js";
 import { ListRegionOptionsUseCase } from "./application/list-region-options.use-case.js";
 import { RegionSync } from "./application/region-sync.js";
+import { RegionSyncLauncher } from "./application/region-sync-launcher.js";
+import { ScheduledRegionSync } from "./application/scheduled-region-sync.js";
 import { SearchRegionsUseCase } from "./application/search-regions.use-case.js";
 import { StartRegionSyncUseCase } from "./application/start-region-sync.use-case.js";
 import { SystemParameters } from "./application/system-parameters.js";
@@ -56,6 +58,8 @@ function regionDataAdapter(config: AppConfig): RegionDataPort {
     RegionSnapshotsRepository,
     RegionSyncsRepository,
     RegionSync,
+    RegionSyncLauncher,
+    ScheduledRegionSync,
     RegionSyncJob,
     ListRegionOptionsUseCase,
     SearchRegionsUseCase,

@@ -55,6 +55,11 @@ export class TenantTx {
     });
   }
 
+  /** Transaksi data tingkat instalasi tanpa tenant dan user, contoh data wilayah; RLS menolak semua baris ber-tenant. */
+  withInstallationTx<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
+    return this.db.transaction(fn);
+  }
+
   /** Transaksi pra-tenant dengan satu kunci DM-12; `fn` boleh memanggil `bindTenant` setelah tenant ditemukan. */
   withLookupTx<T>(key: LookupKey, value: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
     return this.db.transaction(async (tx) => {

@@ -26,7 +26,7 @@ export class RegionSync {
     const snapshot = await this.fetch(job);
     if (!snapshot) return;
     try {
-      await this.db.withSystemTx(job.tenantId, async (tx) => {
+      await this.db.withInstallationTx(async (tx) => {
         const diff = diffSnapshot(await this.snapshots.load(tx), snapshot);
         const syncedAt = new Date();
         await this.snapshots.write(tx, snapshot, syncedAt);
@@ -64,6 +64,6 @@ export class RegionSync {
   }
 
   private fail(job: RegionSyncJob, category: AdapterErrorCategory | null): Promise<void> {
-    return this.db.withSystemTx(job.tenantId, (tx) => this.syncs.fail(tx, job.syncId, category));
+    return this.db.withInstallationTx((tx) => this.syncs.fail(tx, job.syncId, category));
   }
 }

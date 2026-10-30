@@ -10,7 +10,10 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp, createWorkerContext } from "../src/app.factory.js";
 import { seedRoleIds } from "../src/modules/core/identity/index.js";
+import { ScheduledRegionSync } from "../src/modules/core/masterdata/application/scheduled-region-sync.js";
+import { REGION_SYNC_SCHEDULE_QUEUE } from "../src/modules/core/masterdata/jobs/queues.js";
 import type { AppConfig } from "../src/platform/config/config.js";
+import { TenantTx } from "../src/platform/db/tenant-tx.js";
 import { JobQueue } from "../src/platform/queue/job-queue.js";
 import { startDatabase, type TestDatabase } from "./support/database.js";
 import { createSession, type TestSession } from "./support/session.js";
@@ -139,6 +142,58 @@ describe("regions", () => {
     expect(failed.message).toBe("Region sync failed. Existing data is unchanged");
     expect(failed.data).toEqual({ status: "FAILED", errorCategory: "CONNECTION" });
     expect(await regionRows()).toEqual(before);
+  });
+
+  it("schedules the region sync weekly on Sunday at 02.00 Asia/Jakarta", async () => {
+    const worker = await createWorkerContext({ ...db.config, processRole: "worker" });
+    try {
+      await worker.get(JobQueue).startConsumers();
+
+      const { rows } = await db.owner.query(
+        "select cron, timezone from pgboss.schedule where name = 'masterdata.region-sync-schedule'",
+      );
+      expect(rows).toEqual([{ cron: "0 2 * * 0", timezone: "Asia/Jakarta" }]);
+    } finally {
+      await worker.close();
+    }
+  });
+
+  it("runs the scheduled sync like the manual one, with no user as the actor", async () => {
+    const worker = await createWorkerContext({ ...db.config, processRole: "worker" });
+    await worker
+      .get(TenantTx)
+      .withInstallationTx((tx) => worker.get(JobQueue).enqueue(tx, REGION_SYNC_SCHEDULE_QUEUE, {}));
+    await worker.get(JobQueue).startConsumers();
+    let sync: { id: string; created_by: string | null } | undefined;
+    try {
+      const until = Date.now() + WAIT_MS;
+      while (!sync && Date.now() < until) {
+        [sync] = (
+          await db.owner.query("select id, created_by from masterdata.region_syncs where created_by is null")
+        ).rows;
+        if (!sync) await new Promise((resolve) => setTimeout(resolve, POLL_MS));
+      }
+    } finally {
+      await worker.close();
+    }
+    if (!sync) throw new Error("The scheduled region sync did not start");
+
+    expect(sync.created_by).toBeNull();
+    expect((await runWorker(sync.id)).data).toMatchObject({ status: "COMPLETED" });
+  });
+
+  it("skips the scheduled sync while a manual sync is running", async () => {
+    const manual = await startSync();
+    const worker = await createWorkerContext({ ...db.config, processRole: "worker" });
+    try {
+      await worker.get(ScheduledRegionSync).run();
+    } finally {
+      await worker.close();
+    }
+
+    const { rows } = await db.owner.query("select id from masterdata.region_syncs where status = 'RUNNING'");
+    expect(rows).toEqual([{ id: manual.syncId }]);
+    await runWorker(manual.syncId);
   });
 
   it("AC-23.03 finds regions containing the text in any level or zip code, ignoring case", async () => {
