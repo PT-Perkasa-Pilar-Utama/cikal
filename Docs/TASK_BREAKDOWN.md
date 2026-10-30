@@ -1,7 +1,7 @@
 # Cikal POC: Task Breakdown
 
-**Version:** 0.4  
-**Date:** 2026-10-23  
+**Version:** 0.5  
+**Date:** 2026-10-30  
 **Author:** Tech Lead  
 **Status:** Draft  
 **Phase:** POC  
@@ -217,7 +217,8 @@ Goal: Pengajuan yang disetujui melewati Validity Check, Print Akad dengan nomor 
 |---|---|---|---|---|---|---|
 | TL-S6-01 | Bangun perakitan paket per lisensi | Build hanya menyertakan modul berlisensi; container migrate one-shot saat instalasi dan upgrade; uji pasang di VM Linux bersih. Panduan instalasi ditulis di `DEPLOYMENT_PLAN.md`, bukan kartu ini. | AC-100.01, AC-100.03 | TL | 2.5d | tech 02 §2.4, tech 06 §6.12, tech 07 §7.6 |
 | TL-S6-02 | Bangun generator dokumen akad | Template .docx dengan placeholder diisi data pengajuan (docxtemplater), dikonversi ke PDF lewat Gotenberg; template tidak tersedia menghasilkan pesan error. | AC-77.01, AC-77.03 | TL | 1d | tech 05 §5.9; api 25 §25.3 |
-| TL-S6-03 | Verifikasi kriteria sukses POC | Jalankan dan catat bukti K-01 s.d. K-08; uji K-08 dengan developer yang tidak ikut membangun memakai panduan TL-S5-02. | AC-100.02, AC-85.06 | TL | 1.5d | grooming v2 "Kriteria sukses" |
+| TL-S6-03 | Verifikasi kriteria sukses POC | Jalankan dan catat bukti otomatis K-01 s.d. K-08 di `Docs/POC_VERIFICATION.md`; spec Playwright K-04; protokol uji manusia K-01 dan K-08. | AC-100.02, AC-85.06 | TL | 0.5d | grooming v2 "Kriteria sukses" |
+| TL-S6-04 | Uji manusia K-01 dan K-08 serta demo POC | Orang yang tidak ikut membangun memasang paket (K-01) dan developer yang tidak ikut membangun menambah modul langkah dummy memakai panduan TL-S5-02 (K-08); demo K-01 s.d. K-08 ke PO dan BA; hasil dicatat di `Docs/POC_VERIFICATION.md`. Dipisah dari TL-S6-03 (issue #170). | (enabler) | TL | 1d | grooming v2 "Kriteria sukses"; `Docs/POC_VERIFICATION.md` |
 | BE-S6-01 | Bangun langkah Validity Check | `GET /applications/{id}/disbursement`, `POST /applications/{id}/validity-check`: tanggal pencairan minimal H+1, tanggal angsuran pertama menggeser jatuh tempo, Not Valid ke Draft. Aturan tanggal e-polis tidak aktif dan tanggal e-polis tidak ditampilkan karena M14 tidak berlisensi. | AC-76.01, AC-76.02, AC-76.04 s.d. AC-76.06 | FS1 | 1d | api 25 §25.1, §25.2 |
 | BE-S6-02 | Bangun langkah Print Akad | `POST /applications/{id}/akad/print`: field cetak wajib, nomor kontrak dari BE-S6-05, generator akad, GeneratedDocument dan AkadPrint, lanjut ke Record Disbursement. | AC-77.01, AC-77.02 | FS1 | 1d | api 25 §25.3 |
 | BE-S6-03 | Bangun langkah Record Disbursement | `POST /applications/{id}/disbursement/record` dengan mode MANUAL `CoreBankingPort`: Disbursed (tanggal cair, nomor pinjaman core) atau Failed (alasan) dengan validasi; status DISBURSED atau RECONTEST; email lewat BE-S3-04. | AC-101.01 s.d. AC-101.05 | FS1 | 1d | api 25 §25.4; grooming v2 N-05 |
@@ -256,7 +257,7 @@ Goal: Pengajuan yang disetujui melewati Validity Check, Print Akad dengan nomor 
 | S3 | Pengajuan web | 9 | 3 | 11.5d | 4.5d |
 | S4 | Penilaian otomatis | 9 | 3 | 11.5d | 3.5d |
 | S5 | Keputusan manusia | 7 | 6 | 8.5d | 6d |
-| S6 | Pasca-approval dan paket on-premise | 8 | 5 | 10d | 5d |
+| S6 | Pasca-approval dan paket on-premise | 9 | 5 | 10d | 5d |
 
 Kolom BE termasuk kartu `TL-`. Total semua kartu: 90d.
 

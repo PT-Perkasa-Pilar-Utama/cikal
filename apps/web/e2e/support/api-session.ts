@@ -70,6 +70,19 @@ export class ApiSession {
     return schema.parse(await response.json());
   }
 
+  /** Unggah satu file `multipart/form-data` tanpa memeriksa status, untuk spec yang membuktikan penolakan API. */
+  async postFile(
+    path: string,
+    file: { name: string; mimeType: string; buffer: Buffer },
+    headers: Record<string, string> = {},
+  ): Promise<{ status: number; body: unknown }> {
+    const response = await this.context.post(path, {
+      multipart: { file },
+      headers: { "X-CSRF-Token": this.csrf, ...headers },
+    });
+    return { status: response.status(), body: await response.json() };
+  }
+
   async saveState(path: string): Promise<void> {
     await this.context.storageState({ path });
   }
