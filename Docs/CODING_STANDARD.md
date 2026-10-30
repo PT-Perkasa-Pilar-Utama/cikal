@@ -314,6 +314,8 @@ Penulisan yang harus utuh berjalan dalam satu transaksi. Outbox, enqueue pg-boss
 
 Migrasi dibuat dengan `db:generate` dari `db/schema.ts`, lalu direview sebagai SQL (MS-01). Migrasi yang sudah di-merge tidak boleh diedit; perbaikan lewat migrasi baru.
 
+Pengecualian terbatas: DDL partisi tabel (`PARTITION BY`, partisi anak, dan fungsi pemeliharaannya) tidak dibangkitkan drizzle-kit. DDL itu ditulis di migrasi custom `pnpm --filter @cikal/api db:generate <modul> <nama> --custom`, sehingga tetap tercatat di ledger dan direview sebagai SQL. Kolom, constraint, dan index tetap diturunkan dari `db/schema.ts` lewat migrasi biasa lebih dulu, dan migrasi custom menyalin nama yang sama agar snapshot drizzle-kit tetap cocok. Contoh: `integration/db/migrations/0002_call_log_partitions.sql` (technical-specs 06 §6.10). Pembuatan dan penghapusan partisi berjalan lewat fungsi `SECURITY DEFINER` milik `cikal_owner` tanpa parameter, dipanggil runner (`afterMigrate` di `<modul>.data.ts`) dan job harian worker.
+
 ### 6.4 Migrasi hanya maju (expand/contract)
 
 Kolom baru nullable atau punya default. Kolom atau tabel dihapus satu rilis setelah kode berhenti memakainya. Migrasi destruktif ditandai di deskripsi PR ([DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md) §4.1).

@@ -194,6 +194,7 @@ Do not report a task as done while either command fails. Never bypass hooks with
   - Business data access runs in `TenantTx.withTenantTx` (`platform/db/tenant-tx.ts`). Pre-tenant reads use `withLookupTx` and a DM-12 policy.
   - Multi-step writes, outbox, enqueue, and audit share one transaction.
   - Migrations are forward-only (expand/contract) and generated with `pnpm --filter @cikal/api db:generate <module> <name>`.
+  - Partition DDL is the one exception: a `--custom` migration, maintained by a `SECURITY DEFINER` function (`CODING_STANDARD` §6.3).
   - Seeds are idempotent (`onConflictDoNothing`) and layered: `base` (production reference data), `dev` (base plus company 001 and users), `qa` (dev plus wiring and MRTM test data).
   - The migrate runner uses `cikal_owner` via `DATABASE_MIGRATION_URL`. The app uses `cikal_app` (NOBYPASSRLS) via `DATABASE_URL`.
 
