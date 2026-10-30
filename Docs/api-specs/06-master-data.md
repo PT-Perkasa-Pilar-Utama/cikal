@@ -100,6 +100,7 @@ Semua menerima `q` untuk menyaring nama tanpa membedakan huruf besar dan kecil.
 3. Job mengambil seluruh data Oksara ke memori lebih dulu, lalu membandingkan dan menulisnya dalam satu transaksi. Gagal, timeout, kode ganda, atau kelurahan tanpa kode pos: data lama tidak berubah (AC-23.02).
 4. Cabang yang induknya tidak ada di Oksara (contoh kecamatan kabupaten 9209 dan 9210 setelah pemekaran Papua Barat Daya) tidak disimpan dan dicatat di log worker. Baris lokal yang hilang di Oksara tidak dihapus, karena kodenya mungkin dipakai alamat pengajuan.
 5. Hasil disimpan di baris `masterdata.region_syncs`: jumlah ditambah, diubah, waktu selesai. Sinkronisasi RUNNING lebih dari 30 menit dianggap gagal (`TIMEOUT`) saat sinkronisasi berikutnya diminta.
+6. Job terjadwal `masterdata.region-sync-schedule` (worker, setiap Minggu 02.00 Asia/Jakarta, technical-specs 05 §5.4) memulai sinkronisasi lewat langkah 1 sampai 5 tanpa user: `created_by` kosong. Bila sinkronisasi lain masih RUNNING, jadwal kali itu dilewati tanpa error.
 
 **Output 202**
 
