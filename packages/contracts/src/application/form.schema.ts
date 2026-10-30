@@ -3,6 +3,7 @@ import { dataEnvelope } from "../common/envelope.js";
 import { businessDate, id, money, timestamp } from "../common/scalars.js";
 import { productCategorySchema } from "../product/products.schema.js";
 import { applicationStatusSchema } from "./application.schema.js";
+import { collateralTypeSchema } from "./conditional-sections.schema.js";
 import { documentCompletenessSchema } from "./documents.schema.js";
 import { formSectionSchema } from "./drafts.schema.js";
 
@@ -84,6 +85,67 @@ const occupationSectionSchema = z.object({
   }),
 });
 
+const spouseSectionSchema = z.object({
+  fullName: nullableText,
+  idNumber: nullableText,
+  dateOfBirth: businessDate.nullable(),
+  mobileNumber: nullableText,
+  prenuptialAgreement: nullableText,
+  idExpiredDate: nullableText,
+  idAddress: addressSchema,
+  occupation: nullableText,
+  industryOfProfession: nullableText,
+  position: nullableText,
+  sourceOfFunds: nullableText,
+  monthlyIncome: money.nullable(),
+  monthlySpending: money.nullable(),
+  company: z.object({
+    name: nullableText,
+    address: nullableText,
+    provinceCode: nullableText,
+    cityCode: nullableText,
+    phoneNumber: nullableText,
+  }),
+});
+
+const businessSectionSchema = z.object({
+  businessName: nullableText,
+  businessField: nullableText,
+  phoneNumber: nullableText,
+  email: nullableText,
+  annualSales: money.nullable(),
+  businessNumber: nullableText,
+  businessLaunchDate: businessDate.nullable(),
+  characteristicOfFinancing: nullableText,
+  typeOfFinancing: nullableText,
+  typeOfUsage: nullableText,
+  categoryOfFinancing: nullableText,
+  relationshipWithBank: nullableText,
+  address: addressSchema,
+});
+
+const collateralSectionSchema = z.object({
+  collateralType: collateralTypeSchema.nullable(),
+  vehicleType: nullableText,
+  vehicleBrand: nullableText,
+  vehicleModel: nullableText,
+  description: nullableText,
+  vehicleYear: z.number().int().nullable(),
+  vehiclePrice: money.nullable(),
+  vehicleColor: nullableText,
+  machineNumber: nullableText,
+  frameNumber: nullableText,
+  bpkbNumber: nullableText,
+  bpkbOwnerOccupation: nullableText,
+  policeNumber: nullableText,
+  certificateType: nullableText,
+  certificateNumber: nullableText,
+  surfaceArea: nullableText,
+  decreeNumber: nullableText,
+  decreeDate: businessDate.nullable(),
+  address: addressSchema,
+});
+
 const emergencyContactSectionSchema = z.object({
   contactName: nullableText,
   relationToApplicant: nullableText,
@@ -97,13 +159,17 @@ const emergencyContactSectionSchema = z.object({
 export const applicationFormSectionsSchema = z.object({
   application: applicationSectionSchema,
   personal: personalSectionSchema,
+  spouse: spouseSectionSchema.nullable(),
   occupation: occupationSectionSchema.nullable(),
+  business: businessSectionSchema.nullable(),
+  collateral: collateralSectionSchema.nullable(),
   "emergency-contact": emergencyContactSectionSchema.nullable(),
 });
 
 /**
  * Respons `GET /applications/{id}/form` (api-specs 12 §12.5). Section yang belum disimpan bernilai `null`.
  * `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan dari pekerjaan dan status kawin.
+ * `collateralTypes` berisi jenis agunan yang boleh dipilih untuk produk; kosong bila tidak ada step Collateral.
  */
 export const applicationFormResponseSchema = dataEnvelope(
   z.object({
@@ -114,6 +180,7 @@ export const applicationFormResponseSchema = dataEnvelope(
     steps: z.array(formSectionSchema),
     sections: applicationFormSectionsSchema,
     documentCompleteness: documentCompletenessSchema.nullable(),
+    collateralTypes: z.array(collateralTypeSchema),
     returnNote: z.string().nullable(),
   }),
 );

@@ -11,29 +11,37 @@ import { ApplicationIdentities } from "./application/application-identities.js";
 import { ApplicationProcess } from "./application/application-process.js";
 import { ApplicationSectionChecks } from "./application/application-section-checks.js";
 import { ApplicationVisibility } from "./application/application-visibility.js";
+import { ConditionalFormSections } from "./application/conditional-form-sections.js";
 import { DraftDocuments } from "./application/draft-documents.js";
 import { DraftFormSections } from "./application/draft-form-sections.js";
 import { DraftSections } from "./application/draft-sections.js";
+import { DraftSteps } from "./application/draft-steps.js";
 import { GetApplicationDetailUseCase } from "./application/get-application-detail.use-case.js";
 import { GetDraftFormUseCase } from "./application/get-draft-form.use-case.js";
 import { ListApplicationDocumentsUseCase } from "./application/list-application-documents.use-case.js";
 import { ListDraftsUseCase } from "./application/list-drafts.use-case.js";
 import { LoanIds } from "./application/loan-ids.js";
 import { SaveApplicationSectionUseCase } from "./application/save-application-section.use-case.js";
+import { SaveBusinessSectionUseCase } from "./application/save-business-section.use-case.js";
+import { SaveCollateralSectionUseCase } from "./application/save-collateral-section.use-case.js";
 import { SaveDraftUseCase } from "./application/save-draft.use-case.js";
 import { SaveEmergencyContactSectionUseCase } from "./application/save-emergency-contact-section.use-case.js";
 import { SaveOccupationSectionUseCase } from "./application/save-occupation-section.use-case.js";
 import { SavePersonalSectionUseCase } from "./application/save-personal-section.use-case.js";
+import { SaveSpouseSectionUseCase } from "./application/save-spouse-section.use-case.js";
 import { StrictSections } from "./application/strict-sections.js";
 import { SubmitApplicationUseCase } from "./application/submit-application.use-case.js";
 import { UploadApplicationDocumentUseCase } from "./application/upload-application-document.use-case.js";
 import { ApplicantLookupRepository } from "./db/applicant-lookup.repository.js";
 import { ApplicationAddressesRepository } from "./db/application-addresses.repository.js";
+import { ApplicationBusinessesRepository } from "./db/application-businesses.repository.js";
+import { ApplicationCollateralsRepository } from "./db/application-collaterals.repository.js";
 import { ApplicationDocumentsRepository } from "./db/application-documents.repository.js";
 import { ApplicationEmergencyContactsRepository } from "./db/application-emergency-contacts.repository.js";
 import { ApplicationFactsRepository } from "./db/application-facts.repository.js";
 import { ApplicationOccupationsRepository } from "./db/application-occupations.repository.js";
 import { ApplicationPersonalsRepository } from "./db/application-personals.repository.js";
+import { ApplicationSpousesRepository } from "./db/application-spouses.repository.js";
 import { ApplicationsRepository } from "./db/applications.repository.js";
 import { DraftListRepository } from "./db/draft-list.repository.js";
 import { LoanIdCountersRepository } from "./db/loan-id-counters.repository.js";
@@ -51,6 +59,9 @@ import { ApplicationsController } from "./http/applications.controller.js";
     ApplicationPersonalsRepository,
     ApplicationAddressesRepository,
     ApplicationOccupationsRepository,
+    ApplicationSpousesRepository,
+    ApplicationBusinessesRepository,
+    ApplicationCollateralsRepository,
     ApplicationEmergencyContactsRepository,
     ApplicationDocumentsRepository,
     ApplicationProcess,
@@ -64,7 +75,9 @@ import { ApplicationsController } from "./http/applications.controller.js";
     LoanIdCountersRepository,
     LoanIds,
     DraftSections,
+    DraftSteps,
     DraftFormSections,
+    ConditionalFormSections,
     DraftDocuments,
     StrictSections,
     ApplicationFileAccess,
@@ -72,7 +85,10 @@ import { ApplicationsController } from "./http/applications.controller.js";
     SaveDraftUseCase,
     SaveApplicationSectionUseCase,
     SavePersonalSectionUseCase,
+    SaveSpouseSectionUseCase,
     SaveOccupationSectionUseCase,
+    SaveBusinessSectionUseCase,
+    SaveCollateralSectionUseCase,
     SaveEmergencyContactSectionUseCase,
     ListDraftsUseCase,
     GetDraftFormUseCase,

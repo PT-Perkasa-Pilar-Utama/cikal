@@ -7,15 +7,18 @@ import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { ApplicationAddressesRepository } from "../db/application-addresses.repository.js";
 import { ApplicationPersonalsRepository, type PersonalChanges } from "../db/application-personals.repository.js";
+import { ApplicationSpousesRepository } from "../db/application-spouses.repository.js";
 import { addressColumns } from "../domain/address-fields.js";
 import { type PersonalMinimum, personalMinimum } from "../domain/draft-minimum.js";
 import { DraftSections } from "./draft-sections.js";
+import { DraftSteps } from "./draft-steps.js";
 import { StrictSections } from "./strict-sections.js";
 
 /**
  * Simpan section Personal (api-specs 12 §12.3; AC-40.01 s.d. AC-40.10). NIK, nama ibu kandung, NPWP, dan KK
  * disimpan terenkripsi, NIK juga blind index (DM-08). "Same as ID Address" menyalin alamat KTP ke domisili
- * (AC-40.07). Persetujuan pemohon dicatat dengan waktu dan kanal `WEB` (AC-40.08, IN-12).
+ * (AC-40.07). Persetujuan pemohon dicatat dengan waktu dan kanal `WEB` (AC-40.08, IN-12). Marital yang tidak lagi
+ * kawin menghapus data pasangan (AC-43.04).
  */
 @Injectable()
 export class SavePersonalSectionUseCase {
@@ -24,6 +27,8 @@ export class SavePersonalSectionUseCase {
     private readonly sections: DraftSections,
     private readonly personals: ApplicationPersonalsRepository,
     private readonly addresses: ApplicationAddressesRepository,
+    private readonly spouses: ApplicationSpousesRepository,
+    private readonly steps: DraftSteps,
     private readonly rules: StrictSections,
     private readonly encryption: TenantEncryption,
   ) {}
@@ -36,6 +41,7 @@ export class SavePersonalSectionUseCase {
       if (error) throw error;
       const minimum = personalMinimum(input);
       await this.personals.update(tx, draft.id, await this.personalChanges(tx, input, minimum), ctx.userId);
+      if (!(await this.steps.married(tx, input.marital ?? null))) await this.spouses.deleteByApplication(tx, draft.id);
       const idAddress = addressColumns(input.addresses.id);
       const { residence } = input.addresses;
       await this.addresses.upsert(

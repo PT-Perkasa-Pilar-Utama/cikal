@@ -80,7 +80,14 @@ export class SaveDraftUseCase {
         updatedBy: ctx.userId,
       });
       return {
-        data: { id, loanId, status: "DRAFT", currentSection, steps: formSteps() },
+        data: {
+          id,
+          loanId,
+          status: "DRAFT",
+          currentSection,
+          // Draft baru belum punya marital dan pekerjaan.
+          steps: formSteps({ productCategory: product.productCategory, married: false, selfEmployed: false }),
+        },
         ...(request.strict ? {} : { message: draftSavedMessage(loanId) }),
       };
     });

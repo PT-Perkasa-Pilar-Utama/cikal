@@ -4,9 +4,10 @@ import { TenantTx } from "../../../../platform/db/tenant-tx.js";
 import type { RequestContext } from "../../../../platform/http/access-port.js";
 import { DomainError } from "../../../../platform/http/domain-error.js";
 import { ApplicationsRepository } from "../db/applications.repository.js";
-import { formSteps } from "../domain/form-steps.js";
 import { DraftDocuments } from "./draft-documents.js";
 import { DraftFormSections } from "./draft-form-sections.js";
+import { DraftSteps } from "./draft-steps.js";
+import { StrictSections } from "./strict-sections.js";
 
 /**
  * Melanjutkan draft dari step terakhir (api-specs 12 §12.5, AC-49.05). Hanya pembuat draft yang bisa membuka; NIK
@@ -19,6 +20,8 @@ export class GetDraftFormUseCase {
     private readonly applications: ApplicationsRepository,
     private readonly sections: DraftFormSections,
     private readonly documents: DraftDocuments,
+    private readonly steps: DraftSteps,
+    private readonly rules: StrictSections,
   ) {}
 
   execute(ctx: RequestContext, id: string): Promise<ApplicationFormResponse> {
@@ -32,9 +35,10 @@ export class GetDraftFormUseCase {
           loanId: draft.loanId,
           status: draft.status,
           currentSection: draft.currentSection,
-          steps: formSteps(),
+          steps: await this.steps.of(tx, draft),
           sections,
           documentCompleteness: await this.documents.completenessOrNull(tx, draft),
+          collateralTypes: await this.rules.collateralTypes(tx, draft),
           returnNote: draft.returnNote,
         },
       };

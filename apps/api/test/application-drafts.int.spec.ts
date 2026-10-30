@@ -20,7 +20,7 @@ import { createRole, createSession, type TestSession } from "./support/session.j
 const NIK = "3273011402900001";
 const MINIMUM_MESSAGE =
   "Fill in Application Type, Identity Type, Identity Number, Product Category, Product, Full Name, and Full Name ID to save a draft";
-const POC_STEPS = ["application", "personal", "occupation", "documents", "emergency-contact"];
+const TRM_STP_001_STEPS = ["application", "personal", "occupation", "documents", "emergency-contact"];
 
 /** Draft pengajuan web: simpan pertama, daftar milik Sales, dan lanjutkan draft (api-specs 12 §12.2, §12.4, §12.5). */
 describe("application drafts", () => {
@@ -95,7 +95,13 @@ describe("application drafts", () => {
 
     const loanId = formatLoanId(new Date(), productCode, 1);
     expect(res).toEqual({
-      data: { id: expect.any(String), loanId, status: "DRAFT", currentSection: "application", steps: POC_STEPS },
+      data: {
+        id: expect.any(String),
+        loanId,
+        status: "DRAFT",
+        currentSection: "application",
+        steps: TRM_STP_001_STEPS,
+      },
       message: `Application saved as draft. Loan ID: ${loanId}`,
     });
     const { rows } = await db.owner.query(
@@ -221,7 +227,7 @@ describe("application drafts", () => {
       loanId: draft.data.loanId,
       status: "DRAFT",
       currentSection: "occupation",
-      steps: POC_STEPS,
+      steps: TRM_STP_001_STEPS,
       sections: {
         application: {
           applicationType: "NTB",
@@ -246,10 +252,14 @@ describe("application drafts", () => {
           addresses: { id: null, residence: null },
           consentAt: null,
         }),
+        spouse: null,
         occupation: null,
+        business: null,
+        collateral: null,
         "emergency-contact": null,
       },
       documentCompleteness: null,
+      collateralTypes: [],
       returnNote: null,
     });
   });

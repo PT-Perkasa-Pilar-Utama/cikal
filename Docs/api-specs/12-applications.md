@@ -10,14 +10,25 @@ Form pengajuan terdiri dari section. Urutan step dihitung server dari kategori p
 |---|---|---|---|
 | `application` | Application | selalu | POC |
 | `personal` | Personal | selalu | POC |
-| `spouse` | Spouse | marital `Kawin` | Backlog (US-43) |
+| `spouse` | Spouse | marital termasuk parameter `MARRIED_MARITAL_STATUSES` (default `["002"]` Kawin) | POC (US-43) |
 | `occupation` | Occupation | selalu | POC |
-| `business` | Business | pekerjaan wiraswasta | Backlog (US-45) |
-| `collateral` | Collateral | kategori `COLLATERAL` atau `PENSION` | Backlog (US-46) |
+| `business` | Business | `occupation` termasuk parameter `SELF_EMPLOYED_OCCUPATIONS` (default `["005"]` Wiraswasta) | POC (US-45) |
+| `collateral` | Collateral | kategori `COLLATERAL` atau `PENSION` | POC (US-46) |
 | `documents` | Document | selalu (12.6, 12.7) | POC |
 | `emergency-contact` | Emergency Contact | selalu | POC |
 
-Contoh hasil: KTA, Belum Kawin, Karyawan Swasta = `application > personal > occupation > documents > emergency-contact` (TRM_STP_001).
+Contoh hasil (TRM_STP_001 s.d. TRM_STP_006):
+
+| Baris | Produk, marital, pekerjaan | `steps[]` |
+|---|---|---|
+| TRM_STP_001 | KTA, Belum Kawin, Karyawan Swasta | `application > personal > occupation > documents > emergency-contact` |
+| TRM_STP_002 | KTA, Kawin, Karyawan Swasta | `application > personal > spouse > occupation > documents > emergency-contact` |
+| TRM_STP_003 | Kredit Agunan, Kawin, Wiraswasta | `application > personal > spouse > occupation > business > collateral > documents > emergency-contact` |
+| TRM_STP_004 | KUR Kecil, Belum Kawin, Wiraswasta | `application > personal > occupation > business > collateral > documents > emergency-contact` |
+| TRM_STP_005 | KPR, Cerai Hidup, ASN | `application > personal > occupation > collateral > documents > emergency-contact` |
+| TRM_STP_006 | Pension, Kawin, Pensiunan | `application > personal > spouse > occupation > collateral > documents > emergency-contact` |
+
+Verifikasi Taspen pada TRM_STP_006 adalah operasi backlog M13 (12.11).
 
 Dua mode simpan berlaku untuk setiap section:
 
@@ -134,6 +145,47 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 | organization, previousEmployer, pensionInstance | string | tidak | |
 | company.name, company.address, company.provinceCode, company.cityCode, company.districtCode, company.subDistrictCode, company.zipCode, company.phoneNumber | | ya bila `sourceOfIncome` ada di parameter `EMPLOYED_INCOME_SOURCES` (default `["001"]` Bekerja) | |
 
+`spouse` (US-43)
+
+| field | type | required (strict) | notes |
+|---|---|---|---|
+| fullName | string | ya | maks 100 |
+| idNumber | string | ya | 16 digit, beda dari NIK pemohon; terenkripsi dan blind index |
+| dateOfBirth | date | ya | |
+| prenuptialAgreement | string | ya | `paramId` Prenuptial Agreement |
+| mobileNumber | string | tidak | `08`, 10 s.d. 13 digit |
+| idExpiredDate | string | tidak | `SEUMUR HIDUP` atau tanggal |
+| idAddress | Address | tidak | alamat KTP pasangan |
+| occupation, industryOfProfession, sourceOfFunds | string | tidak | `paramId` |
+| position | string | tidak | |
+| monthlyIncome, monthlySpending | money | tidak | AC-43.01 mengisi nominal "6.000.000", jadi uang, bukan pilihan rentang |
+| company.name, company.address, company.provinceCode, company.cityCode, company.phoneNumber | string | tidak | |
+
+`business` (US-45)
+
+| field | type | required (strict) | notes |
+|---|---|---|---|
+| businessName | string | ya | maks 100 |
+| businessField | string | ya | `paramId` Business Field |
+| annualSales | money | ya | |
+| businessLaunchDate | date | ya | tidak di masa depan; lama usaha minimal parameter produk `MIN_BUSINESS_MONTHS` |
+| address.address, provinceCode, cityCode, districtCode, subDistrictCode, zipCode | string | ya | rt, rw tidak wajib |
+| phoneNumber, email, businessNumber | string | tidak | |
+| characteristicOfFinancing, typeOfFinancing, typeOfUsage, categoryOfFinancing, relationshipWithBank | string | tidak | `paramId` |
+
+`collateral` (US-46)
+
+| field | type | required (strict) | notes |
+|---|---|---|---|
+| collateralType | enum | ya | `VEHICLE`, `CERTIFICATE`, `PENSION_DECREE`; pilihan per produk di 12.5 `collateralTypes` |
+| vehicleType, vehicleBrand, vehicleModel, vehicleYear (int), vehiclePrice (money), vehicleColor, machineNumber, frameNumber, bpkbNumber, policeNumber | | ya bila `VEHICLE` | `vehicleType` `paramId` Object Type |
+| certificateType, certificateNumber, surfaceArea (desimal 2 angka) | | ya bila `CERTIFICATE` | `certificateNumber` terenkripsi |
+| decreeNumber, decreeDate | | ya bila `PENSION_DECREE` | |
+| address.address, provinceCode, cityCode, districtCode, subDistrictCode, zipCode | string | ya bila `VEHICLE` atau `CERTIFICATE` | |
+| description, bpkbOwnerOccupation | string | tidak | |
+
+Jenis agunan yang boleh: kategori `PENSION` hanya `PENSION_DECREE`; kategori `COLLATERAL` mengikuti parameter produk `COLLATERAL_TYPES` (default `["VEHICLE","CERTIFICATE"]`; KPR diisi `["CERTIFICATE"]` sehingga layar langsung memilih "Sertifikat", AC-46.02).
+
 `emergency-contact`
 
 | field | type | required (strict) | notes |
@@ -159,6 +211,11 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 | Produk KUR (parameter produk `SELF_EMPLOYED_ONLY = true`) dan `occupation` di luar parameter `SELF_EMPLOYED_OCCUPATIONS` (default `["005"]` Wiraswasta) | `422 OCCUPATION_NOT_ELIGIBLE` "This product is only available for self-employed applicants" | AC-44.04 |
 | Nomor HP tidak cocok `^08\d{8,11}$` | `400`, detail "Mobile number must start with 08 and contain 10 to 13 digits" | AC-48.02, AC-48.04 |
 | Nomor kontak darurat sama dengan nomor pemohon | `422 EMERGENCY_CONTACT_SAME_NUMBER` "Emergency contact number must be different from applicant number" | AC-48.03 |
+| NIK pasangan sama dengan NIK pemohon | `422 SPOUSE_ID_SAME_AS_APPLICANT` "Spouse ID number must be different from applicant ID number" | AC-43.02 |
+| `businessLaunchDate` setelah hari ini (Asia/Jakarta) | `422 BUSINESS_LAUNCH_DATE_IN_FUTURE` "Business launch date must not be in the future" | AC-45.02 |
+| Lama usaha dalam bulan penuh kurang dari `MIN_BUSINESS_MONTHS` produk | `422 BUSINESS_TOO_NEW` "Business must have been running for at least 6 months" | AC-45.04 |
+| `collateralType` di luar jenis yang boleh untuk produk | `422 COLLATERAL_TYPE_NOT_ALLOWED` "Selected collateral type is not available for this product" (teks usulan engineering) | AC-46.02 |
+| `vehicleYear` setelah tahun berjalan | `422 VEHICLE_YEAR_IN_FUTURE` "Vehicle year must not be later than 2026" | AC-46.04 |
 
 **Behavior (kedua mode)**
 
@@ -169,9 +226,9 @@ Address: `address` (wajib), `rt`, `rw`, `provinceCode`, `cityCode`, `districtCod
 | Section `application`: produk tidak tersedia atau beda kategori (RT-07) | `422 PRODUCT_NOT_AVAILABLE` | 12.2 langkah 3 |
 | Section `application`: `insuranceId` tidak ada atau nonaktif | `400 VALIDATION_FAILED`, detail `insuranceId` "Selected insurance is not available" (teks usulan engineering) | api-specs 06 §6.2 |
 
-Parameter sistem aturan section (seed `base`, `masterdata`): `NPWP_MIN_LIMIT` (MONEY, default `50000000.00`), `REQUIRE_CONSENT_FOR_EXTERNAL_CHECK` (BOOLEAN, default `false`), `SELF_EMPLOYED_ONLY` (BOOLEAN, scope PRODUCT, default `false`), `SELF_EMPLOYED_OCCUPATIONS` dan `EMPLOYED_INCOME_SOURCES` (MULTI_CHOICE berisi `paramId` General Parameter). Usia saat lunas memakai default RM-02 (usia dalam bulan penuh + tenor dibanding `maxAgeAtMaturityMonth`) sampai rumus `AGE_AT_MATURITY_MONTH` tersedia di modul Calculation.
+Parameter sistem aturan section (seed `base`, `masterdata`): `NPWP_MIN_LIMIT` (MONEY, default `50000000.00`), `REQUIRE_CONSENT_FOR_EXTERNAL_CHECK` (BOOLEAN, default `false`), `SELF_EMPLOYED_ONLY` (BOOLEAN, scope PRODUCT, default `false`), `SELF_EMPLOYED_OCCUPATIONS`, `EMPLOYED_INCOME_SOURCES`, dan `MARRIED_MARITAL_STATUSES` (MULTI_CHOICE berisi `paramId` General Parameter), `MIN_BUSINESS_MONTHS` (NUMBER 0 s.d. 120, scope PRODUCT, default `0`; KUR `6`), `COLLATERAL_TYPES` (MULTI_CHOICE `VEHICLE`, `CERTIFICATE`, scope PRODUCT). Usia saat lunas memakai default RM-02 (usia dalam bulan penuh + tenor dibanding `maxAgeAtMaturityMonth`) sampai rumus `AGE_AT_MATURITY_MONTH` tersedia di modul Calculation.
 
-Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas membawa satu `details[]` berisi field penyebabnya (contoh `requestedLimit`, `dateOfBirth`, `mobileNumber`). `consentGiven = true` menyimpan `consentAt = now` dan `consentChannel = WEB` (AC-40.08, IN-12). Perubahan produk, status kawin, atau pekerjaan menghitung ulang `steps[]`.
+Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas membawa satu `details[]` berisi field penyebabnya (contoh `requestedLimit`, `dateOfBirth`, `mobileNumber`). `consentGiven = true` menyimpan `consentAt = now` dan `consentChannel = WEB` (AC-40.08, IN-12). Perubahan produk, status kawin, atau pekerjaan menghitung ulang `steps[]`. Simpan `personal` dengan marital di luar `MARRIED_MARITAL_STATUSES` menghapus data pasangan; layar lebih dulu meminta konfirmasi "Spouse data will be removed. Continue?" (AC-43.04). Data `business` dan `collateral` yang section-nya keluar dari `steps[]` tetap tersimpan dan diabaikan submit.
 
 **Output 200**
 
@@ -185,9 +242,9 @@ Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas
 
 `nextSection` adalah step setelah section yang disimpan, `null` untuk step terakhir. `strict=true` memindahkan `currentSection` ke `nextSection`; `strict=false` menyimpan `currentSection` = section yang disimpan. Simpan section mengganti seluruh field section; field yang tidak dikirim menjadi kosong. `message` hanya dikirim pada `strict=false` (AC-49.03). Loan ID tidak berubah saat disimpan ulang (AC-49.03).
 
-**Errors:** tabel di atas; `NOT_FOUND` 404 untuk draft milik Sales lain (AC-49.06); `INVALID_STATE` 409 bila bukan `DRAFT`; `NOT_FOUND` 404 untuk section backlog yang belum tersedia.
+**Errors:** tabel di atas; `NOT_FOUND` 404 untuk draft milik Sales lain (AC-49.06); `INVALID_STATE` 409 bila bukan `DRAFT`; `NOT_FOUND` 404 untuk section yang tidak ada di `steps[]` draft (contoh `spouse` untuk pemohon belum kawin, AC-43.03) atau nama section lain.
 
-**Traceability:** US-39 (AC-39.01 s.d. AC-39.03), US-40 (AC-40.01 s.d. AC-40.10), US-44 (AC-44.01 s.d. AC-44.05), US-48 (AC-48.01 s.d. AC-48.04), US-49 (AC-49.03), US-50 (AC-50.06).
+**Traceability:** US-39 (AC-39.01 s.d. AC-39.03), US-40 (AC-40.01 s.d. AC-40.10), US-43 (AC-43.01 s.d. AC-43.04), US-45 (AC-45.01 s.d. AC-45.05), US-46 (AC-46.01 s.d. AC-46.06), US-44 (AC-44.01 s.d. AC-44.05), US-48 (AC-48.01 s.d. AC-48.04), US-49 (AC-49.03), US-50 (AC-50.06).
 
 ## 12.4 GET /applications/drafts
 
@@ -223,14 +280,15 @@ Angka di pesan diisi dari produk dan parameter aktif. Error `422` aturan di atas
     "steps": ["application", "personal", "occupation", "documents", "emergency-contact"],
     "sections": { "application": { "productId": "0192...", "tenorProposed": 36, "requestedLimit": "20000000.00", "interestRate": "14.0000" },
                   "personal": { "fullName": "Rudi Hartono", "idCardNumber": "3273011402900001" },
-                  "occupation": null, "emergency-contact": null },
+                  "spouse": null, "occupation": null, "business": null, "collateral": null, "emergency-contact": null },
     "documentCompleteness": { "uploadedMandatory": 0, "requiredMandatory": 7 },
+    "collateralTypes": [],
     "returnNote": null
   }
 }
 ```
 
-Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pembuat draft. `currentSection` adalah step yang sedang diisi saat "Save as Draft" atau step berikutnya saat "Next". `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan karena pekerjaan atau status kawin belum diisi.
+Section yang belum disimpan bernilai `null`. NIK dikembalikan utuh hanya ke pembuat draft. `currentSection` adalah step yang sedang diisi saat "Save as Draft" atau step berikutnya saat "Next". `documentCompleteness` bernilai `null` selama checklist belum bisa dicocokkan karena pekerjaan atau status kawin belum diisi. `collateralTypes` berisi jenis agunan yang boleh dipilih untuk produk (12.3 `collateral`); kosong untuk kategori tanpa step Collateral.
 
 **Errors:** `NOT_FOUND` 404 (bukan pembuat atau tidak ada).
 
@@ -311,7 +369,7 @@ Klien menampilkan `completeness` sebagai "0 of 7 documents"; dokumen opsional ti
 **Behavior** (satu transaksi)
 
 1. Kunci baris Application. Status bukan `DRAFT`: bila pengajuan sudah disubmit dengan kunci idempotensi lain, `409 ALREADY_SUBMITTED`; klik ganda dengan kunci sama mendapat respons pertama (AC-50.07).
-2. Jalankan validasi strict semua section di `steps[]` dengan data tersimpan, memakai aturan 12.3 yang sama dengan "Next". Gagal: `422 INCOMPLETE_APPLICATION` dengan `details[].field` berisi path, `details[].code` berisi kode aturan (contoh `REQUIRED`, `AGE_OUT_OF_RANGE`), dan `details[].section` berisi section yang ditandai error di stepper (AC-50.03). Section yang belum pernah disimpan ditandai dengan semua field wajibnya.
+2. Jalankan validasi strict semua section di `steps[]` dengan data tersimpan (data section di luar `steps[]` diabaikan), memakai aturan 12.3 yang sama dengan "Next". Gagal: `422 INCOMPLETE_APPLICATION` dengan `details[].field` berisi path, `details[].code` berisi kode aturan (contoh `REQUIRED`, `AGE_OUT_OF_RANGE`), dan `details[].section` berisi section yang ditandai error di stepper (AC-50.03). Section yang belum pernah disimpan ditandai dengan semua field wajibnya.
 3. Dokumen wajib belum lengkap: `422 DOCUMENTS_INCOMPLETE` dengan jumlah terunggah dan wajib, detail `section` = `documents` (AC-50.02). Checklist tidak ada: `422 CHECKLIST_NOT_CONFIGURED` (AC-25.05).
 4. Status `ON_PROGRESS`, `submittedAt`, `submittedBy`; hapus `returnNote`.
 5. `orchestrator.start(applicationId)` di transaksi yang sama: ProcessInstance dengan versi rute ACTIVE, versi rumus, dan snapshot parameter (RT-06, FM-05, PR-06); StepExecution `DATA_ENTRY` `COMPLETED`; job `advance` di-enqueue. Langkah pertama berikutnya mengikuti rute produk (AC-50.04).
@@ -383,8 +441,5 @@ Data tiap tab modul dibaca dari file modulnya (contoh `19-dedup.md` 19.2, `16-ap
 
 | Operasi | Purpose | Access | Traceability |
 |---|---|---|---|
-| `PUT /applications/{id}/sections/spouse` | Data pasangan; NIK pasangan terenkripsi | `APP-ENTRY` UPDATE | US-43 |
-| `PUT /applications/{id}/sections/business` | Data usaha | `APP-ENTRY` UPDATE | US-45 |
-| `PUT /applications/{id}/sections/collateral` | Data agunan | `APP-ENTRY` UPDATE | US-46 |
 | `POST /applications/{id}/ocr-ktp` | Isi data pribadi dari foto KTP (M04) | `APP-ENTRY` UPDATE | US-41 |
 | `POST /applications/{id}/pension-verification` | Verifikasi Taspen/EDAPEM (M13) | `APP-ENTRY` UPDATE | US-42 |

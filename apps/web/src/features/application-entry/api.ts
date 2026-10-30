@@ -7,6 +7,8 @@ import {
   applicationFormResponseSchema,
   applicationSubmitResponseSchema,
   availableProductsResponseSchema,
+  type BusinessSectionInput,
+  type CollateralSectionInput,
   documentUploadResponseSchema,
   type EmergencyContactSectionInput,
   insuranceListResponseSchema,
@@ -17,6 +19,7 @@ import {
   parameterOptionsResponseSchema,
   regionOptionsResponseSchema,
   type SavableSection,
+  type SpouseSectionInput,
   sectionSaveResponseSchema,
   subDistrictOptionsResponseSchema,
 } from "@cikal/contracts";
@@ -46,6 +49,16 @@ export function useApplicationForm(id: string) {
     // Form dibaca sekali saat dibuka; isi berikutnya dipegang state form, bukan cache.
     staleTime: Number.POSITIVE_INFINITY,
     refetchOnWindowFocus: false,
+  });
+}
+
+/** Jenis agunan yang boleh dipilih untuk produk draft, dibaca ulang setiap step Collateral dibuka (AC-46.02). */
+export function useCollateralTypes(id: string) {
+  return useQuery({
+    queryKey: [FORM_KEY, id, "collateral-types"],
+    queryFn: async () =>
+      (await apiRequest(applicationFormResponseSchema, `/v1/applications/${id}/form`)).data.collateralTypes,
+    staleTime: 0,
   });
 }
 
@@ -125,7 +138,10 @@ export function useCreateDraft() {
 interface SectionBodies {
   application: ApplicationSectionInput;
   personal: PersonalSectionInput;
+  spouse: SpouseSectionInput;
   occupation: OccupationSectionInput;
+  business: BusinessSectionInput;
+  collateral: CollateralSectionInput;
   "emergency-contact": EmergencyContactSectionInput;
 }
 

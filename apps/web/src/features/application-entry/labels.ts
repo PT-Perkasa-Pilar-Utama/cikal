@@ -1,4 +1,4 @@
-import type { FormSection, ProductCategory } from "@cikal/contracts";
+import type { CollateralType, FormSection, ProductCategory } from "@cikal/contracts";
 
 /** Label tab stepper per section (api-specs 12 §12.1, design-system 8.4). */
 export const STEP_LABELS: Record<FormSection, string> = {
@@ -48,3 +48,13 @@ export const SUBMIT_CONFIRMATION = "Submit this application?";
 
 /** Label checkbox persetujuan pemohon (AC-40.08). */
 export const CONSENT_LABEL = "Applicant consents to credit checking and personal data processing";
+
+/** Teks konfirmasi Marital yang tidak lagi kawin saat data pasangan sudah terisi (AC-43.04). */
+export const SPOUSE_REMOVAL_CONFIRMATION = "Spouse data will be removed. Continue?";
+
+/** Pilihan "Collateral Type" (AC-46.01, AC-46.02); label SK pensiun teks usulan engineering. */
+export const COLLATERAL_TYPE_LABELS: Record<CollateralType, string> = {
+  VEHICLE: "Kendaraan",
+  CERTIFICATE: "Sertifikat",
+  PENSION_DECREE: "SK Pensiun",
+};

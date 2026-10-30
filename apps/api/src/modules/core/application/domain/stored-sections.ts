@@ -2,19 +2,28 @@ import {
   type ApplicationFormSections,
   type ApplicationSectionInput,
   applicationSectionInputSchema,
+  type BusinessSectionInput,
+  businessSectionInputSchema,
+  type CollateralSectionInput,
+  collateralSectionInputSchema,
   type EmergencyContactSectionInput,
   emergencyContactSectionInputSchema,
   type OccupationSectionInput,
   occupationSectionInputSchema,
   type PersonalSectionInput,
   personalSectionInputSchema,
+  type SpouseSectionInput,
+  spouseSectionInputSchema,
 } from "@cikal/contracts";
 
 /** Section tersimpan dalam bentuk body section, agar submit memakai aturan strict yang sama dengan "Next". */
 export interface StoredSectionInputs {
   application: ApplicationSectionInput;
   personal: PersonalSectionInput;
+  spouse: SpouseSectionInput;
   occupation: OccupationSectionInput;
+  business: BusinessSectionInput;
+  collateral: CollateralSectionInput;
   emergencyContact: EmergencyContactSectionInput;
 }
 
@@ -39,7 +48,10 @@ export function storedSectionInputs(sections: ApplicationFormSections): StoredSe
       addresses: { id: withoutNulls(addresses.id), residence: withoutNulls(addresses.residence) },
       consentGiven: consentAt !== null,
     }),
+    spouse: spouseSectionInputSchema.parse(withoutNulls(sections.spouse)),
     occupation: occupationSectionInputSchema.parse(withoutNulls(sections.occupation)),
+    business: businessSectionInputSchema.parse(withoutNulls(sections.business)),
+    collateral: collateralSectionInputSchema.parse(withoutNulls(sections.collateral)),
     emergencyContact: emergencyContactSectionInputSchema.parse(withoutNulls(sections["emergency-contact"])),
   };
 }

@@ -1,10 +1,13 @@
 import {
   APPLICATION_SUBMIT_MESSAGES,
+  type BusinessSectionInput,
+  type CollateralSectionInput,
   type EmergencyContactSectionInput,
   type FormSection,
   formSectionSchema,
   type OccupationSectionInput,
   type PersonalSectionInput,
+  type SpouseSectionInput,
 } from "@cikal/contracts";
 import { useRef, useState } from "react";
 import { ApiError, idempotencyHeader } from "../../lib/api/client";
@@ -23,7 +26,10 @@ interface Draft {
 export interface SectionValues {
   application?: ApplicationStepValues;
   personal?: PersonalSectionInput;
+  spouse?: SpouseSectionInput;
   occupation?: OccupationSectionInput;
+  business?: BusinessSectionInput;
+  collateral?: CollateralSectionInput;
   "emergency-contact"?: EmergencyContactSectionInput;
 }
 
@@ -60,7 +66,8 @@ export function useEntryFlow({ onExit, onSubmitted, start }: EntryFlowOptions) {
   const [errored, setErrored] = useState<ReadonlySet<FormSection>>(new Set());
   const [values, setValues] = useState<SectionValues>(start?.values ?? {});
   const [notice, setNotice] = useState<Notice>();
-  const [confirming, setConfirming] = useState<"back" | "submit">();
+  const [confirming, setConfirming] = useState<"back" | "submit" | "spouse-removal">();
+  const [pendingPersonal, setPendingPersonal] = useState<{ body: PersonalSectionInput; strict: boolean }>();
   const [submitKey, setSubmitKey] = useState<Record<string, string>>({});
   const createDraft = useCreateDraft();
   const saveSection = useSaveSection();
@@ -130,12 +137,41 @@ export function useEntryFlow({ onExit, onSubmitted, start }: EntryFlowOptions) {
     });
   }
 
+  /**
+   * Marital yang berubah saat data pasangan sudah tersimpan menghapus data pasangan di API; konfirmasi "Spouse data
+   * will be removed. Continue?" muncul lebih dulu (AC-43.04).
+   */
   function savePersonal(body: PersonalSectionInput, strict: boolean) {
-    if (draft) save({ id: draft.id, section: "personal", body, strict }, { personal: body });
+    if (!draft) return;
+    if (values.spouse && steps.includes("spouse") && body.marital !== values.personal?.marital) {
+      setPendingPersonal({ body, strict });
+      setConfirming("spouse-removal");
+      return;
+    }
+    save({ id: draft.id, section: "personal", body, strict }, { personal: body });
+  }
+
+  function confirmSpouseRemoval() {
+    setConfirming(undefined);
+    if (!draft || !pendingPersonal) return;
+    const { body, strict } = pendingPersonal;
+    save({ id: draft.id, section: "personal", body, strict }, { personal: body, spouse: undefined });
+  }
+
+  function saveSpouse(body: SpouseSectionInput, strict: boolean) {
+    if (draft) save({ id: draft.id, section: "spouse", body, strict }, { spouse: body });
   }
 
   function saveOccupation(body: OccupationSectionInput, strict: boolean) {
     if (draft) save({ id: draft.id, section: "occupation", body, strict }, { occupation: body });
+  }
+
+  function saveBusiness(body: BusinessSectionInput, strict: boolean) {
+    if (draft) save({ id: draft.id, section: "business", body, strict }, { business: body });
+  }
+
+  function saveCollateral(body: CollateralSectionInput, strict: boolean) {
+    if (draft) save({ id: draft.id, section: "collateral", body, strict }, { collateral: body });
   }
 
   function saveEmergencyContact(body: EmergencyContactSectionInput, strict: boolean) {
@@ -196,12 +232,16 @@ export function useEntryFlow({ onExit, onSubmitted, start }: EntryFlowOptions) {
     submitting: createDraft.isPending || saveSection.isPending || submit.isPending,
     saveApplication,
     savePersonal,
+    saveSpouse,
     saveOccupation,
+    saveBusiness,
+    saveCollateral,
     saveEmergencyContact,
     leaveDocuments,
     back: () => setConfirming("back"),
     cancelConfirmation: () => setConfirming(undefined),
     confirmBack,
+    confirmSpouseRemoval,
     confirmSubmit,
   };
 }

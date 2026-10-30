@@ -486,7 +486,7 @@ Indeks `pg_trgm` pada `loan_id` dan nama (lewat `application_personals.full_name
 | documents.verification_status | text | no | `PENDING`, `MATCH`, `NOT_MATCH` |
 | documents.verification_remarks | text | yes | |
 
-Tabel `application_spouses`, `application_businesses`, `application_collaterals` mengikuti data dictionary dengan konvensi yang sama; field sensitif (`id_number` pasangan, nomor sertifikat) terenkripsi.
+Tabel `application_spouses`, `application_businesses`, `application_collaterals` mengikuti data dictionary dengan konvensi yang sama, satu baris per pengajuan (PK `application_id`); field sensitif (`id_number` pasangan, nomor sertifikat) terenkripsi, `id_number` pasangan juga blind index. `application_collaterals.collateral_type` CHECK `VEHICLE`, `CERTIFICATE`, `PENSION_DECREE`. Lama usaha tidak disimpan; dihitung dari `business_launch_date`.
 
 ### LOAN_ID_COUNTERS
 | column | type | nullable | notes |

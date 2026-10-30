@@ -1,4 +1,4 @@
-import type { Address, ApplicationFormSections } from "@cikal/contracts";
+import type { ApplicationFormSections } from "@cikal/contracts";
 import { Injectable } from "@nestjs/common";
 import { TenantEncryption } from "../../../../platform/crypto/tenant-encryption.js";
 import type { Tx } from "../../../../platform/db/tenant-tx.js";
@@ -7,17 +7,8 @@ import { ApplicationEmergencyContactsRepository } from "../db/application-emerge
 import { ApplicationOccupationsRepository } from "../db/application-occupations.repository.js";
 import { type ApplicationPersonalRow, ApplicationPersonalsRepository } from "../db/application-personals.repository.js";
 import type { DraftRow } from "../db/applications.repository.js";
-
-const address = (row: Address): Address => ({
-  address: row.address,
-  rt: row.rt,
-  rw: row.rw,
-  provinceCode: row.provinceCode,
-  cityCode: row.cityCode,
-  districtCode: row.districtCode,
-  subDistrictCode: row.subDistrictCode,
-  zipCode: row.zipCode,
-});
+import { addressOf } from "../domain/address-fields.js";
+import { ConditionalFormSections } from "./conditional-form-sections.js";
 
 /** Isi section form draft (api-specs 12 §12.5); field terenkripsi dibuka hanya untuk pembuat draft (AC-49.06). */
 @Injectable()
@@ -27,6 +18,7 @@ export class DraftFormSections {
     private readonly addresses: ApplicationAddressesRepository,
     private readonly occupations: ApplicationOccupationsRepository,
     private readonly contacts: ApplicationEmergencyContactsRepository,
+    private readonly conditional: ConditionalFormSections,
     private readonly encryption: TenantEncryption,
   ) {}
 
@@ -36,6 +28,7 @@ export class DraftFormSections {
     if (!personal) return null;
     const occupation = await this.occupations.findByApplication(tx, draft.id);
     const contact = await this.contacts.findByApplication(tx, draft.id);
+    const { spouse, business, collateral } = await this.conditional.load(tx, draft.id);
     return {
       application: {
         applicationType: draft.applicationType,
@@ -52,6 +45,7 @@ export class DraftFormSections {
         marketingCode: draft.marketingCode,
       },
       personal: await this.personal(tx, draft, personal),
+      spouse,
       occupation: occupation && {
         sourceOfIncome: occupation.sourceOfIncome,
         occupation: occupation.occupation,
@@ -73,13 +67,15 @@ export class DraftFormSections {
           phoneNumber: occupation.companyPhoneNumber,
         },
       },
+      business,
+      collateral,
       "emergency-contact": contact && {
         contactName: contact.contactName,
         relationToApplicant: contact.relationToApplicant,
         mobileNumber: contact.mobileNumber,
         homePhoneNumber: contact.homePhoneNumber,
         altPhoneNumber: contact.altPhoneNumber,
-        address: address(contact),
+        address: addressOf(contact),
       },
     };
   }
@@ -119,8 +115,8 @@ export class DraftFormSections {
       phoneNumber: row.phoneNumber,
       email: row.email,
       addresses: {
-        id: idAddress ? address(idAddress) : null,
-        residence: residence ? { ...address(residence), sameAsId: residence.sameAsId } : null,
+        id: idAddress ? addressOf(idAddress) : null,
+        residence: residence ? { ...addressOf(residence), sameAsId: residence.sameAsId } : null,
       },
       consentAt: draft.consentAt?.toISOString() ?? null,
     };

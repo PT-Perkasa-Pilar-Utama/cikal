@@ -8,8 +8,8 @@ type SeedValues = ReadonlyArray<readonly [paramId: string, paramValue: string]>;
 
 /**
  * Pilihan contoh company 001 untuk checklist dokumen (US-25) dan form pengajuan (nilai contoh AC-39.01, AC-40.01,
- * AC-44.01, AC-48.01). Nama dokumen mengikuti AC-25.01 dan AC-47; `paramId` dokumen adalah `documentType` slot
- * unggah (api-specs 12 §12.6).
+ * AC-43.01, AC-44.01, AC-45.01, AC-46.01, AC-48.01). Nama dokumen mengikuti AC-25.01 dan AC-47; `paramId` dokumen
+ * adalah `documentType` slot unggah (api-specs 12 §12.6).
  */
 const SEED_PARAMETERS: ReadonlyArray<readonly [ParamType, SeedValues]> = [
   [
@@ -111,6 +111,42 @@ const SEED_PARAMETERS: ReadonlyArray<readonly [ParamType, SeedValues]> = [
       ["001", "Orang Tua"],
       ["002", "Saudara Kandung"],
       ["003", "Anak"],
+    ],
+  ],
+  [
+    "Prenuptial Agreement",
+    [
+      ["Y", "Yes"],
+      ["N", "No"],
+    ],
+  ],
+  [
+    "Source of Fund",
+    [
+      ["001", "Gaji"],
+      ["002", "Hasil Usaha"],
+    ],
+  ],
+  [
+    "Business Field",
+    [
+      ["001", "Perdagangan Eceran"],
+      ["002", "Industri Pengolahan"],
+      ["003", "Jasa"],
+    ],
+  ],
+  [
+    "Object Type",
+    [
+      ["MOBIL", "Mobil"],
+      ["MOTOR", "Motor"],
+    ],
+  ],
+  [
+    "Certificate Type",
+    [
+      ["SHM", "SHM"],
+      ["SHGB", "SHGB"],
     ],
   ],
   [
