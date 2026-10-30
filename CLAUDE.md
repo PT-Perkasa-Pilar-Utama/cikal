@@ -85,7 +85,7 @@ cikal/
 ## 4. Work model
 
 - **One card, one issue, one branch, one PR.** A card is a row in `TASK_BREAKDOWN.md`, ID `<BE|FE|TL>-S<sprint>-<NN>`. It is an issue on board [Cikal POC delivery](https://github.com/orgs/PT-Perkasa-Pilar-Utama/projects/24).
-- **Owners are pre-assigned.** FS1 (fullstack) holds 48 cards. TL holds 22 cards and reviews. TL cards are reviewed by FS1.
+- **Owners are pre-assigned.** FS1 (fullstack) holds 48 cards. TL holds 23 cards and reviews. TL cards are reviewed by FS1.
 - **Contract-stable model:**
   - Sprint 1 endpoints exist as stubs that return contract mocks from `packages/contracts`.
   - A backend card replaces the stub. It keeps the route, decorator, and DTO.
