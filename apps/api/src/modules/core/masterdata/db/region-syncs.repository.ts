@@ -25,8 +25,8 @@ const errorCategorySchema = z.enum(adapterErrorCategories).nullable();
 /** Akses tabel `masterdata.region_syncs` (api-specs 06 §6.3.3, §6.3.4). */
 @Injectable()
 export class RegionSyncsRepository {
-  /** `false` bila sinkronisasi lain masih RUNNING (indeks unik `region_syncs_running_unique`). */
-  async insertRunning(tx: Tx, id: string, startedAt: Date, userId: string): Promise<boolean> {
+  /** `false` bila sinkronisasi lain masih RUNNING (indeks unik `region_syncs_running_unique`); `userId` `null` = jadwal. */
+  async insertRunning(tx: Tx, id: string, startedAt: Date, userId: string | null): Promise<boolean> {
     const rows = await tx
       .insert(regionSyncs)
       .values({ id, status: "RUNNING", startedAt, createdBy: userId, updatedBy: userId })
