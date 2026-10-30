@@ -48,12 +48,13 @@ Spec e2e berjalan terhadap stack dev dengan seed `qa` dan worker pg-boss. Spec i
 | K-04 | `apps/web/e2e/tl-s6-03.spec.ts` "K-04 AC-85.06 ..." | Paket POC tanpa M14: timeline menampilkan langkah Epolis "Skipped - not licensed". |
 | K-04 | `apps/web/e2e/tl-s6-03.spec.ts` "K-04 the Super User menu has no E-Polis" | Menu Super User tidak memuat E-Polis. |
 | K-04 | `apps/web/e2e/tl-s6-03.spec.ts` "K-04 AC-100.02 ..." | File lisensi dev yang diubah ditolak `422 LICENSE_INVALID` "License file is invalid"; lisensi `PPU-LIC-DEV-0001` tetap `ACTIVE`. |
+| K-04 | `apps/web/e2e/issue-171.spec.ts` (AC-100.01, AC-100.02) | Halaman "License" menampilkan modul dan masa berlaku lisensi dev; file yang diubah menampilkan "License file is invalid" dan lisensi lama tetap tampil. |
 | K-04 | `apps/api/test/license.int.spec.ts` (AC-100.02), `apps/api/test/process-timeline.int.spec.ts` (AC-85.06) | Kasus lisensi lain yang ditolak; langkah SLIK "Skipped - not licensed" bila lisensi tanpa M10. |
 | K-05 | `apps/web/e2e/fe-s5-05.spec.ts` "AC-37.05 the active model scores until the new version is approved, then it scores the next application" | Kriteria scoring diubah lewat layar dengan checker-maker; skor pengajuan berikutnya berubah tanpa perubahan kode. |
 | K-06 | `apps/api/test/process-monitoring.int.spec.ts` (AC-86.01, AC-86.03, AC-86.04) | Langkah Dukcapil Error tampil di filter Error; Retry yang gagal menambah satu percobaan pada StepExecution yang sama; Retry setelah pulih menyelesaikan langkah itu. |
 | K-07 | `apps/api/test/regions.int.spec.ts` (AC-23.01 s.d. AC-23.04) | Sinkronisasi menambah dan memperbarui wilayah; dropdown provinsi, kota, kecamatan, kelurahan berjenjang. Adapter Oksara diganti tiruan di uji; Oksara asli diuji saat demo. |
 
-Catatan AC-100.02: halaman "License" belum ada (DEPLOYMENT_PLAN §8 F-10), jadi pesan "License file is invalid" dibuktikan di respons API, bukan di layar.
+Catatan AC-100.02: pesan "License file is invalid" di halaman "License" dibuktikan `apps/web/e2e/issue-171.spec.ts` (issue #171); spec `tl-s6-03` membuktikan respons API yang sama.
 
 ## 3. Menjalankan ulang bukti otomatis
 
@@ -65,7 +66,7 @@ Jalankan dari root repo dengan Node 22 dan Docker menyala.
 4. Jalankan spec e2e K-02 s.d. K-05:
 
    ```bash
-   E2E_BASE_URL=http://localhost:5173 pnpm --filter @cikal/web exec playwright test fe-s6-04 fe-s2-04 fe-s5-05 tl-s6-03
+   E2E_BASE_URL=http://localhost:5173 pnpm --filter @cikal/web exec playwright test fe-s6-04 fe-s2-04 fe-s5-05 tl-s6-03 issue-171
    ```
 
 5. Jalankan spec integrasi K-02 s.d. K-07:

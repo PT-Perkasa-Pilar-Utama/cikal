@@ -1,7 +1,8 @@
-import { errorEnvelopeSchema, type LicenseFile, licenseResponseSchema } from "@cikal/contracts";
+import { errorEnvelopeSchema, licenseResponseSchema } from "@cikal/contracts";
 import { ApiSession } from "./support/api-session";
 import { type Applicant, processTimeline, submittedApplication } from "./support/application";
 import { expect, test } from "./support/fixtures";
+import { CHANGED_DEV_LICENSE } from "./support/license";
 
 /*
  * TL-S6-03: bukti K-04 di instalasi POC (Docs/POC_VERIFICATION.md). Paket POC tidak memuat M14, jadi langkah Epolis
@@ -17,20 +18,6 @@ const WORKER_HINT = "Is the pg-boss worker running (pnpm --filter @cikal/api sta
 const KTA_QA = "0192b6ca-0001-7000-8000-000000000001";
 const KTA_QA_DOCUMENTS = ["KTP", "KK", "NPWP", "SLIP_GAJI", "REKENING_KORAN", "SURAT_KETERANGAN_KERJA", "PBB"];
 const APPLICANT: Applicant = { fullName: "Lukman Lisensi", idCardNumber: "3273011402900101" };
-
-/** Salinan lisensi seed `dev` dan `qa` (apps/api tenancy `seed/dev-license.ts`), ditandatangani kunci dev. */
-const DEV_LICENSE: LicenseFile = {
-  license: {
-    licenseNumber: "PPU-LIC-DEV-0001",
-    companyCode: "001",
-    deploymentType: "ON_PREMISE",
-    modules: ["CORE", "M06", "M07", "M08", "M09", "M10", "M11", "M14", "M15"],
-    validFrom: "2026-10-21",
-    validTo: "2027-12-31",
-    maxUsers: null,
-  },
-  signature: "17W4jcrcV8ZwvaySM6F6BAQ5hAan6lxcXnXmLCFMryuBA22tSFhMb9bWvkV5sn1mmcNzbg+H/VxKdy9b6fLaDA==",
-};
 
 test("K-04 AC-85.06 the Epolis step of an unlicensed module shows Skipped - not licensed", async ({ pageAs }) => {
   const application = await submittedApplication(KTA_QA, {
@@ -64,16 +51,10 @@ test("K-04 the Super User menu has no E-Polis", async ({ pageAs }) => {
 });
 
 test("K-04 AC-100.02 a licence file changed after issuing is refused and the previous licence stays", async () => {
-  // Nomor lisensi baru agar penolakan hanya karena tanda tangan, bukan karena nomor pernah dipasang.
-  const changed: LicenseFile = {
-    ...DEV_LICENSE,
-    license: { ...DEV_LICENSE.license, licenseNumber: "PPU-LIC-DEV-0002", validTo: "2036-12-31" },
-  };
-
   await ApiSession.as("superuser", async (session) => {
     const response = await session.postFile(
       "/api/v1/license",
-      { name: "license.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(changed)) },
+      { name: "license.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(CHANGED_DEV_LICENSE)) },
       { "Idempotency-Key": crypto.randomUUID() },
     );
 
