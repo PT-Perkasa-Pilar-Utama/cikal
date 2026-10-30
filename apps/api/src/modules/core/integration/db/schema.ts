@@ -1,6 +1,17 @@
 import type { AdapterErrorCategory, IntegrationMode, ModuleCode } from "@cikal/contracts";
 import { sql } from "drizzle-orm";
-import { check, index, integer, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { auditColumns, tenantIsolation } from "../../../../platform/db/columns.js";
 import { companies } from "../../tenancy/index.js";
 
@@ -71,12 +82,13 @@ export const integrationConfigs = integration.table(
 
 /**
  * INTEGRATION_CALL_LOGS, data dictionary IntegrationCallLog: satu baris per percobaan panggilan dengan PII
- * disamarkan (IN-06). Role aplikasi hanya boleh `SELECT` dan `INSERT` (`integration.data.ts`).
+ * disamarkan (IN-06). Role aplikasi hanya boleh `SELECT` dan `INSERT` (`integration.data.ts`). Tabel dipartisi
+ * bulanan per `started_at` lewat migrasi custom, jadi kunci primer memuat kolom partisi (technical-specs 06 §6.10).
  */
 export const integrationCallLogs = integration.table(
   "integration_call_logs",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").notNull(),
     tenantId: tenantId(),
     moduleCode: text("module_code").$type<ModuleCode>().notNull(),
     providerCode: text("provider_code"),
@@ -97,6 +109,7 @@ export const integrationCallLogs = integration.table(
     ...auditColumns(),
   },
   (table) => [
+    primaryKey({ columns: [table.id, table.startedAt] }),
     index("integration_call_logs_application_idx").on(table.applicationId, table.startedAt),
     check("integration_call_logs_direction_check", sql`${table.direction} in (${textList(DIRECTIONS)})`),
     check("integration_call_logs_status_check", sql`${table.status} in (${textList(CALL_STATUSES)})`),

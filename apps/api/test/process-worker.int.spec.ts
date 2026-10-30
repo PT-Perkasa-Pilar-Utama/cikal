@@ -64,4 +64,17 @@ describe("worker", () => {
 
     expect(await completed(processId)).toBe(true);
   });
+
+  it("schedules the call log partition maintenance daily at 01.00 Asia/Jakarta, again after a restart", async () => {
+    const schedule = () =>
+      db.owner.query<{ cron: string; timezone: string }>(
+        "select cron, timezone from pgboss.schedule where name = 'integration.call-log-partitions'",
+      );
+    const queue = worker.get(JobQueue);
+    await queue.stopConsumers();
+    await db.owner.query("delete from pgboss.schedule");
+    await queue.startConsumers();
+
+    expect((await schedule()).rows).toEqual([{ cron: "0 1 * * *", timezone: "Asia/Jakarta" }]);
+  });
 });

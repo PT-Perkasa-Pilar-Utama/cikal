@@ -43,7 +43,12 @@ export interface ModuleData {
   appendOnlyTables: readonly string[];
   /** Antrean pg-boss milik modul, dibuat runner bersama migrasi. */
   queues: readonly QueueDefinition[];
+  /** Pemeliharaan skema setelah migrasi dengan role pemilik, contoh partisi bulan berjalan (technical-specs 06 §6.10). */
+  afterMigrate: ModuleMaintenance | null;
 }
+
+/** Berjalan setiap `migrate` dan `reset` sehingga wajib idempoten. */
+export type ModuleMaintenance = (db: NodePgDatabase) => Promise<void>;
 
 /** `moduleUrl` diisi `import.meta.url` milik modul, sehingga folder migrasi tidak pernah berupa path absolut (MS-02). */
 export function defineModuleData(
@@ -54,6 +59,7 @@ export function defineModuleData(
     seeds?: Partial<Record<SeedName, ModuleSeed>>;
     appendOnlyTables?: readonly string[];
     queues?: readonly QueueDefinition[];
+    afterMigrate?: ModuleMaintenance;
   },
 ): ModuleData {
   return {
@@ -62,5 +68,6 @@ export function defineModuleData(
     seeds: data.seeds ?? {},
     appendOnlyTables: data.appendOnlyTables ?? [],
     queues: data.queues ?? [],
+    afterMigrate: data.afterMigrate ?? null,
   };
 }
