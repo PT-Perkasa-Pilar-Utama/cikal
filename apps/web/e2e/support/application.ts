@@ -13,6 +13,7 @@ import {
 import { type APIRequestContext, request } from "@playwright/test";
 import { z } from "zod";
 import { ApiSession } from "./api-session";
+import { businessSection, collateralSection, spouseSection } from "./conditional-sections";
 
 /** Kode General Parameter seed `dev` (masterdata `general-parameters.ts`). */
 export const KARYAWAN_SWASTA = "001";
@@ -114,7 +115,10 @@ export async function salesDraft(
   const bodies: Record<SavableSection, object> = {
     application: applicationSection(productId, options.requestedLimit ?? "20000000.00"),
     personal: personalSection(marital, options.email ?? "rudi@contoh.com", applicant),
+    spouse: spouseSection,
     occupation: occupationSection,
+    business: businessSection,
+    collateral: collateralSection,
     "emergency-contact": emergencyContactSection,
   };
   return ApiSession.as("sales.jkt01", async (sales) => {

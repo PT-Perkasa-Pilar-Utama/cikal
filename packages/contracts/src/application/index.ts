@@ -1,4 +1,5 @@
 export * from "./application.schema.js";
+export * from "./conditional-sections.schema.js";
 export * from "./detail.mock.js";
 export * from "./detail.schema.js";
 export * from "./documents.mock.js";

@@ -5,6 +5,7 @@ import type {
   ApplicationFormSections,
   FormSection,
 } from "@cikal/contracts";
+import { conditionalValues } from "./conditional-step-values";
 import type { SectionValues } from "./use-entry-flow";
 
 /** Nilai kosong dari API (`null`) menjadi field yang tidak dikirim. */
@@ -129,6 +130,7 @@ export function draftStart({ data }: ApplicationFormResponse): DraftStart {
       application: applicationValues(data.sections),
       personal: personalValues(data.sections),
       occupation: occupationValues(data.sections),
+      ...conditionalValues(data.sections),
       "emergency-contact": emergencyContactValues(data.sections),
     },
     returnNote: data.returnNote,

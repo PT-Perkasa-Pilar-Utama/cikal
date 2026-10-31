@@ -1,4 +1,4 @@
-import { APPLICATION_SUBMIT_MESSAGES, type ApplicationSubmitResponse } from "@cikal/contracts";
+import { APPLICATION_SUBMIT_MESSAGES, type ApplicationSubmitResponse, type FormSection } from "@cikal/contracts";
 import { Inject, Injectable } from "@nestjs/common";
 import { businessDate } from "../../../../platform/clock/business-date.js";
 import { TenantTx, type Tx } from "../../../../platform/db/tenant-tx.js";
@@ -14,6 +14,7 @@ import { APPLICATION_SUBMITTED_EVENT, type ApplicationEventPayload } from "./app
 import { ApplicationSectionChecks } from "./application-section-checks.js";
 import { DraftDocuments } from "./draft-documents.js";
 import { DraftFormSections } from "./draft-form-sections.js";
+import { DraftSteps } from "./draft-steps.js";
 import { StrictSections } from "./strict-sections.js";
 
 /**
@@ -28,6 +29,7 @@ export class SubmitApplicationUseCase {
     private readonly db: TenantTx,
     private readonly applications: ApplicationsRepository,
     private readonly forms: DraftFormSections,
+    private readonly steps: DraftSteps,
     private readonly checks: ApplicationSectionChecks,
     private readonly rules: StrictSections,
     private readonly documents: DraftDocuments,
@@ -60,23 +62,34 @@ export class SubmitApplicationUseCase {
     });
   }
 
-  /** Langkah 2: aturan strict semua section di `steps[]`; produk tanpa rute ACTIVE `PRODUCT_NOT_AVAILABLE`. */
+  /**
+   * Langkah 2: aturan strict semua section di `steps[]`; data section di luar `steps[]` diabaikan. Produk tanpa rute
+   * ACTIVE `PRODUCT_NOT_AVAILABLE`.
+   */
   private async checkSections(tx: Tx, draft: DraftRow, today: string): Promise<void> {
     const sections = await this.forms.load(tx, draft);
     // Draft selalu punya baris Personal sejak `POST /applications`.
     if (!sections) throw new Error(`Application ${draft.id} has no personal data`);
     const inputs = storedSectionInputs(sections);
     const product = await this.checks.product(tx, inputs.application, today);
-    const error = incompleteApplicationError([
-      [
-        "application",
+    const steps = await this.steps.of(tx, draft);
+    const checks: Partial<Record<FormSection, () => Promise<DomainError | null>>> = {
+      application: async () =>
         applicationRequiredError(inputs.application) ??
-          (await this.checks.ruleError(tx, inputs.application, product, true)),
-      ],
-      ["personal", await this.rules.personalError(tx, draft, inputs.personal, today)],
-      ["occupation", await this.rules.occupationError(tx, draft, inputs.occupation)],
-      ["emergency-contact", await this.rules.emergencyContactError(tx, draft, inputs.emergencyContact)],
-    ]);
+        (await this.checks.ruleError(tx, inputs.application, product, true)),
+      personal: () => this.rules.personalError(tx, draft, inputs.personal, today),
+      spouse: () => this.rules.spouseError(tx, draft, inputs.spouse),
+      occupation: () => this.rules.occupationError(tx, draft, inputs.occupation),
+      business: () => this.rules.businessError(tx, draft, inputs.business, today),
+      collateral: () => this.rules.collateralError(tx, draft, inputs.collateral, today),
+      "emergency-contact": () => this.rules.emergencyContactError(tx, draft, inputs.emergencyContact),
+    };
+    const results: Array<[FormSection, DomainError | null]> = [];
+    for (const section of steps) {
+      const check = checks[section];
+      if (check) results.push([section, await check()]);
+    }
+    const error = incompleteApplicationError(results);
     if (error) throw error;
   }
 

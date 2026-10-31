@@ -10,6 +10,7 @@ import { companies } from "../../tenancy/index.js";
 import { application } from "./pg-schema.js";
 
 export * from "./applicant.schema.js";
+export * from "./conditional-sections.schema.js";
 export { application } from "./pg-schema.js";
 
 export type ApplicationChannel = "WEB" | "MOBILE" | "API" | "UPLOAD";

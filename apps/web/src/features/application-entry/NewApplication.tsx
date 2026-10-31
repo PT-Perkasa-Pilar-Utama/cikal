@@ -1,13 +1,16 @@
 import { FeedbackMessage } from "../../components/ui/FeedbackMessage";
 import { ApplicationSection } from "./ApplicationSection";
 import { ApplicationStepper } from "./ApplicationStepper";
+import { BusinessSection } from "./BusinessSection";
+import { CollateralSection } from "./CollateralSection";
 import { ConfirmationPopup } from "./ConfirmationPopup";
 import { DocumentsSection } from "./DocumentsSection";
 import type { DraftStart } from "./draft-form-values";
 import { EmergencyContactSection } from "./EmergencyContactSection";
-import { SUBMIT_CONFIRMATION, UNSAVED_DATA_CONFIRMATION } from "./labels";
+import { SPOUSE_REMOVAL_CONFIRMATION, SUBMIT_CONFIRMATION, UNSAVED_DATA_CONFIRMATION } from "./labels";
 import { OccupationSection } from "./OccupationSection";
 import { PersonalSection } from "./PersonalSection";
+import { SpouseSection } from "./SpouseSection";
 import { useEntryFlow } from "./use-entry-flow";
 
 interface NewApplicationProps {
@@ -59,6 +62,14 @@ export function NewApplication({ onExit, onSubmitted, start }: NewApplicationPro
             onSaveDraft={(body) => flow.savePersonal(body, false)}
           />
         )}
+        {current === "spouse" && (
+          <SpouseSection
+            {...common}
+            saved={values.spouse}
+            onNext={(body) => flow.saveSpouse(body, true)}
+            onSaveDraft={(body) => flow.saveSpouse(body, false)}
+          />
+        )}
         {current === "occupation" && (
           <OccupationSection
             {...common}
@@ -66,6 +77,23 @@ export function NewApplication({ onExit, onSubmitted, start }: NewApplicationPro
             onNext={(body) => flow.saveOccupation(body, true)}
             onSaveDraft={(body) => flow.saveOccupation(body, false)}
             pension={values.application?.application.productCategory === "PENSION"}
+          />
+        )}
+        {current === "business" && (
+          <BusinessSection
+            {...common}
+            saved={values.business}
+            onNext={(body) => flow.saveBusiness(body, true)}
+            onSaveDraft={(body) => flow.saveBusiness(body, false)}
+          />
+        )}
+        {current === "collateral" && draft && (
+          <CollateralSection
+            {...common}
+            applicationId={draft.id}
+            saved={values.collateral}
+            onNext={(body) => flow.saveCollateral(body, true)}
+            onSaveDraft={(body) => flow.saveCollateral(body, false)}
           />
         )}
         {current === "documents" && draft && (
@@ -87,6 +115,16 @@ export function NewApplication({ onExit, onSubmitted, start }: NewApplicationPro
           confirmLabel="OK"
           cancelLabel="Cancel"
           onConfirm={flow.confirmBack}
+          onCancel={flow.cancelConfirmation}
+        />
+      )}
+      {flow.confirming === "spouse-removal" && (
+        <ConfirmationPopup
+          title="Marital"
+          text={SPOUSE_REMOVAL_CONFIRMATION}
+          confirmLabel="OK"
+          cancelLabel="Cancel"
+          onConfirm={flow.confirmSpouseRemoval}
           onCancel={flow.cancelConfirmation}
         />
       )}

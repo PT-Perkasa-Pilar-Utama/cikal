@@ -9,9 +9,9 @@ import { BranchDirectory } from "../../organization/index.js";
 import { ProductCodes } from "../../product/index.js";
 import { type ApplicationKey, ApplicationsRepository, type DetailRow } from "../db/applications.repository.js";
 import { applicationTabs } from "../domain/application-tabs.js";
-import { formSteps } from "../domain/form-steps.js";
 import { ApplicationVisibility } from "./application-visibility.js";
 import { DraftFormSections } from "./draft-form-sections.js";
+import { DraftSteps } from "./draft-steps.js";
 
 const applicationNotFound = () => new DomainError("APPLICATION_NOT_FOUND", "Application not found", 404);
 
@@ -26,6 +26,7 @@ export class GetApplicationDetailUseCase {
     private readonly applications: ApplicationsRepository,
     private readonly visibility: ApplicationVisibility,
     private readonly sections: DraftFormSections,
+    private readonly steps: DraftSteps,
     private readonly productCodes: ProductCodes,
     private readonly branches: BranchDirectory,
     @Inject(PROCESS_VIEW_PORT) private readonly processes: ProcessViewPort,
@@ -53,7 +54,7 @@ export class GetApplicationDetailUseCase {
           currentStep: row.currentStep,
           currentStepStatus: row.currentStep ? (process.stepStatuses[row.currentStep] ?? null) : null,
           summary: await this.summary(tx, row),
-          tabs: applicationTabs(formSteps(), process.activeSteps, process.processInstances.length > 0),
+          tabs: applicationTabs(await this.steps.of(tx, row), process.activeSteps, process.processInstances.length > 0),
           sections,
           processInstances: process.processInstances,
         },

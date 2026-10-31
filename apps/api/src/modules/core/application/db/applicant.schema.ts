@@ -2,30 +2,11 @@ import { sql } from "drizzle-orm";
 import { boolean, check, date, index, integer, numeric, text, unique, uuid } from "drizzle-orm/pg-core";
 import { auditColumns, bytea, tenantIsolation } from "../../../../platform/db/columns.js";
 import { documentFiles } from "../../document/index.js";
-import { companies } from "../../tenancy/index.js";
 import { application } from "./pg-schema.js";
-import { applications } from "./schema.js";
+import { applicationId, regionColumns, tenantId } from "./section-columns.js";
 
 export type AddressType = "ID" | "RESIDENCE" | "CORRESPONDENCE";
 export type DocumentVerificationStatus = "PENDING" | "MATCH" | "NOT_MATCH";
-
-const applicationId = () =>
-  uuid("application_id")
-    .notNull()
-    .references(() => applications.id);
-const tenantId = () =>
-  uuid("tenant_id")
-    .notNull()
-    .references(() => companies.id);
-
-/** Kolom wilayah api-specs 06 §6.3 dengan awalan nama, contoh `company_province_code`. */
-const regionColumns = (prefix = "") => ({
-  provinceCode: text(`${prefix}province_code`),
-  cityCode: text(`${prefix}city_code`),
-  districtCode: text(`${prefix}district_code`),
-  subDistrictCode: text(`${prefix}sub_district_code`),
-  zipCode: text(`${prefix}zip_code`),
-});
 
 /**
  * APPLICATION_PERSONALS, technical-specs 06 §6.9. Field sensitif terenkripsi bersama versi kuncinya, NIK juga blind

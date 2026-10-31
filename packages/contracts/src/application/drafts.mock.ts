@@ -5,7 +5,7 @@ import type { SectionSaveResponse } from "./sections.schema.js";
 const DRAFT_ID = "0192b6f3-0001-7000-8000-000000000001";
 const PRODUCT_ID = "0192b6f3-0001-7000-8000-000000000002";
 const LOAN_ID = "20102026KTA0000013";
-const POC_STEPS = ["application", "personal", "occupation", "documents", "emergency-contact"] as const;
+const TRM_STP_001_STEPS = ["application", "personal", "occupation", "documents", "emergency-contact"] as const;
 
 const KTP_ADDRESS = {
   address: "Jl. Merdeka No. 10",
@@ -20,7 +20,13 @@ const KTP_ADDRESS = {
 
 /** Draft KTA pertama (AC-49.01). */
 export const applicationDraftResponseMock = {
-  data: { id: DRAFT_ID, loanId: LOAN_ID, status: "DRAFT", currentSection: "application", steps: [...POC_STEPS] },
+  data: {
+    id: DRAFT_ID,
+    loanId: LOAN_ID,
+    status: "DRAFT",
+    currentSection: "application",
+    steps: [...TRM_STP_001_STEPS],
+  },
   message: `Application saved as draft. Loan ID: ${LOAN_ID}`,
 } satisfies ApplicationDraftResponse;
 
@@ -48,7 +54,7 @@ export const applicationFormResponseMock = {
     loanId: LOAN_ID,
     status: "DRAFT",
     currentSection: "occupation",
-    steps: [...POC_STEPS],
+    steps: [...TRM_STP_001_STEPS],
     sections: {
       application: {
         applicationType: "NTB",
@@ -87,10 +93,14 @@ export const applicationFormResponseMock = {
         addresses: { id: KTP_ADDRESS, residence: { ...KTP_ADDRESS, sameAsId: true } },
         consentAt: "2026-10-20T07:00:00.000Z",
       },
+      spouse: null,
       occupation: null,
+      business: null,
+      collateral: null,
       "emergency-contact": null,
     },
     documentCompleteness: null,
+    collateralTypes: [],
     returnNote: null,
   },
 } satisfies ApplicationFormResponse;
@@ -103,6 +113,6 @@ export const sectionSaveResponseMock = {
     status: "DRAFT",
     savedSection: "personal",
     nextSection: "occupation",
-    steps: [...POC_STEPS],
+    steps: [...TRM_STP_001_STEPS],
   },
 } satisfies SectionSaveResponse;

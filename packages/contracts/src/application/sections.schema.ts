@@ -18,20 +18,34 @@ export const APPLICATION_SECTION_MESSAGES = {
     `Applicant age must be between ${min} and ${max} years for this product`,
   npwpRequired: (limit: string): string => `NPWP is required for requested limit above ${limit}`,
   ageAtMaturityExceeded: (years: string): string => `Applicant age at maturity must not exceed ${years} years`,
+  spouseIdSameAsApplicant: "Spouse ID number must be different from applicant ID number",
+  businessLaunchInFuture: "Business launch date must not be in the future",
+  businessTooNew: (months: number): string => `Business must have been running for at least ${months} months`,
+  vehicleYearInFuture: (year: number): string => `Vehicle year must not be later than ${year}`,
+  collateralTypeNotAllowed: "Selected collateral type is not available for this product",
 } as const;
 
 /** Section yang bisa disimpan lewat `PUT /applications/{id}/sections/{section}` di rilis POC (api-specs 12 §12.1). */
-export const savableSectionSchema = z.enum(["application", "personal", "occupation", "emergency-contact"]);
+export const savableSectionSchema = z.enum([
+  "application",
+  "personal",
+  "spouse",
+  "occupation",
+  "business",
+  "collateral",
+  "emergency-contact",
+]);
 export type SavableSection = z.infer<typeof savableSectionSchema>;
 
 const text = (max: number) => z.string().trim().max(max);
 const paramId = text(50);
 const regionCode = text(20);
-const mobileNumber = z
+/** Format nomor HP dan telepon, dipakai juga section Spouse dan Business. */
+export const mobileNumberField = z
   .string()
   .trim()
   .regex(/^08\d{8,11}$/, APPLICATION_SECTION_MESSAGES.mobileNumber);
-const phoneNumber = z
+export const phoneNumberField = z
   .string()
   .trim()
   .regex(/^\+?\d{6,15}$/, "Phone number must contain 6 to 15 digits");
@@ -82,8 +96,8 @@ export const personalSectionInputSchema = draftPersonalInputSchema.extend({
     .trim()
     .regex(/^\d{16}$/, "KK number must be 16 digits")
     .optional(),
-  mobileNumber: mobileNumber.optional(),
-  phoneNumber: phoneNumber.optional(),
+  mobileNumber: mobileNumberField.optional(),
+  phoneNumber: phoneNumberField.optional(),
   email: z.email().max(100).optional(),
   addresses: z
     .object({
@@ -117,7 +131,7 @@ export const occupationSectionInputSchema = z.object({
       districtCode: regionCode.optional(),
       subDistrictCode: regionCode.optional(),
       zipCode: text(10).optional(),
-      phoneNumber: phoneNumber.optional(),
+      phoneNumber: phoneNumberField.optional(),
     })
     .default({}),
 });
@@ -126,9 +140,9 @@ export type OccupationSectionInput = z.infer<typeof occupationSectionInputSchema
 export const emergencyContactSectionInputSchema = z.object({
   contactName: text(100).optional(),
   relationToApplicant: paramId.optional(),
-  mobileNumber: mobileNumber.optional(),
-  homePhoneNumber: phoneNumber.optional(),
-  altPhoneNumber: phoneNumber.optional(),
+  mobileNumber: mobileNumberField.optional(),
+  homePhoneNumber: phoneNumberField.optional(),
+  altPhoneNumber: phoneNumberField.optional(),
   address: addressInputSchema.default({}),
 });
 export type EmergencyContactSectionInput = z.infer<typeof emergencyContactSectionInputSchema>;

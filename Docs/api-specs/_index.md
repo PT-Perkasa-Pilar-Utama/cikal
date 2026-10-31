@@ -178,7 +178,7 @@ Legend: `OK` diimplementasikan dan diuji, `WIP` sedang dikerjakan, `TODO` belum 
 | `POST /applications/{id}/submit` | 12 §12.8 | POC | OK |
 | `GET /applications/{id}` | 12 §12.9 | POC | OK |
 | `GET /applications/by-loan-id/{loanId}` | 12 §12.10 | POC | OK |
-| Sections spouse, business, collateral; OCR; pension | 12 §12.11 | Backlog | TODO |
+| OCR KTP, pension verification | 12 §12.11 | Backlog | TODO |
 
 ### Processes
 

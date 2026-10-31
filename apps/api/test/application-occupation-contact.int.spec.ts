@@ -127,7 +127,7 @@ describe("occupation and emergency contact sections", () => {
       occupationBody({ monthlyIncomeAllowance: undefined, tenureAtCurrentJob: undefined }),
     );
 
-    expect(res.data.nextSection).toBe("documents");
+    expect(res.data.nextSection).toBe("collateral");
   });
 
   it("AC-44.04 accepts only self-employed applicants for a KUR product (OCCUPATION_NOT_ELIGIBLE)", async () => {
@@ -147,7 +147,7 @@ describe("occupation and emergency contact sections", () => {
       "occupation",
       occupationBody({ sourceOfIncome: "002", occupation: "005", company: {} }),
     );
-    expect(selfEmployed.data.nextSection).toBe("documents");
+    expect(selfEmployed.data.nextSection).toBe("business");
   });
 
   it("AC-44.05 lists empty Occupation and Company Name and stays on Occupation", async () => {

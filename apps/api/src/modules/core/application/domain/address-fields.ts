@@ -24,3 +24,17 @@ export function addressColumns(input: AddressInput): AddressColumns {
     zipCode: input.zipCode ?? null,
   };
 }
+
+/** Kolom alamat baris tabel section sebagai objek alamat respons form (api-specs 12 §12.5). */
+export function addressOf(row: AddressColumns): AddressColumns {
+  return {
+    address: row.address,
+    rt: row.rt,
+    rw: row.rw,
+    provinceCode: row.provinceCode,
+    cityCode: row.cityCode,
+    districtCode: row.districtCode,
+    subDistrictCode: row.subDistrictCode,
+    zipCode: row.zipCode,
+  };
+}
